@@ -100,6 +100,7 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 			fl.nodeInboundStreams[metaNode.Id] = make(model.MsgPipeline)
 			newNode.ConfigureInStream(&fl.activeSubscriptions,fl.nodeInboundStreams[metaNode.Id])
 		}
+		newNode.SetSharedResources(fl.sharedResources)
 		err := newNode.LoadNodeConfig()
 		if err == nil && isNewNode {
 			fl.AddNode(newNode)
@@ -447,5 +448,5 @@ func (fl *Flow) SetMessageStream(msgInStream model.MsgPipeline) {
 }
 
 func (fl *Flow) SetSharedResources(resources *shared.GlobalSharedResources) {
-	fl.opContext.SharedResources = resources
+	fl.sharedResources = resources
 }

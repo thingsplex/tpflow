@@ -1,0 +1,13 @@
+{
+  "mqtt_server_uri":"tcp://localhost:1883",
+  "mqtt_client_id_prefix":"thingsplex_dev",
+  "mqtt_server_username":"",
+  "mqtt_server_password":"",
+  "mqtt_topic_global_prefix":"",
+  "flow_storage_dir":"./testdata/var/flow_storage",
+  "registry_db_file":"./testdata/var/registry.db",
+  "context_storage_dir":"./testdata/var/flow_storage/context.db",
+  "log_file":"",
+  "log_level":"debug",
+  "log_format":"text"
+}

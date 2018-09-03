@@ -78,7 +78,7 @@ func (node *TriggerNode) LoadNodeConfig() error {
 }
 
 func (node *TriggerNode) LookupAddressToAlias(address string) {
-	service,err := node.flowOpCtx.SharedResources.Registry.GetServiceByFullAddress(address)
+	service,err := node.sharedResources.Registry.GetServiceByFullAddress(address)
 	if err == nil {
 		node.ctx.SetVariable("flow_service_alias","string",service.Alias,"",node.flowOpCtx.FlowId,true)
 		node.ctx.SetVariable("flow_location_alias","string",service.LocationAlias,"",node.flowOpCtx.FlowId,true)

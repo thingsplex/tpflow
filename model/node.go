@@ -1,5 +1,7 @@
 package model
 
+import "github.com/alivinco/tpflow/shared"
+
 type NodeID string
 
 type MetaNode struct {
@@ -33,6 +35,7 @@ type Node interface {
 	Init() error
 	// Invoked when node is stopped
 	Cleanup() error
+	SetSharedResources(sharedResource *shared.GlobalSharedResources)
 }
 
 

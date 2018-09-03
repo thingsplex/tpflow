@@ -11,4 +11,5 @@ type Configs struct {
 	MqttClientIdPrefix string   `json:"mqtt_client_id_prefix"`
 	LogFile            string   `json:"log_file"`
 	LogLevel           string   `json:"log_level"`
+	LogFormat          string   `json:"log_format"`
 }

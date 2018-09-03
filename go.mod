@@ -1,11 +1,12 @@
 module github.com/alivinco/tpflow
 
 require (
+	github.com/BurntSushi/toml v0.3.0 // indirect
 	github.com/ChrisTrenkamp/goxpath v0.0.0-20170922090931-c385f95c6022
 	github.com/DataDog/zstd v1.3.4 // indirect
 	github.com/Sereal/Sereal v0.0.0-20180727013122-68c42fd7bfdf // indirect
 	github.com/Sirupsen/logrus v1.0.6
-	github.com/alivinco/fimpgo v0.0.0-20180611082941-329e28640cf6
+	github.com/alivinco/fimpgo v1.0.0
 	github.com/asdine/storm v2.1.1+incompatible
 	github.com/boltdb/bolt v1.3.1
 	github.com/buger/jsonparser v0.0.0-20180808090653-f4dd9f5a6b44 // indirect
@@ -48,6 +49,7 @@ require (
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.1.2 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0-20170531160350-a96e63847dc3
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.2.1 // indirect
 )
