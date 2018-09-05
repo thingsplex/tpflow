@@ -8,8 +8,6 @@ github.com/Sereal/Sereal v0.0.0-20180727013122-68c42fd7bfdf h1:gziqYtUl2f8Oo1/Ko
 github.com/Sereal/Sereal v0.0.0-20180727013122-68c42fd7bfdf/go.mod h1:D0JMgToj/WdxCgd30Kc1UcA9E+WdZoJqeVOuYW7iTBM=
 github.com/Sirupsen/logrus v1.0.6 h1:HCAGQRk48dRVPA5Y+Yh0qdCSTzPOyU1tBJ7Q9YzotII=
 github.com/Sirupsen/logrus v1.0.6/go.mod h1:rmk17hk6i8ZSAJkSDa7nOxamrG+SP4P0mm+DAvExv4U=
-github.com/alivinco/fimpgo v0.0.0-20180611082941-329e28640cf6 h1:KxJqrDxi6J5vhTonI5/e8J43tXoQ+YrNknnIoFw4IXk=
-github.com/alivinco/fimpgo v0.0.0-20180611082941-329e28640cf6/go.mod h1:zIYzjVqXH2M5KayRvMalwVePsCZuJy5TqFYwVqMprtY=
 github.com/alivinco/fimpgo v1.0.0 h1:0eA5PYn/VDQgzHTVL+9UccXySO5P1DMtsNUNBuVI3GQ=
 github.com/alivinco/fimpgo v1.0.0/go.mod h1:zIYzjVqXH2M5KayRvMalwVePsCZuJy5TqFYwVqMprtY=
 github.com/asdine/storm v2.1.1+incompatible h1:j/IqbSqHVmrU908a11QGf+2Iv7pr7NXiyDE+P35Bp80=
@@ -38,6 +36,8 @@ github.com/hpcloud/tail v1.0.0 h1:nfCOvKYfkgYP8hkirhJocXT2+zOD8yUNjXaWfTlyFKI=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
 github.com/imdario/mergo v0.3.6 h1:xTNEAn+kxVO7dTZGu0CegyqKZmoWFI0rF8UxjlB2d28=
 github.com/imdario/mergo v0.3.6/go.mod h1:2EnlNZ0deacrJVfApfmtdGgDfMuh/nq6Ok1EcJh5FfA=
+github.com/influxdata/influxdb v1.6.2 h1:Cvl0/3n7/T6RkCefitJtEHWKJznmOA+9tT8gVx3vVS0=
+github.com/influxdata/influxdb v1.6.2/go.mod h1:qZna6X/4elxqT3yI9iZYdZrWWdeFOOprn86kgg4+IzY=
 github.com/kelvins/sunrisesunset v0.0.0-20170601204625-14f1915ad4b4 h1:8GEzGYjqXcb1PW2RFrkbsv7Gzq4v9ykbjy6lUc9nbnM=
 github.com/kelvins/sunrisesunset v0.0.0-20170601204625-14f1915ad4b4/go.mod h1:3oZ7G+fb8Z8KF+KPHxeDO3GWpEjgvk/f+d/yaxmDRT4=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=

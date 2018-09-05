@@ -20,6 +20,7 @@ require (
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/hpcloud/tail v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.6
+	github.com/influxdata/influxdb v1.6.2
 	github.com/kelvins/sunrisesunset v0.0.0-20170601204625-14f1915ad4b4
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/labstack/echo v3.2.1+incompatible

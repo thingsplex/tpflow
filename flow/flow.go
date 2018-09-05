@@ -5,7 +5,7 @@ import (
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node"
-	"github.com/alivinco/tpflow/shared"
+	"github.com/alivinco/tpflow/adapter"
 	"github.com/alivinco/tpflow/utils"
 	"github.com/pkg/errors"
 	"time"
@@ -32,7 +32,7 @@ type Flow struct {
 	WaitingSince        time.Time
 	LastExecutionTime   time.Duration
 	logFields           log.Fields
- 	sharedResources     * shared.GlobalSharedResources
+ 	sharedResources     * adapter.Adapters
 }
 
 func NewFlow(metaFlow model.FlowMeta, globalContext *model.Context, msgTransport *fimpgo.MqttTransport) *Flow {
@@ -447,6 +447,6 @@ func (fl *Flow) SetMessageStream(msgInStream model.MsgPipeline) {
 	fl.msgInStream = msgInStream
 }
 
-func (fl *Flow) SetSharedResources(resources *shared.GlobalSharedResources) {
+func (fl *Flow) SetSharedResources(resources *adapter.Adapters) {
 	fl.sharedResources = resources
 }

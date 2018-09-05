@@ -1,6 +1,8 @@
 package model
 
-import "github.com/alivinco/tpflow/shared"
+import (
+	"github.com/alivinco/tpflow/adapter"
+)
 
 type NodeID string
 
@@ -35,7 +37,7 @@ type Node interface {
 	Init() error
 	// Invoked when node is stopped
 	Cleanup() error
-	SetSharedResources(sharedResource *shared.GlobalSharedResources)
+	SetSharedResources(sharedResource *adapter.Adapters)
 }
 
 

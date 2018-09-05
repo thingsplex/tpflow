@@ -4,17 +4,18 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/fimpgo/fimptype"
+	tpflow "github.com/alivinco/tpflow"
 	"github.com/pkg/errors"
 	"strconv"
 )
 
 type MqttIntegration struct {
 	msgTransport *fimpgo.MqttTransport
-	config       *Configs
+	config       *tpflow.Configs
 	registry     *ThingRegistryStore
 }
 
-func NewMqttIntegration(config *Configs, registry *ThingRegistryStore) *MqttIntegration {
+func NewMqttIntegration(config *tpflow.Configs, registry *ThingRegistryStore) *MqttIntegration {
 	int := MqttIntegration{config: config, registry: registry}
 	return &int
 }

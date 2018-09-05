@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"github.com/alivinco/fimpgo"
+	tpflow "github.com/alivinco/tpflow"
+	"github.com/alivinco/tpflow/adapter"
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node"
-	"github.com/alivinco/tpflow/shared"
 	"github.com/alivinco/tpflow/utils"
 	//thingsplexmodel "github.com/alivinco/thingsplex/model"
 	"io/ioutil"
@@ -20,8 +21,8 @@ type Manager struct {
 	msgStreams    map[string]model.MsgPipeline
 	msgTransport  *fimpgo.MqttTransport
 	globalContext *model.Context
-	config        *model.Configs
-	sharedResources shared.GlobalSharedResources
+	config        tpflow.Configs
+	adapters      adapter.Adapters
 }
 
 
@@ -37,7 +38,7 @@ type FlowListItem struct {
 	Stats *model.FlowStatsReport
 }
 
-func NewManager(config *model.Configs) (*Manager,error) {
+func NewManager(config tpflow.Configs) (*Manager,error) {
 	var err error
 	man := Manager{config:config}
 	man.msgStreams = make(map[string]model.MsgPipeline)
@@ -132,7 +133,7 @@ func (mg *Manager) LoadFlowFromJson(flowJsonDef []byte) error{
 
 	flow := NewFlow(flowMeta, mg.globalContext, mg.msgTransport)
 	flow.SetStoragePath(mg.config.FlowStorageDir)
-	flow.SetSharedResources(&mg.sharedResources)
+	flow.SetSharedResources(&mg.adapters)
 	mg.flowRegistry = append(mg.flowRegistry,flow)
 	return nil
 }
@@ -274,6 +275,6 @@ func (mg *Manager) DeleteFlowFromStorage(id string) {
 }
 
 
-func (mg *Manager) SetSharedResources(resources shared.GlobalSharedResources) {
-	mg.sharedResources = resources
+func (mg *Manager) SetSharedResources(resources adapter.Adapters) {
+	mg.adapters = resources
 }

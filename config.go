@@ -1,4 +1,4 @@
-package model
+package tpflow
 
 type Configs struct {
 	MqttServerURI      string   `json:"mqtt_server_uri"`

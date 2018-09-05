@@ -4,7 +4,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/model"
-	"github.com/alivinco/tpflow/shared"
+	"github.com/alivinco/tpflow/adapter"
 )
 
 type BaseNode struct {
@@ -17,7 +17,7 @@ type BaseNode struct {
 	isReactorRunning bool
 	transport *fimpgo.MqttTransport
 	logFields log.Fields
-	sharedResources *shared.GlobalSharedResources
+	sharedResources *adapter.Adapters
 }
 
 func (node *BaseNode) SetupBaseNode() {
@@ -68,6 +68,6 @@ func (node *BaseNode) Cleanup() error {
 func (node *BaseNode) ConfigureInStream(activeSubscriptions *[]string,msgInStream model.MsgPipeline) {
 }
 
-func (node *BaseNode) SetSharedResources(sharedResource *shared.GlobalSharedResources) {
+func (node *BaseNode) SetSharedResources(sharedResource *adapter.Adapters) {
 	node.sharedResources = sharedResource
 }

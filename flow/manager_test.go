@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"github.com/alivinco/fimpgo"
-	"github.com/alivinco/tpflow/model"
 	"testing"
 	"time"
 )
 
 func TestManager_LoadFlowFromFile(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
-	config := model.Configs{MqttServerURI:"tcp://localhost:1883",FlowStorageDir:"./flows"}
+	config := Configs{MqttServerURI:"tcp://localhost:1883",FlowStorageDir:"./flows"}
 	man,err := NewManager(&config)
 	if err != nil {
 		t.Error(err)
@@ -44,7 +43,7 @@ func TestManager_LoadFlowFromFile(t *testing.T) {
 
 func TestManager_LoadAllFlowsFromStorage(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
-	config := model.Configs{MqttServerURI:"tcp://localhost:1883",FlowStorageDir:"./flows"}
+	config := Configs{MqttServerURI:"tcp://localhost:1883",FlowStorageDir:"./flows"}
 	man,err := NewManager(&config)
 	if err != nil {
 		t.Error(err)
@@ -77,7 +76,7 @@ func TestManager_LoadAllFlowsFromStorage(t *testing.T) {
 
 func TestManager_GenerateNewFlow(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
-	config := model.Configs{MqttServerURI:"tcp://localhost:1883",FlowStorageDir:"../var/flow_storage"}
+	config := Configs{MqttServerURI:"tcp://localhost:1883",FlowStorageDir:"../var/flow_storage"}
 	man,err := NewManager(&config)
 	if err != nil {
 		t.Error(err)
@@ -89,7 +88,7 @@ func TestManager_GenerateNewFlow(t *testing.T) {
 
 func TestManager_GetFlowList(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
-	config := model.Configs{MqttServerURI:"tcp://localhost:1883",FlowStorageDir:"./flows"}
+	config := Configs{MqttServerURI:"tcp://localhost:1883",FlowStorageDir:"./flows"}
 	man,err := NewManager(&config)
 	if err != nil {
 		t.Error(err)

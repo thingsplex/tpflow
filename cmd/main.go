@@ -5,10 +5,10 @@ import (
 	"flag"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/alivinco/tpflow"
-	"github.com/alivinco/tpflow/model"
+	tpflow "github.com/alivinco/tpflow"
+	"github.com/alivinco/tpflow/adapter"
+	"github.com/alivinco/tpflow/flow"
 	"github.com/alivinco/tpflow/registry"
-	"github.com/alivinco/tpflow/shared"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io/ioutil"
 	"os"
@@ -43,7 +43,7 @@ func SetupLog(logfile string, level string,logFormat string ) {
 }
 
 func main() {
-	configs := &model.Configs{}
+	configs := tpflow.Configs{}
 	var configFile string
 	flag.StringVar(&configFile, "c", "", "Config file")
 	flag.Parse()
@@ -53,8 +53,9 @@ func main() {
 		fmt.Println("Loading configs from file ", configFile)
 	}
 	configFileBody, err := ioutil.ReadFile(configFile)
-	err = json.Unmarshal(configFileBody, configs)
+	err = json.Unmarshal(configFileBody, &configs)
 	if err != nil {
+		fmt.Print(err)
 		panic("Can't load config file.")
 	}
 
@@ -72,7 +73,7 @@ func main() {
 	if err != nil {
 		log.Error("Can't Init Flow manager . Error :", err)
 	}
-	flowSharedResources := shared.GlobalSharedResources{Registry:thingRegistryStore}
+	flowSharedResources := adapter.Adapters{Registry:thingRegistryStore}
 	flowManager.SetSharedResources(flowSharedResources)
 	flowManager.InitMessagingTransport()
 	err = flowManager.LoadAllFlowsFromStorage()
