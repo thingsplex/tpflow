@@ -6,9 +6,12 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	tpflow "github.com/alivinco/tpflow"
+	fapi "github.com/alivinco/tpflow/api"
 	"github.com/alivinco/tpflow/adapter"
 	"github.com/alivinco/tpflow/flow"
 	"github.com/alivinco/tpflow/registry"
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io/ioutil"
 	"os"
@@ -80,7 +83,24 @@ func main() {
 	if err != nil {
 		log.Error("Can't load Flows from storage . Error :", err)
 	}
+
+	e := echo.New()
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
+	fapi.NewContextApi(flowManager.GetGlobalContext(),e)
+	fapi.NewFlowApi(flowManager,e)
+	fapi.NewRegistryApi(thingRegistryStore,e)
+
+
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:4200", "http:://localhost:8082","http:://localhost:8083"},
+		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
+	}))
+
 	log.Info("<main> Started")
+
+	e.Logger.Debug(e.Start(":8083"))
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c)

@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/alivinco/tpflow"
+	"github.com/alivinco/tpflow/flow"
 	"github.com/alivinco/tpflow/model"
 	"github.com/labstack/echo"
 	"io/ioutil"
