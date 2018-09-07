@@ -27,3 +27,5 @@ Thumbs.db
 vendor/golang.org/x
 var/flow_storage
 *.deb
+*.db
+thingsplex
