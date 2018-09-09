@@ -4,20 +4,20 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/model"
-	"github.com/alivinco/tpflow/adapter"
+	"github.com/alivinco/tpflow/connector"
 )
 
 type BaseNode struct {
 
-	meta model.MetaNode
-	ctx *model.Context
-	flowOpCtx *model.FlowOperationalContext
-	isStartNode bool   // true - if node is first in a flow
-	isMsgReactor bool  // true - node reacts on messages and requires input stream .
-	isReactorRunning bool
-	transport *fimpgo.MqttTransport
-	logFields log.Fields
-	sharedResources *adapter.Adapters
+	meta              model.MetaNode
+	ctx               *model.Context
+	flowOpCtx         *model.FlowOperationalContext
+	isStartNode       bool   // true - if node is first in a flow
+	isMsgReactor      bool  // true - node reacts on messages and requires input stream .
+	isReactorRunning  bool
+	transport         *fimpgo.MqttTransport
+	logFields         log.Fields
+	connectorRegistry *connector.Registry
 }
 
 func (node *BaseNode) SetupBaseNode() {
@@ -68,6 +68,6 @@ func (node *BaseNode) Cleanup() error {
 func (node *BaseNode) ConfigureInStream(activeSubscriptions *[]string,msgInStream model.MsgPipeline) {
 }
 
-func (node *BaseNode) SetSharedResources(sharedResource *adapter.Adapters) {
-	node.sharedResources = sharedResource
+func (node *BaseNode) SetConnectorRegistry(connectorRegistry *connector.Registry) {
+	node.connectorRegistry = connectorRegistry
 }

@@ -5,7 +5,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/alivinco/fimpgo"
 	tpflow "github.com/alivinco/tpflow"
-	"github.com/alivinco/tpflow/adapter"
+	"github.com/alivinco/tpflow/connector"
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node"
 	"github.com/alivinco/tpflow/utils"
@@ -17,12 +17,12 @@ import (
 )
 
 type Manager struct {
-	flowRegistry  []*Flow
-	msgStreams    map[string]model.MsgPipeline
-	msgTransport  *fimpgo.MqttTransport
-	globalContext *model.Context
-	config        tpflow.Configs
-	adapters      adapter.Adapters
+	flowRegistry      []*Flow
+	msgStreams        map[string]model.MsgPipeline
+	msgTransport      *fimpgo.MqttTransport
+	globalContext     *model.Context
+	config            tpflow.Configs
+	connectorRegistry connector.Registry
 }
 
 
@@ -45,6 +45,7 @@ func NewManager(config tpflow.Configs) (*Manager,error) {
 	man.flowRegistry = make([]*Flow,0)
 	man.globalContext,err = model.NewContextDB(config.ContextStorageDir)
 	man.globalContext.RegisterFlow("global")
+	man.connectorRegistry = connector.Registry{}
 	return &man,err
 }
 
@@ -133,7 +134,7 @@ func (mg *Manager) LoadFlowFromJson(flowJsonDef []byte) error{
 
 	flow := NewFlow(flowMeta, mg.globalContext, mg.msgTransport)
 	flow.SetStoragePath(mg.config.FlowStorageDir)
-	flow.SetSharedResources(&mg.adapters)
+	flow.SetConnectorRegistry(&mg.connectorRegistry)
 	mg.flowRegistry = append(mg.flowRegistry,flow)
 	return nil
 }
@@ -275,6 +276,6 @@ func (mg *Manager) DeleteFlowFromStorage(id string) {
 }
 
 
-func (mg *Manager) SetSharedResources(resources adapter.Adapters) {
-	mg.adapters = resources
+func (mg *Manager) GetConnectorRegistry() *connector.Registry {
+	return &mg.connectorRegistry
 }

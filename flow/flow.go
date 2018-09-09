@@ -5,7 +5,7 @@ import (
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node"
-	"github.com/alivinco/tpflow/adapter"
+	"github.com/alivinco/tpflow/connector"
 	"github.com/alivinco/tpflow/utils"
 	"github.com/pkg/errors"
 	"time"
@@ -32,7 +32,7 @@ type Flow struct {
 	WaitingSince        time.Time
 	LastExecutionTime   time.Duration
 	logFields           log.Fields
- 	sharedResources     * adapter.Adapters
+ 	connectorRegistry   * connector.Registry
 }
 
 func NewFlow(metaFlow model.FlowMeta, globalContext *model.Context, msgTransport *fimpgo.MqttTransport) *Flow {
@@ -100,7 +100,7 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 			fl.nodeInboundStreams[metaNode.Id] = make(model.MsgPipeline)
 			newNode.ConfigureInStream(&fl.activeSubscriptions,fl.nodeInboundStreams[metaNode.Id])
 		}
-		newNode.SetSharedResources(fl.sharedResources)
+		newNode.SetConnectorRegistry(fl.connectorRegistry)
 		err := newNode.LoadNodeConfig()
 		if err == nil && isNewNode {
 			fl.AddNode(newNode)
@@ -447,6 +447,6 @@ func (fl *Flow) SetMessageStream(msgInStream model.MsgPipeline) {
 	fl.msgInStream = msgInStream
 }
 
-func (fl *Flow) SetSharedResources(resources *adapter.Adapters) {
-	fl.sharedResources = resources
+func (fl *Flow) SetConnectorRegistry(resources *connector.Registry) {
+	fl.connectorRegistry = resources
 }

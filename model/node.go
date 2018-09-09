@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/alivinco/tpflow/adapter"
+	"github.com/alivinco/tpflow/connector"
 )
 
 type NodeID string
@@ -37,7 +37,12 @@ type Node interface {
 	Init() error
 	// Invoked when node is stopped
 	Cleanup() error
-	SetSharedResources(sharedResource *adapter.Adapters)
+	SetConnectorRegistry(connectorRegistry *connector.Registry)
+
+	//GetAdapterInstance()
+
+	//GetConfigs() interface{}
+	//SetConfigs(configs interface{})
 }
 
 

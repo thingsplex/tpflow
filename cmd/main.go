@@ -7,7 +7,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	tpflow "github.com/alivinco/tpflow"
 	fapi "github.com/alivinco/tpflow/api"
-	"github.com/alivinco/tpflow/adapter"
 	"github.com/alivinco/tpflow/flow"
 	"github.com/alivinco/tpflow/registry"
 	"github.com/labstack/echo"
@@ -76,8 +75,7 @@ func main() {
 	if err != nil {
 		log.Error("Can't Init Flow manager . Error :", err)
 	}
-	flowSharedResources := adapter.Adapters{Registry:thingRegistryStore}
-	flowManager.SetSharedResources(flowSharedResources)
+	flowManager.GetConnectorRegistry().AddInstance("thing_registry","thing_registry","RUNNING",thingRegistryStore)
 	flowManager.InitMessagingTransport()
 	err = flowManager.LoadAllFlowsFromStorage()
 	if err != nil {

@@ -3,6 +3,7 @@ package node
 import (
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/model"
+	"github.com/alivinco/tpflow/registry"
 	"github.com/alivinco/tpflow/utils"
 	"github.com/mitchellh/mapstructure"
 	"time"
@@ -15,6 +16,7 @@ type TriggerNode struct {
 	activeSubscriptions *[]string
 	msgInStream         model.MsgPipeline
 	config              TriggerConfig
+	thingRegistry       *registry.ThingRegistryStore
 }
 
 type TriggerConfig struct {
@@ -74,11 +76,24 @@ func (node *TriggerNode) LoadNodeConfig() error {
 	if err != nil{
 		node.getLog().Error("Error while decoding node configs.Err:",err)
 	}
+
+	connInstance := node.connectorRegistry.GetInstance("thing_registry","thing_registry")
+	var ok bool;
+	if connInstance != nil {
+		node.thingRegistry,ok = connInstance.Connection.(*registry.ThingRegistryStore)
+		if !ok {
+			node.thingRegistry = nil
+		}
+	}
 	return err
 }
 
 func (node *TriggerNode) LookupAddressToAlias(address string) {
-	service,err := node.sharedResources.Registry.GetServiceByFullAddress(address)
+
+	if node.thingRegistry == nil {
+		return
+	}
+	service,err := node.thingRegistry.GetServiceByFullAddress(address)
 	if err == nil {
 		node.ctx.SetVariable("flow_service_alias","string",service.Alias,"",node.flowOpCtx.FlowId,true)
 		node.ctx.SetVariable("flow_location_alias","string",service.LocationAlias,"",node.flowOpCtx.FlowId,true)
