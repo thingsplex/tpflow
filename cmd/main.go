@@ -75,7 +75,7 @@ func main() {
 	if err != nil {
 		log.Error("Can't Init Flow manager . Error :", err)
 	}
-	flowManager.GetConnectorRegistry().AddInstance("thing_registry","thing_registry","RUNNING",thingRegistryStore)
+	flowManager.GetConnectorRegistry().AddConnection("things_registry","thing_registry","thing_registry","RUNNING",thingRegistryStore)
 	flowManager.InitMessagingTransport()
 	err = flowManager.LoadAllFlowsFromStorage()
 	if err != nil {

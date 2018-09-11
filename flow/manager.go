@@ -45,7 +45,8 @@ func NewManager(config tpflow.Configs) (*Manager,error) {
 	man.flowRegistry = make([]*Flow,0)
 	man.globalContext,err = model.NewContextDB(config.ContextStorageDir)
 	man.globalContext.RegisterFlow("global")
-	man.connectorRegistry = connector.Registry{}
+	man.connectorRegistry = *connector.NewRegistry(config.ConnectorStorageDir)
+	man.connectorRegistry.LoadInstancesFromDisk()
 	return &man,err
 }
 

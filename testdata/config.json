@@ -5,6 +5,7 @@
   "mqtt_server_password":"",
   "mqtt_topic_global_prefix":"",
   "flow_storage_dir":"./testdata/var/flow_storage",
+  "connector_storage_dir":"./testdata/var/connectors",
   "registry_db_file":"./testdata/var/registry.db",
   "context_storage_dir":"./testdata/var/flow_storage/context.db",
   "log_file":"",

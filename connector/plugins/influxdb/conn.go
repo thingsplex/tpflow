@@ -3,12 +3,13 @@ package influxdb
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/alivinco/tpflow/connector"
+	"github.com/alivinco/tpflow/connector/model"
 	influx "github.com/influxdata/influxdb/client/v2"
 	"github.com/mitchellh/mapstructure"
 )
 
 type Connector struct {
+	name string
 	influxC influx.Client
 	state   string
 	config  ConnectorConfig
@@ -24,8 +25,10 @@ type ConnectorConfig struct {
 	RetentionDuration string
 }
 
-func NewInfluxdbConnectorInstance(config interface{}) connector.ConnInterface {
-	con := Connector{}
+
+
+func NewConnectorInstance(name string ,config interface{}) model.ConnInterface {
+	con := Connector{name:name}
 	con.LoadConfig(config)
 	con.Init()
 	return &con
@@ -78,3 +81,4 @@ func (conn *Connector) Stop(){
 func (conn *Connector) GetConnection() interface{}{
 	return conn.influxC
 }
+
