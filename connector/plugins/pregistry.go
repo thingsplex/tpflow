@@ -1,7 +1,6 @@
 package plugins
 
 import (
-	"errors"
 	"github.com/alivinco/tpflow/connector/model"
 	"github.com/alivinco/tpflow/connector/plugins/influxdb"
 )
@@ -14,15 +13,29 @@ var pluginRegistry = map[string]model.Plugin{
 
 }
 
-func GetPlugin(name string) (model.Plugin,error) {
+func GetPlugin(name string) *model.Plugin {
 	plugin , ok := pluginRegistry[name]
 	if ok {
-		return plugin,nil
+		return &plugin
 	}
-	return model.Plugin{},errors.New("Plugin not found")
+	return nil
 
 }
 
 func RegisterPlugin(name string ,plugin model.Plugin) {
 	pluginRegistry[name] = plugin
+}
+
+func GetConfigurationTemplate(name string) model.Instance {
+	inst := model.Instance{}
+	 if p := GetPlugin(name);p!=nil {
+	 	inst.Config = p.Config
+	 }
+	 return inst
+
+}
+
+
+func GetPlugins () map[string]model.Plugin {
+	return pluginRegistry
 }

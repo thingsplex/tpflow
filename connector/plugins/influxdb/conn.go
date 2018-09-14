@@ -59,6 +59,7 @@ func (conn *Connector) Init()error {
 	if response, err := conn.influxC.Query(q); err == nil && response.Error() == nil {
 		log.Infof("<InfluxdbConn> Database %s was created with status :%s", conn.config.Db, response.Results)
 	} else {
+		log.Error("<InfluxdbConn> Database init failed . Error:",err)
 		return err
 	}
 	// Setting up retention policies
@@ -69,11 +70,13 @@ func (conn *Connector) Init()error {
 	} else {
 			log.Errorf("<InfluxdbConn> Configuration of retention policy %s failed with status : %s ", conn.config.RetentionPolicyName, response.Error())
 	}
+	conn.state = "RUNNING"
 	return err
 
 }
 
 func (conn *Connector) Stop(){
+	conn.state = "STOPPED"
 	conn.influxC.Close()
 
 }
@@ -82,3 +85,6 @@ func (conn *Connector) GetConnection() interface{}{
 	return conn.influxC
 }
 
+func (conn *Connector) GetState() string{
+	return conn.state
+}

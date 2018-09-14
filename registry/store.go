@@ -599,3 +599,22 @@ func (st *ThingRegistryStore) ClearAll() error {
 	}
 	return nil
 }
+
+// Method to comply with Connector interface
+
+func (st *ThingRegistryStore) LoadConfig(config interface{})error {
+	return nil
+}
+func (st *ThingRegistryStore) Init()error {
+	return nil
+}
+func (st *ThingRegistryStore) Stop() {
+
+}
+func (st *ThingRegistryStore) GetConnection() interface{} {
+	return &st
+
+}
+func (st *ThingRegistryStore) GetState() string {
+	return "RUNNING"
+}

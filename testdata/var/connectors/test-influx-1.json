@@ -1,0 +1,14 @@
+{
+  "ID": "test-influx-1",
+  "Name": "influxdb",
+  "Plugin": "influxdb",
+  "State": "",
+  "Config": {
+    "Address": "http://localhost:8086",
+    "Username": "",
+    "Password": "",
+    "Db": "tpflowtest",
+    "RetentionPolicyName": "tpflow_1w",
+    "RetentionDuration": "1w"
+  }
+}

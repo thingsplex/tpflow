@@ -77,7 +77,7 @@ func (node *TriggerNode) LoadNodeConfig() error {
 		node.getLog().Error("Error while decoding node configs.Err:",err)
 	}
 
-	connInstance := node.connectorRegistry.GetInstance("thing_registry","thing_registry")
+	connInstance := node.connectorRegistry.GetInstance("thing_registry")
 	var ok bool;
 	if connInstance != nil {
 		node.thingRegistry,ok = connInstance.Connection.(*registry.ThingRegistryStore)

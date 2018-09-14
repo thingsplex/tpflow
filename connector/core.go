@@ -25,8 +25,8 @@ func NewRegistry(configDir string) *Registry {
 }
 
 // Adds existing connection as connector instance into the registry
-func (reg *Registry) AddConnection(id string ,name string,connType string,state string,conn interface{}) {
-	inst := model.Instance{ID:id, Name:name,ConnectorType:connType,State:state,Connection:conn}
+func (reg *Registry) AddConnection(id string ,name string,connType string,conn model.ConnInterface) {
+	inst := model.Instance{ID:id, Name:name, Plugin:connType,Connection:conn}
 	reg.instances = append(reg.instances,&inst)
 }
 
@@ -39,26 +39,38 @@ func (reg *Registry) AddInstance(inst *model.Instance) {
 
 
 // Creates instance of connector using one of registered plugins
-func (reg *Registry) CreateInstance(name string , connType string, config interface{}) model.ConnInterface {
- 	connPlugin,err := plugins.GetPlugin(connType)
-	if err != nil {
+func (reg *Registry) CreateInstance(id string ,name string , plugin string, config interface{}) model.ConnInterface {
+ 	connPlugin := plugins.GetPlugin(plugin)
+	if connPlugin != nil {
+		if id == "" {
+			id = utils.GenerateId(15)
+		}
 		connInstance := connPlugin.Constructor(name ,config)
-		reg.AddConnection(utils.GenerateId(15),name,connType,"RUNNING",connInstance)
+		reg.AddConnection(id,name, plugin,connInstance)
 		return connInstance
 	}
 	return nil
 }
 
 // Returns pointer to existing instance of connector
-func (reg *Registry) GetInstance(name string,connType string) *model.Instance {
+func (reg *Registry) GetInstance(id string) *model.Instance {
 	for i := range reg.instances {
-		if reg.instances[i].Name == name && reg.instances[i].ConnectorType == connType {
+		if reg.instances[i].ID == id {
 			return reg.instances[i]
 		}
 	}
 	return nil
 }
 
+// Returns pointer to existing instance of connector
+func (reg *Registry) GetAllInstances() []model.InstanceView {
+	var instList []model.InstanceView
+	for i := range reg.instances {
+		inst := model.InstanceView{ID: reg.instances[i].ID, Name: reg.instances[i].Name, Plugin: reg.instances[i].Plugin, State: reg.instances[i].Connection.GetState(), Config: reg.instances[i].Config}
+		instList = append(instList,inst)
+	}
+	return instList
+}
 
 
 func (reg *Registry) LoadInstancesFromDisk() error {
@@ -84,7 +96,9 @@ func (reg *Registry) LoadInstancesFromDisk() error {
 				log.Error("<ConnRegistry> Can't unmarshel connector file.")
 				continue
 			}
-			reg.AddInstance(&inst)
+
+			reg.CreateInstance(inst.ID,inst.Name,inst.Plugin,inst.Config)
+
 
 		}
 	}

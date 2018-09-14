@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/alivinco/tpflow/connector/plugins"
 	"github.com/alivinco/tpflow/flow"
 	"github.com/alivinco/tpflow/model"
 	"github.com/labstack/echo"
@@ -36,6 +37,24 @@ func (ctx *FlowApi) RegisterRestApi() {
 
 		return c.JSON(http.StatusOK, resp)
 	})
+
+
+	ctx.echo.GET("/fimp/connector/template/:id", func(c echo.Context) error {
+		id := c.Param("id")
+		result := plugins.GetConfigurationTemplate(id)
+		return c.JSON(http.StatusOK,result)
+	})
+
+	ctx.echo.GET("/fimp/connector/plugins", func(c echo.Context) error {
+		result := plugins.GetPlugins()
+		return c.JSON(http.StatusOK,result)
+	})
+
+	ctx.echo.GET("/fimp/connector/list", func(c echo.Context) error {
+		result := ctx.flowManager.GetConnectorRegistry().GetAllInstances()
+		return c.JSON(http.StatusOK,result)
+	})
+
 
 	ctx.echo.POST("/fimp/flow/definition/:id", func(c echo.Context) error {
 		id := c.Param("id")
