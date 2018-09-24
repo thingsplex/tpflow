@@ -144,7 +144,7 @@ func (mg *Manager) LoadFlowFromJson(flowJsonDef []byte) error{
 
 func (mg *Manager) UpdateFlowFromJson(id string, flowJsonDef []byte) error {
 	mg.StopFlow(id)
-	mg.DeleteFlowFromRegistry(id)
+	mg.DeleteFlowFromRegistry(id,false)
 	err := mg.LoadFlowFromJson(flowJsonDef)
 	return err
 }
@@ -255,11 +255,14 @@ func (mg *Manager) StopFlow(id string) {
 	log.Infof("Flow with Id = %s is unloaded",id)
 }
 
-func (mg *Manager) DeleteFlowFromRegistry(id string) {
+func (mg *Manager) DeleteFlowFromRegistry(id string,cleanRegistry bool) {
 
 	for i :=range mg.flowRegistry {
 		if mg.flowRegistry[i].Id == id {
-			mg.flowRegistry[i].CleanupBeforeDelete()
+			if cleanRegistry {
+				mg.flowRegistry[i].CleanupBeforeDelete()
+			}
+
 			mg.flowRegistry = append(mg.flowRegistry[:i], mg.flowRegistry[i+1:]...)
 			break
 		}
@@ -272,7 +275,7 @@ func (mg *Manager) DeleteFlowFromStorage(id string) {
 		return
 	}
 	mg.StopFlow(id)
-	mg.DeleteFlowFromRegistry(id)
+	mg.DeleteFlowFromRegistry(id,true)
 	os.Remove(mg.GetFlowFileNameById(id))
 }
 

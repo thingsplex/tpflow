@@ -1,7 +1,6 @@
 package model
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
 	"sync"
 )
@@ -59,7 +58,7 @@ func (ctx *ContextInMemoryStore) GetRecordsForFlow(flowId string) ([]ContextReco
 			return true
 		})
 	}else {
-		log.Debugf("---- Can't load records for for flowId = %s",flowId)
+		//log.Debugf("---- Can't load records for for flowId = %s",flowId)
 	}
 	return result,nil
 }

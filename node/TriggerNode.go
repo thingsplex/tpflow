@@ -83,7 +83,10 @@ func (node *TriggerNode) LoadNodeConfig() error {
 		node.thingRegistry,ok = connInstance.Connection.(*registry.ThingRegistryStore)
 		if !ok {
 			node.thingRegistry = nil
+			node.getLog().Error("Can't get things connection to things registry . Cast to ThingRegistryStore failed")
 		}
+	}else {
+		node.getLog().Error("Connector registry doesn't have thing_registry instance")
 	}
 	return err
 }
