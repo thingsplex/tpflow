@@ -222,15 +222,30 @@ func (fl *Flow) Run() {
 				fl.WaitingSince = time.Now()
 				// Starting all Start nodes and waiting for event from one of them
 				fl.currentNodeIds = fl.currentNodeIds[:0]
-				for si := range fl.nodes {
-					if fl.nodes[si].IsStartNode() {
-						if ! fl.nodes[si].IsReactorRunning(){
-							go fl.nodes[si].WaitForEvent(fl.nodeOutboundStream)
+                runningReactorNodes := 0
+                for {
+					for si := range fl.nodes {
+						if fl.nodes[si].IsStartNode() {
+							if ! fl.nodes[si].IsReactorRunning(){
+								go fl.nodes[si].WaitForEvent(fl.nodeOutboundStream)
+							}
+							runningReactorNodes++
+							fl.currentNodeIds = append(fl.currentNodeIds,fl.nodes[si].GetMetaNode().Id )
 						}
-						fl.currentNodeIds = append(fl.currentNodeIds,fl.nodes[si].GetMetaNode().Id )
+
+					}
+
+					//Deadlock protection
+					if runningReactorNodes > 0 {
+						break
+					}else {
+						fl.getLog().Debug(" No reactor nodes running,retrying")
+						time.Sleep(10 * time.Millisecond)
 					}
 
 				}
+
+
 				// Blocking wait
 				reactorEvent :=<- fl.nodeOutboundStream
 				fl.getLog().Debug(" New event from reactor node.")

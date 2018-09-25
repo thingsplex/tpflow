@@ -128,11 +128,12 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 
 				if !node.config.IsValueFilterEnabled || ( (newMsg.Payload.Value == node.config.ValueFilter.Value) && node.config.IsValueFilterEnabled)  {
 					newEvent := model.ReactorEvent{Msg:newMsg,TransitionNodeId:node.meta.SuccessTransition}
+					if node.config.LookupServiceNameAndLocation {
+						node.LookupAddressToAlias(newEvent.Msg.AddressStr)
+					}
+
 					select {
 					case nodeEventStream <- newEvent:
-						if node.config.LookupServiceNameAndLocation {
-							node.LookupAddressToAlias(newEvent.Msg.AddressStr)
-						}
 						return
 					default:
 						node.getLog().Debug("Message is dropped (no listeners) ")
