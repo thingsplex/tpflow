@@ -1,10 +1,12 @@
 package api
 
 import (
+	"encoding/json"
 	"github.com/alivinco/tpflow/connector/plugins"
 	"github.com/alivinco/tpflow/flow"
 	"github.com/alivinco/tpflow/model"
 	"github.com/labstack/echo"
+	"github.com/labstack/gommon/log"
 	"io/ioutil"
 	"net/http"
 )
@@ -66,12 +68,30 @@ func (ctx *FlowApi) RegisterRestApi() {
 		return c.NoContent(http.StatusOK)
 	})
 
-	ctx.echo.POST("/fimp/flow/definition/import", func(c echo.Context) error {
+	ctx.echo.POST("/fimp/flow/definition/import_from_url", func(c echo.Context) error {
+
 		body, err := ioutil.ReadAll(c.Request().Body)
 		if err != nil {
 			return err
 		}
-		ctx.flowManager.ImportFlow(body)
+		request := ImportFlowFromUrlRequest{}
+		err = json.Unmarshal(body,&request)
+		if err != nil {
+			log.Error("Can't parse request ",err)
+		}
+
+		// Get the data
+		resp, err := http.Get(request.Url)
+		if err != nil {
+			return err
+		}
+		flow, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Error("Can't read file from url ",err)
+			return err
+		}
+		log.Info("Importing flow")
+		ctx.flowManager.ImportFlow(flow)
 		return c.NoContent(http.StatusOK)
 	})
 
@@ -105,4 +125,9 @@ func (ctx *FlowApi) RegisterRestApi() {
 
 func (ctx *FlowApi) RegisterMqttApi() {
 
+}
+
+type ImportFlowFromUrlRequest struct {
+	Url string
+	Token string
 }

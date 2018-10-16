@@ -23,7 +23,10 @@ type ReactorEvent struct {
 }
 
 type FlowMeta struct {
-	Id          string
+	Id          string // Instance id . Is different for every instance
+	ClassId     string // Class id , all instances share the same ClassId
+	Author      string
+	Version     int
 	Name        string
 	Group       string
 	Description string
