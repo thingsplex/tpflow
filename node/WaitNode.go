@@ -12,8 +12,8 @@ type WaitNode struct {
 	transport *fimpgo.MqttTransport
 }
 
-func NewWaitNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context,transport *fimpgo.MqttTransport) model.Node {
-	node := WaitNode{ctx:ctx,transport:transport}
+func NewWaitNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context) model.Node {
+	node := WaitNode{ctx:ctx}
 	node.meta = meta
 	node.flowOpCtx  = flowOpCtx
 	return &node

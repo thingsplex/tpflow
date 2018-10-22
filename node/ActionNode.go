@@ -28,8 +28,8 @@ type ActionNodeConfig struct {
 	VirtualServiceProps map[string]interface{} // mostly used to announce supported features of the service , for instance supported modes , states , setpoints , etc...
 }
 
-func NewActionNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context,transport *fimpgo.MqttTransport) model.Node {
-	node := ActionNode{ctx:ctx,transport:transport}
+func NewActionNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context) model.Node {
+	node := ActionNode{ctx:ctx}
 	node.meta = meta
 	node.flowOpCtx = flowOpCtx
 	node.config = ActionNodeConfig{DefaultValue:model.Variable{}}
@@ -70,6 +70,19 @@ func (node *ActionNode) LoadNodeConfig() error {
 	node.addressTemplate,err = template.New("address").Funcs(funcMap).Parse(node.meta.Address)
 	if err != nil {
 		node.getLog().Error(" Failed while parsing url template.Error:",err)
+	}
+
+	fimpTransportInstance := node.connectorRegistry.GetInstance("fimpmqtt")
+	var ok bool
+	if fimpTransportInstance != nil {
+		node.transport,ok = fimpTransportInstance.Connection.GetConnection().(*fimpgo.MqttTransport)
+		if !ok {
+			node.getLog().Error("can't cast connection to mqttfimpgo ")
+			return errors.New("can't cast connection to mqttfimpgo ")
+		}
+	}else {
+		node.getLog().Error("Connector registry doesn't have fimp instance")
+		return errors.New("can't find fimp connector")
 	}
 	return err
 }
@@ -113,7 +126,6 @@ func (node *ActionNode) OnInput( msg *model.Message) ([]model.NodeID,error) {
 	address:= addrTemplateBuffer.String()
 	node.getLog().Debug(" Address: ",address)
 	node.getLog().Debug(" Action message : ", fimpMsg)
-
 	node.transport.PublishRaw(address, msgBa)
 	return []model.NodeID{node.meta.SuccessTransition},nil
 }

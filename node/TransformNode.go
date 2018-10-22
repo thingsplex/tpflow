@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/model"
 	"github.com/mitchellh/mapstructure"
 	"text/template"
@@ -14,7 +13,6 @@ type TransformNode struct {
 	BaseNode
 	ctx *model.Context
 	nodeConfig TransformNodeConfig
-	transport *fimpgo.MqttTransport
 	template *template.Template
 }
 
@@ -51,8 +49,8 @@ type TransformXPathRecord struct {
 	UpdateInputVariable bool
 }
 
-func NewTransformNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context,transport *fimpgo.MqttTransport) model.Node {
-	node := TransformNode{ctx:ctx,transport:transport}
+func NewTransformNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context) model.Node {
+	node := TransformNode{ctx:ctx}
 	node.meta = meta
 	node.flowOpCtx = flowOpCtx
 	node.SetupBaseNode()

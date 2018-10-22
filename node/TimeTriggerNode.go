@@ -41,7 +41,7 @@ type TimeExpression struct {
 	Comment string
 }
 
-func NewTimeTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context, transport *fimpgo.MqttTransport) model.Node {
+func NewTimeTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
 	node := TimeTriggerNode{ctx: ctx}
 	node.isStartNode = true
 	node.isMsgReactor = true
@@ -182,23 +182,23 @@ func (node *TimeTriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEven
 		node.isReactorRunning = false
 		node.getLog().Debug(" Reactor-WaitForEvent is stopped ")
 	}()
-
-	if node.config.GenerateAstroTimeEvents {
-		node.scheduleNextAstroEvent()
-	}
-	newMsg :=<- node.cronMessageCh
-
-	newEvent := model.ReactorEvent{Msg:newMsg,TransitionNodeId:node.meta.SuccessTransition}
-	select {
-	case nodeEventStream <- newEvent:
-		return
-	case msg := <- node.msgInStream:
-		if msg.CancelOp {
-			node.cron.Stop()
-			return
+	for {
+		if node.config.GenerateAstroTimeEvents {
+			node.scheduleNextAstroEvent()
 		}
-	default:
-		node.getLog().Debug(" Message is dropped (no listeners) ")
+
+		select {
+		case newMsg := <-node.cronMessageCh:
+			newEvent := model.ReactorEvent{Msg: newMsg, TransitionNodeId: node.meta.SuccessTransition}
+			node.flowRunner(newEvent)
+		case signal := <-node.flowOpCtx.NodeControlSignalChannel:
+			node.getLog().Debug("Control signal ")
+			if signal == model.SIGNAL_STOP {
+				return
+			}
+		}
+
 	}
+
 
 }

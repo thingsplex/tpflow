@@ -32,13 +32,13 @@ type Node interface {
 	IsStartNode() bool
 	IsMsgReactorNode() bool
 	IsReactorRunning() bool
-    ConfigureInStream(activeSubscriptions *[]string,msgInStream MsgPipeline)
+    //ConfigureInStream(activeSubscriptions *[]string,msgInStream MsgPipeline)
     // Invoked when node is started
 	Init() error
 	// Invoked when node is stopped
 	Cleanup() error
 	SetConnectorRegistry(connectorRegistry *connector.Registry)
-
+	SetFlowRunner(runner FlowRunner)
 	//GetAdapterInstance()
 
 	//GetConfigs() interface{}

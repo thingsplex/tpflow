@@ -98,8 +98,6 @@ func (reg *Registry) LoadInstancesFromDisk() error {
 			}
 
 			reg.CreateInstance(inst.ID,inst.Name,inst.Plugin,inst.Config)
-
-
 		}
 	}
 	return nil

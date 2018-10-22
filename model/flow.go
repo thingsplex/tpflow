@@ -7,6 +7,8 @@ import (
 
 type MsgPipeline chan Message
 
+type FlowRunner func(ReactorEvent)
+
 type Message struct {
 	AddressStr string
 	Address    fimpgo.Address

@@ -3,8 +3,7 @@ package flow
 import (
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
-	"github.com/alivinco/fimpgo"
-	tpflow "github.com/alivinco/tpflow"
+	"github.com/alivinco/tpflow"
 	"github.com/alivinco/tpflow/connector"
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node"
@@ -19,7 +18,7 @@ import (
 type Manager struct {
 	flowRegistry      []*Flow
 	msgStreams        map[string]model.MsgPipeline
-	msgTransport      *fimpgo.MqttTransport
+	//msgTransport      *fimpgo.MqttTransport
 	globalContext     *model.Context
 	config            tpflow.Configs
 	connectorRegistry connector.Registry
@@ -51,32 +50,32 @@ func NewManager(config tpflow.Configs) (*Manager,error) {
 }
 
 func (mg *Manager) InitMessagingTransport() {
-	clientId := mg.config.MqttClientIdPrefix+"flow_manager"
-	mg.msgTransport = fimpgo.NewMqttTransport(mg.config.MqttServerURI, clientId, mg.config.MqttUsername, mg.config.MqttPassword, true, 1, 1)
-	mg.msgTransport.SetGlobalTopicPrefix(mg.config.MqttTopicGlobalPrefix)
-	err := mg.msgTransport.Start()
-	log.Info("<FlMan> Mqtt transport connected")
-	if err != nil {
-		log.Error("<FlMan> Error connecting to broker : ", err)
-	}
-	mg.msgTransport.SetMessageHandler(mg.onMqttMessage)
+	//clientId := mg.config.MqttClientIdPrefix+"flow_manager"
+	//mg.msgTransport = fimpgo.NewMqttTransport(mg.config.MqttServerURI, clientId, mg.config.MqttUsername, mg.config.MqttPassword, true, 1, 1)
+	//mg.msgTransport.SetGlobalTopicPrefix(mg.config.MqttTopicGlobalPrefix)
+	//err := mg.msgTransport.Start()
+	//log.Info("<FlMan> Mqtt transport connected")
+	//if err != nil {
+	//	log.Error("<FlMan> Error connecting to broker : ", err)
+	//}
+	//mg.msgTransport.SetMessageHandler(mg.onMqttMessage)
 
 }
 
-func (mg *Manager) onMqttMessage(topic string, addr *fimpgo.Address, iotMsg *fimpgo.FimpMessage, rawMessage []byte) {
-	msg := model.Message{AddressStr: topic, Address: *addr, Payload: *iotMsg,RawPayload:rawMessage}
-	// Message broadcast to all flows
-	for id, stream := range mg.msgStreams {
-		if mg.GetFlowById(id).IsFlowInterestedInMessage(topic) {
-			select {
-			case stream <- msg:
-				log.Debug("<FlMan> Message was sent to flow with id = ", id)
-			default:
-				log.Debug("<FlMan> Message is dropped (no listeners) for flow with id = ", id)
-			}
-		}
-	}
-}
+//func (mg *Manager) onMqttMessage(topic string, addr *fimpgo.Address, iotMsg *fimpgo.FimpMessage, rawMessage []byte) {
+//	msg := model.Message{AddressStr: topic, Address: *addr, Payload: *iotMsg,RawPayload:rawMessage}
+//	// Message broadcast to all flows
+//	for id, stream := range mg.msgStreams {
+//		if mg.GetFlowById(id).IsFlowInterestedInMessage(topic) {
+//			select {
+//			case stream <- msg:
+//				log.Debug("<FlMan> Message was sent to flow with id = ", id)
+//			default:
+//				log.Debug("<FlMan> Message is dropped (no listeners) for flow with id = ", id)
+//			}
+//		}
+//	}
+//}
 
 func (mg *Manager) GenerateNewFlow() model.FlowMeta {
 	fl := model.FlowMeta{}
@@ -133,7 +132,7 @@ func (mg *Manager) LoadFlowFromJson(flowJsonDef []byte) error{
 		return err
 	}
 
-	flow := NewFlow(flowMeta, mg.globalContext, mg.msgTransport)
+	flow := NewFlow(flowMeta, mg.globalContext)
 	flow.SetStoragePath(mg.config.FlowStorageDir)
 	flow.SetConnectorRegistry(&mg.connectorRegistry)
 	mg.flowRegistry = append(mg.flowRegistry,flow)
@@ -233,7 +232,7 @@ func (mg *Manager) ControlFlow(cmd string , flowId string) error {
 func (mg *Manager) StartFlow(flowId string) {
 	flow := mg.GetFlowById(flowId)
 	if flow.GetFlowState() != "RUNNING" {
-		flow.SetMessageStream(mg.GetNewStream(flow.Id))
+		//flow.SetMessageStream(mg.GetNewStream(flow.Id))
 		flow.Start()
 	}
 
@@ -250,8 +249,8 @@ func (mg *Manager) StopFlow(id string) {
 		return
 	}
 	mg.GetFlowById(id).Stop()
-	close(mg.msgStreams[id])
-	delete(mg.msgStreams,id)
+	//close(mg.msgStreams[id])
+	//delete(mg.msgStreams,id)
 	log.Infof("Flow with Id = %s is unloaded",id)
 }
 

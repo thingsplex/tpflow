@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github.com/ChrisTrenkamp/goxpath"
 	"github.com/ChrisTrenkamp/goxpath/tree/xmltree"
-	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/model"
 	"github.com/mitchellh/mapstructure"
 	"github.com/oliveagle/jsonpath"
@@ -21,7 +20,6 @@ import (
 type RestActionNode struct {
 	BaseNode
 	ctx *model.Context
-	transport *fimpgo.MqttTransport
 	config RestActionNodeConfig
 	reqTemplate *template.Template
 	urlTemplate *template.Template
@@ -82,8 +80,8 @@ type RestActionNodeTemplateParams struct {
 	Message *model.Message
 }
 
-func NewRestActionNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context,transport *fimpgo.MqttTransport) model.Node {
-	node := RestActionNode{ctx:ctx,transport:transport}
+func NewRestActionNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context) model.Node {
+	node := RestActionNode{ctx:ctx}
 	node.meta = meta
 	node.flowOpCtx = flowOpCtx
 	node.config = RestActionNodeConfig{}

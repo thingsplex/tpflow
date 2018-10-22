@@ -1,6 +1,7 @@
 package node
 
 import (
+	"errors"
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/utils"
@@ -27,8 +28,8 @@ type ReceiveConfig struct {
 	VirtualServiceGroup string
 }
 
-func NewReceiveNode(flowOpCtx *model.FlowOperationalContext ,meta model.MetaNode,ctx *model.Context,transport *fimpgo.MqttTransport) model.Node {
-	node := ReceiveNode{ctx:ctx,transport:transport}
+func NewReceiveNode(flowOpCtx *model.FlowOperationalContext ,meta model.MetaNode,ctx *model.Context) model.Node {
+	node := ReceiveNode{ctx:ctx}
 	node.isStartNode = false
 	node.isMsgReactor = true
 	node.flowOpCtx = flowOpCtx
@@ -69,6 +70,18 @@ func (node *ReceiveNode) LoadNodeConfig() error {
 	err := mapstructure.Decode(node.meta.Config,&node.config)
 	if err != nil{
 		node.getLog().Error("Failed to load node configs.Err:",err)
+	}
+	fimpTransportInstance := node.connectorRegistry.GetInstance("fimpmqtt")
+	var ok bool
+	if fimpTransportInstance != nil {
+		node.transport,ok = fimpTransportInstance.Connection.GetConnection().(*fimpgo.MqttTransport)
+		if !ok {
+			node.getLog().Error("can't cast connection to mqttfimpgo ")
+			return errors.New("can't cast connection to mqttfimpgo ")
+		}
+	}else {
+		node.getLog().Error("Connector registry doesn't have fimp instance")
+		return errors.New("can't find fimp connector")
 	}
 	return err
 }

@@ -2,7 +2,6 @@ package node
 
 import (
 	"errors"
-	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/utils"
 	//"github.com/mitchellh/mapstructure"
@@ -28,11 +27,10 @@ type IFExpression struct {
 type IfNode struct {
 	BaseNode
 	ctx *model.Context
-	transport *fimpgo.MqttTransport
 }
 
-func NewIfNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context,transport *fimpgo.MqttTransport) model.Node {
-	node := IfNode{ctx:ctx,transport:transport}
+func NewIfNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context) model.Node {
+	node := IfNode{ctx:ctx}
 	node.meta = meta
 	node.flowOpCtx = flowOpCtx
 	node.SetupBaseNode()

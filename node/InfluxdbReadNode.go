@@ -2,7 +2,6 @@ package node
 
 import (
 	"errors"
-	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/model"
 	influx "github.com/influxdata/influxdb/client/v2"
 	"github.com/mitchellh/mapstructure"
@@ -12,7 +11,7 @@ import (
 type InfluxdbReadNode struct {
 	BaseNode
 	ctx *model.Context
-	transport *fimpgo.MqttTransport
+	//transport *fimpgo.MqttTransport
 	config InfluxdbReadConfig
 	queryTemplate *template.Template
 	connection influx.Client
@@ -25,8 +24,8 @@ type InfluxdbReadConfig struct {
 	IsLVariableGlobal bool
 }
 
-func NewInfluxdbReadNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context,transport *fimpgo.MqttTransport) model.Node {
-	node := InfluxdbReadNode {ctx:ctx,transport:transport}
+func NewInfluxdbReadNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context) model.Node {
+	node := InfluxdbReadNode {ctx:ctx}
 	node.meta = meta
 	node.flowOpCtx = flowOpCtx
 	node.config = InfluxdbReadConfig{}

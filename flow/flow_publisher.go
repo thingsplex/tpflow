@@ -143,7 +143,18 @@ func (fl *Flow) SendInclusionReport() {
 	msg := fimpgo.NewMessage("evt.thing.inclusion_report", "flow","object", report, nil,nil,nil)
 	addrString := "pt:j1/mt:evt/rt:ad/rn:flow/ad:1"
 	addr, _ := fimpgo.NewAddressFromString(addrString)
-	fl.msgTransport.Publish(addr,msg)
+
+	fimpTransportInstance := fl.connectorRegistry.GetInstance("fimpmqtt")
+	if fimpTransportInstance != nil {
+		msgTransport,ok := fimpTransportInstance.Connection.GetConnection().(*fimpgo.MqttTransport)
+		if !ok {
+			fl.getLog().Error("can't cast connection to mqttfimpgo ")
+		}
+		msgTransport.Publish(addr,msg)
+	}else {
+		fl.getLog().Error("Connector registry doesn't have fimp instance")
+	}
+
 	fl.getLog().Info("Inclusion report is sent")
 }
 
@@ -152,5 +163,14 @@ func (fl *Flow) SendExclusionReport() {
 	msg := fimpgo.NewMessage("evt.thing.exclusion_report", "flow","object", report, nil,nil,nil)
 	addrString := "pt:j1/mt:evt/rt:ad/rn:flow/ad:1"
 	addr, _ := fimpgo.NewAddressFromString(addrString)
-	fl.msgTransport.Publish(addr,msg)
+	fimpTransportInstance := fl.connectorRegistry.GetInstance("fimpmqtt")
+	if fimpTransportInstance != nil {
+		msgTransport,ok := fimpTransportInstance.Connection.GetConnection().(*fimpgo.MqttTransport)
+		if !ok {
+			fl.getLog().Error("can't cast connection to mqttfimpgo ")
+		}
+		msgTransport.Publish(addr,msg)
+	}else {
+		fl.getLog().Error("Connector registry doesn't have fimp instance")
+	}
 }

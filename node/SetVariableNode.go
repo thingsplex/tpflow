@@ -1,7 +1,6 @@
 package node
 
 import (
-	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/model"
 	"github.com/mitchellh/mapstructure"
 )
@@ -10,7 +9,6 @@ type SetVariableNode struct {
 	BaseNode
 	ctx *model.Context
 	nodeConfig SetVariableNodeConfig
-	transport *fimpgo.MqttTransport
 }
 
 type SetVariableNodeConfig struct {
@@ -22,8 +20,8 @@ type SetVariableNodeConfig struct {
 	DefaultValue model.Variable
 }
 
-func NewSetVariableNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context,transport *fimpgo.MqttTransport) model.Node {
-	node := SetVariableNode{ctx:ctx,transport:transport}
+func NewSetVariableNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context) model.Node {
+	node := SetVariableNode{ctx:ctx}
 	node.meta = meta
 	node.flowOpCtx = flowOpCtx
 	node.SetupBaseNode()

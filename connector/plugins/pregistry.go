@@ -2,14 +2,14 @@ package plugins
 
 import (
 	"github.com/alivinco/tpflow/connector/model"
+	"github.com/alivinco/tpflow/connector/plugins/fimpmqtt"
 	"github.com/alivinco/tpflow/connector/plugins/influxdb"
 )
 
 
-
-
 var pluginRegistry = map[string]model.Plugin{
 	"influxdb": {Constructor: influxdb.NewConnectorInstance, Config: influxdb.ConnectorConfig{}},
+	"fimpmqtt"    : {Constructor: fimpmqtt.NewConnectorInstance, Config: fimpmqtt.ConnectorConfig{}},
 
 }
 

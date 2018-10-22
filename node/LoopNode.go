@@ -1,7 +1,6 @@
 package node
 
 import (
-	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/model"
 	"github.com/mitchellh/mapstructure"
 )
@@ -9,7 +8,6 @@ import (
 type LoopNode struct {
 	BaseNode
 	ctx       *model.Context
-	transport *fimpgo.MqttTransport
 	config    LoopNodeConfig
 	counter   int64
 	countUp   bool
@@ -22,8 +20,8 @@ type LoopNodeConfig struct {
 	SaveToVariable bool
 }
 
-func NewLoopNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context, transport *fimpgo.MqttTransport) model.Node {
-	node := LoopNode{ctx: ctx, transport: transport}
+func NewLoopNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+	node := LoopNode{ctx: ctx}
 	node.meta = meta
 	node.flowOpCtx = flowOpCtx
 	node.SetupBaseNode()

@@ -2,7 +2,6 @@ package node
 
 import (
 	"encoding/json"
-	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/model"
 	"github.com/mitchellh/mapstructure"
 	"io/ioutil"
@@ -14,7 +13,6 @@ import (
 type ExecNode struct {
 	BaseNode
 	ctx *model.Context
-	transport *fimpgo.MqttTransport
 	config ExecNodeConfig
 	scriptFullPath string
 }
@@ -31,8 +29,8 @@ type ExecNodeConfig struct {
 	IsInputJson bool
 }
 
-func NewExecNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context,transport *fimpgo.MqttTransport) model.Node {
-	node := ExecNode{ctx:ctx,transport:transport}
+func NewExecNode(flowOpCtx *model.FlowOperationalContext,meta model.MetaNode,ctx *model.Context) model.Node {
+	node := ExecNode{ctx:ctx}
 	node.meta = meta
 	node.flowOpCtx = flowOpCtx
 	node.config = ExecNodeConfig{}
