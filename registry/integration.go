@@ -35,13 +35,13 @@ func (mg *MqttIntegration) InitMessagingTransport() {
 
 }
 
-func (mg *MqttIntegration)RequestInclusionReport(adapter string ,addr string) {
-	reqMsg := fimpgo.NewStringMessage("cmd.thing.get_inclusion_report",adapter,addr,nil,nil,nil)
+func (mg *MqttIntegration) RequestInclusionReport(adapter string, addr string) {
+	reqMsg := fimpgo.NewStringMessage("cmd.thing.get_inclusion_report", adapter, addr, nil, nil, nil)
 	if adapter == "zwave-ad" {
 		adapter = "zw"
 	}
-	tAddr := fimpgo.Address{MsgType:fimpgo.MsgTypeCmd,ResourceType:fimpgo.ResourceTypeAdapter,ResourceName:adapter,ResourceAddress:"1"}
-	mg.msgTransport.Publish(&tAddr,reqMsg)
+	tAddr := fimpgo.Address{MsgType: fimpgo.MsgTypeCmd, ResourceType: fimpgo.ResourceTypeAdapter, ResourceName: adapter, ResourceAddress: "1"}
+	mg.msgTransport.Publish(&tAddr, reqMsg)
 }
 
 func (mg *MqttIntegration) onMqttMessage(topic string, addr *fimpgo.Address, iotMsg *fimpgo.FimpMessage, rawMessage []byte) {
@@ -52,49 +52,48 @@ func (mg *MqttIntegration) onMqttMessage(topic string, addr *fimpgo.Address, iot
 		}
 	}()
 
-		switch iotMsg.Type {
-		case "evt.thing.inclusion_report":
-			mg.processInclusionReport(iotMsg)
-		case "evt.thing.exclusion_report":
-			tech := addr.ResourceName
-			mg.processExclusionReport(iotMsg, tech)
-		case "cmd.service.get_list":
-			//  pt:j1/mt:cmd/rt:app/rn:registry/ad:1
-			//  {"serv":"registry","type":"cmd.service.get_list","val_t":"str_map","val":{"serviceName":"out_bin_switch","filterWithoutAlias":"true"},"props":null,"tags":null,"uid":"1234455"}
-			filters,err := iotMsg.GetStrMapValue()
-			if err == nil {
-				var filterWithoutAlias bool
-				var locationId,thingId int
+	switch iotMsg.Type {
+	case "evt.thing.inclusion_report":
+		mg.processInclusionReport(iotMsg)
+	case "evt.thing.exclusion_report":
+		tech := addr.ResourceName
+		mg.processExclusionReport(iotMsg, tech)
+	case "cmd.service.get_list":
+		//  pt:j1/mt:cmd/rt:app/rn:registry/ad:1
+		//  {"serv":"registry","type":"cmd.service.get_list","val_t":"str_map","val":{"serviceName":"out_bin_switch","filterWithoutAlias":"true"},"props":null,"tags":null,"uid":"1234455"}
+		filters, err := iotMsg.GetStrMapValue()
+		if err == nil {
+			var filterWithoutAlias bool
+			var locationId, thingId int
 
-				locationIdStr , _ := filters["locationId"]
-				thingIdStr,_ := filters["thingId"]
-				locationId , _ = strconv.Atoi(locationIdStr)
-				thingId , _ = strconv.Atoi(thingIdStr)
+			locationIdStr, _ := filters["locationId"]
+			thingIdStr, _ := filters["thingId"]
+			locationId, _ = strconv.Atoi(locationIdStr)
+			thingId, _ = strconv.Atoi(thingIdStr)
 
-				serviceName , _ := filters["serviceName"]
-				filterFithoutAliasStr , filterOk :=filters["filterWithoutAlias"]
-				if filterOk {
-					if filterFithoutAliasStr == "true" {
-						filterWithoutAlias = true
-					}
+			serviceName, _ := filters["serviceName"]
+			filterFithoutAliasStr, filterOk := filters["filterWithoutAlias"]
+			if filterOk {
+				if filterFithoutAliasStr == "true" {
+					filterWithoutAlias = true
 				}
-				//if ok {
-					response ,err :=  mg.registry.GetExtendedServices(serviceName,filterWithoutAlias,ID(thingId),ID(locationId))
-					if err != nil {
-						log.Error("<MqRegInt> Can get services .Err :",err)
-					}
-					responseMsg := fimpgo.NewMessage("evt.service.list","registry","object",response,nil,nil,iotMsg)
-					addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "registry", ResourceAddress: "1"}
-					mg.msgTransport.Publish(&addr,responseMsg)
-				//}
-			}else {
-				log.Error("<MqRegInt> Can't parse value. Error :",err)
 			}
-		default:
-			log.Info("<MqRegInt> Unsupported message type :",iotMsg.Type)
+			//if ok {
+			response, err := mg.registry.GetExtendedServices(serviceName, filterWithoutAlias, ID(thingId), ID(locationId))
+			if err != nil {
+				log.Error("<MqRegInt> Can get services .Err :", err)
+			}
+			responseMsg := fimpgo.NewMessage("evt.service.list", "registry", "object", response, nil, nil, iotMsg)
+			addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "registry", ResourceAddress: "1"}
+			mg.msgTransport.Publish(&addr, responseMsg)
+			//}
+		} else {
+			log.Error("<MqRegInt> Can't parse value. Error :", err)
 		}
+	default:
+		log.Info("<MqRegInt> Unsupported message type :", iotMsg.Type)
+	}
 }
-
 
 func (mg *MqttIntegration) processInclusionReport(msg *fimpgo.FimpMessage) error {
 	log.Info("<MqRegInt> New inclusion report")
@@ -110,44 +109,43 @@ func (mg *MqttIntegration) processInclusionReport(msg *fimpgo.FimpMessage) error
 		} else {
 			log.Info("<MqRegInt> Thing already in registry . Updating")
 		}
-			thing.Address = inclReport.Address
-			thing.Alias = inclReport.Alias
-			thing.CommTechnology = inclReport.CommTechnology
-			thing.DeviceId = inclReport.DeviceId
-			thing.HwVersion = inclReport.HwVersion
-			thing.SwVersion = inclReport.SwVersion
-			thing.ManufacturerId = inclReport.ManufacturerId
-			thing.ProductId = inclReport.ProductId
-			thing.ProductHash = inclReport.ProductHash
-			thing.ProductName = inclReport.ProductName
-			thing.PowerSource = inclReport.PowerSource
-			thing.Tags = inclReport.Tags
-			thing.PropSets = inclReport.PropSets
-			thing.TechSpecificProps = inclReport.TechSpecificProps
-			thing.WakeUpInterval = inclReport.WakeUpInterval
-			thing.Security = inclReport.Security
-			thingId, err := mg.registry.UpsertThing(thing)
-			if err != nil {
-				log.Error("<MqRegInt> Can't insert new Thing . Error: ", err)
+		thing.Address = inclReport.Address
+		thing.Alias = inclReport.Alias
+		thing.CommTechnology = inclReport.CommTechnology
+		thing.DeviceId = inclReport.DeviceId
+		thing.HwVersion = inclReport.HwVersion
+		thing.SwVersion = inclReport.SwVersion
+		thing.ManufacturerId = inclReport.ManufacturerId
+		thing.ProductId = inclReport.ProductId
+		thing.ProductHash = inclReport.ProductHash
+		thing.ProductName = inclReport.ProductName
+		thing.PowerSource = inclReport.PowerSource
+		thing.Tags = inclReport.Tags
+		thing.PropSets = inclReport.PropSets
+		thing.TechSpecificProps = inclReport.TechSpecificProps
+		thing.WakeUpInterval = inclReport.WakeUpInterval
+		thing.Security = inclReport.Security
+		thingId, err := mg.registry.UpsertThing(thing)
+		if err != nil {
+			log.Error("<MqRegInt> Can't insert new Thing . Error: ", err)
+		}
+		for i := range inclReport.Services {
+			service := Service{}
+			service.Name = inclReport.Services[i].Name
+			service.Address = inclReport.Services[i].Address
+			service.Enabled = inclReport.Services[i].Enabled
+			service.Alias = inclReport.Services[i].Alias
+			service.Tags = inclReport.Services[i].Tags
+			service.Props = inclReport.Services[i].Props
+			service.Groups = inclReport.Services[i].Groups
+			service.Interfaces = make([]Interface, len(inclReport.Services[i].Interfaces))
+			service.ParentContainerId = thingId
+			service.ParentContainerType = ThingContainer
+			for iIntf := range inclReport.Services[i].Interfaces {
+				service.Interfaces[iIntf] = Interface(inclReport.Services[i].Interfaces[iIntf])
 			}
-			for i :=range inclReport.Services  {
-				service := Service{}
-				service.Name = inclReport.Services[i].Name
-				service.Address = inclReport.Services[i].Address
-				service.Enabled = inclReport.Services[i].Enabled
-				service.Alias = inclReport.Services[i].Alias
-				service.Tags = inclReport.Services[i].Tags
-				service.Props = inclReport.Services[i].Props
-				service.Groups = inclReport.Services[i].Groups
-				service.Interfaces = make([]Interface,len(inclReport.Services[i].Interfaces))
-				service.ParentContainerId = thingId
-				service.ParentContainerType = ThingContainer
-				for iIntf := range inclReport.Services[i].Interfaces {
-					service.Interfaces[iIntf] = Interface(inclReport.Services[i].Interfaces[iIntf])
-				}
-				mg.registry.UpsertService(&service)
-			}
-
+			mg.registry.UpsertService(&service)
+		}
 
 	} else {
 		log.Error("<MqRegInt> Either address or commTech is empty ")

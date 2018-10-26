@@ -3,7 +3,8 @@ package flow
 import (
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/fimpgo/fimptype"
-	"github.com/alivinco/tpflow/node"
+	actfimp "github.com/alivinco/tpflow/node/action/fimp"
+	trigfimp "github.com/alivinco/tpflow/node/trigger/fimp"
 	"github.com/mitchellh/mapstructure"
 	"strings"
 )
@@ -17,7 +18,7 @@ func (fl *Flow) SendInclusionReport() {
 	report.CommTechnology = "flow"
 	report.PowerSource = "ac"
 	report.ProductName = fl.FlowMeta.Name
-	report.ProductHash = "flow_"+fl.Id
+	report.ProductHash = "flow_" + fl.Id
 	report.SwVersion = "1.0"
 	report.Groups = []string{}
 	report.ProductId = "flow_1"
@@ -36,11 +37,11 @@ func (fl *Flow) SendInclusionReport() {
 		report.Groups = append(report.Groups, group)
 	}
 
-	getService := func(name string,group string) (*fimptype.Service,bool) {
+	getService := func(name string, group string) (*fimptype.Service, bool) {
 		for i := range services {
 			if services[i].Name == name {
 				if services[i].Groups[0] == group {
-					return &services[i],false
+					return &services[i], false
 				}
 
 			}
@@ -52,21 +53,21 @@ func (fl *Flow) SendInclusionReport() {
 		service.Tags = []string{}
 		service.Props = map[string]interface{}{}
 		addGroup(group)
-		return &service,true
+		return &service, true
 	}
 
 	for i := range fl.nodes {
 		if fl.nodes[i].IsStartNode() {
-			var config node.TriggerConfig
-			err := mapstructure.Decode(fl.nodes[i].GetMetaNode().Config,&config)
-			if err==nil {
-				if config.RegisterAsVirtualService{
+			var config trigfimp.TriggerConfig
+			err := mapstructure.Decode(fl.nodes[i].GetMetaNode().Config, &config)
+			if err == nil {
+				if config.RegisterAsVirtualService {
 					fl.getLog().Debug("New trigger to add ")
 					group := config.VirtualServiceGroup
 					if group == "" {
 						group = string(fl.nodes[i].GetMetaNode().Id)
 					}
-					service,new := getService(fl.nodes[i].GetMetaNode().Service,group)
+					service, new := getService(fl.nodes[i].GetMetaNode().Service, group)
 					intf := fimptype.Interface{}
 					intf.Type = "in"
 					intf.MsgType = fl.nodes[i].GetMetaNode().ServiceInterface
@@ -80,34 +81,34 @@ func (fl *Flow) SendInclusionReport() {
 						service.Address = address
 						service.Interfaces = []fimptype.Interface{intf}
 
-					}else {
-						service.Interfaces = append(service.Interfaces,intf)
+					} else {
+						service.Interfaces = append(service.Interfaces, intf)
 					}
 
-					if len(config.VirtualServiceProps)>0 {
-						fl.getLog().Debug("Setting service props from Trigger :",config.VirtualServiceProps)
+					if len(config.VirtualServiceProps) > 0 {
+						fl.getLog().Debug("Setting service props from Trigger :", config.VirtualServiceProps)
 						service.Props = config.VirtualServiceProps
 					}
 					if new {
-						services = append(services,*service)
+						services = append(services, *service)
 					}
 
 				}
-			}else {
-				fl.getLog().Error("Fail to register trigger.Error ",err)
+			} else {
+				fl.getLog().Error("Fail to register trigger.Error ", err)
 			}
 		}
 		if fl.nodes[i].GetMetaNode().Type == "action" {
 			//config,ok := fl.nodes[i].GetMetaNode().Config.(node.ActionNodeConfig)
-			config := node.ActionNodeConfig{}
-			err := mapstructure.Decode(fl.nodes[i].GetMetaNode().Config,&config)
-			if err==nil {
+			config := actfimp.NodeConfig{}
+			err := mapstructure.Decode(fl.nodes[i].GetMetaNode().Config, &config)
+			if err == nil {
 				if config.RegisterAsVirtualService {
 					group := config.VirtualServiceGroup
 					if group == "" {
 						group = string(fl.nodes[i].GetMetaNode().Id)
 					}
-					service,new := getService(fl.nodes[i].GetMetaNode().Service,group)
+					service, new := getService(fl.nodes[i].GetMetaNode().Service, group)
 
 					intf := fimptype.Interface{}
 					intf.Type = "out"
@@ -117,41 +118,40 @@ func (fl *Flow) SendInclusionReport() {
 
 					if new {
 						service.Alias = fl.nodes[i].GetMetaNode().Label
-						address := strings.Replace( fl.nodes[i].GetMetaNode().Address,"pt:j1/mt:cmd","",-1)
-						address = strings.Replace( address,"pt:j1/mt:evt","",-1)
+						address := strings.Replace(fl.nodes[i].GetMetaNode().Address, "pt:j1/mt:cmd", "", -1)
+						address = strings.Replace(address, "pt:j1/mt:evt", "", -1)
 						service.Address = address
 						service.Interfaces = []fimptype.Interface{intf}
 					}
-					service.Interfaces = append(service.Interfaces,intf)
-					if len(config.VirtualServiceProps)>0 {
-						fl.getLog().Debug("Setting service props from Action :",config.VirtualServiceProps)
+					service.Interfaces = append(service.Interfaces, intf)
+					if len(config.VirtualServiceProps) > 0 {
+						fl.getLog().Debug("Setting service props from Action :", config.VirtualServiceProps)
 						service.Props = config.VirtualServiceProps
 					}
 					if new {
-						services = append(services,*service)
+						services = append(services, *service)
 					}
-
 				}
 
-			}else {
-				fl.getLog().Error("Fail to register action .Error  ",err)
+			} else {
+				fl.getLog().Error("Fail to register action .Error  ", err)
 			}
 		}
 
 	}
 	report.Services = services
-	msg := fimpgo.NewMessage("evt.thing.inclusion_report", "flow","object", report, nil,nil,nil)
+	msg := fimpgo.NewMessage("evt.thing.inclusion_report", "flow", "object", report, nil, nil, nil)
 	addrString := "pt:j1/mt:evt/rt:ad/rn:flow/ad:1"
 	addr, _ := fimpgo.NewAddressFromString(addrString)
 
 	fimpTransportInstance := fl.connectorRegistry.GetInstance("fimpmqtt")
 	if fimpTransportInstance != nil {
-		msgTransport,ok := fimpTransportInstance.Connection.GetConnection().(*fimpgo.MqttTransport)
+		msgTransport, ok := fimpTransportInstance.Connection.GetConnection().(*fimpgo.MqttTransport)
 		if !ok {
 			fl.getLog().Error("can't cast connection to mqttfimpgo ")
 		}
-		msgTransport.Publish(addr,msg)
-	}else {
+		msgTransport.Publish(addr, msg)
+	} else {
 		fl.getLog().Error("Connector registry doesn't have fimp instance")
 	}
 
@@ -159,18 +159,18 @@ func (fl *Flow) SendInclusionReport() {
 }
 
 func (fl *Flow) SendExclusionReport() {
-	report := fimptype.ThingExclusionReport{Address:fl.Id}
-	msg := fimpgo.NewMessage("evt.thing.exclusion_report", "flow","object", report, nil,nil,nil)
+	report := fimptype.ThingExclusionReport{Address: fl.Id}
+	msg := fimpgo.NewMessage("evt.thing.exclusion_report", "flow", "object", report, nil, nil, nil)
 	addrString := "pt:j1/mt:evt/rt:ad/rn:flow/ad:1"
 	addr, _ := fimpgo.NewAddressFromString(addrString)
 	fimpTransportInstance := fl.connectorRegistry.GetInstance("fimpmqtt")
 	if fimpTransportInstance != nil {
-		msgTransport,ok := fimpTransportInstance.Connection.GetConnection().(*fimpgo.MqttTransport)
+		msgTransport, ok := fimpTransportInstance.Connection.GetConnection().(*fimpgo.MqttTransport)
 		if !ok {
 			fl.getLog().Error("can't cast connection to mqttfimpgo ")
 		}
-		msgTransport.Publish(addr,msg)
-	}else {
+		msgTransport.Publish(addr, msg)
+	} else {
 		fl.getLog().Error("Connector registry doesn't have fimp instance")
 	}
 }

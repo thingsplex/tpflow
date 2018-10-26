@@ -13,30 +13,27 @@ func GenerateId(len int) string {
 	return uniuri.NewLen(len)
 }
 
-func ConfigValueToNumber(valueType string,value interface{})(float64,error){
+func ConfigValueToNumber(valueType string, value interface{}) (float64, error) {
 	if valueType == "int" {
 		switch val := value.(type) {
-		case int64 :
-			return float64(val),nil
+		case int64:
+			return float64(val), nil
 		case float64:
-			return val,nil
+			return val, nil
 		default:
 			return 0, errors.New("Can't convert interface{} to int64")
 
 		}
-	}else
-	if valueType == "float" {
-		floatVal,ok := value.(float64)
+	} else if valueType == "float" {
+		floatVal, ok := value.(float64)
 		if ok {
-			return floatVal , nil
-		}else {
+			return floatVal, nil
+		} else {
 			return 0, errors.New("Can't convert interface{} to float64")
 		}
 	}
-	return 0,errors.New("Not numeric value type")
+	return 0, errors.New("Not numeric value type")
 }
-
-
 
 func match(route []string, topic []string) bool {
 	if len(route) == 0 {
@@ -92,6 +89,3 @@ func DownloadFileFromUrl(filepath string, url string) error {
 
 	return nil
 }
-
-
-

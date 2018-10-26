@@ -14,15 +14,13 @@ type RegistryApi struct {
 	echo *echo.Echo
 }
 
-
-
-func NewRegistryApi(ctx *registry.ThingRegistryStore,echo *echo.Echo) *RegistryApi {
-	ctxApi := RegistryApi{reg:ctx,echo:echo}
+func NewRegistryApi(ctx *registry.ThingRegistryStore, echo *echo.Echo) *RegistryApi {
+	ctxApi := RegistryApi{reg: ctx, echo: echo}
 	ctxApi.RegisterRestApi()
 	return &ctxApi
 }
 
-func (api * RegistryApi) RegisterRestApi() {
+func (api *RegistryApi) RegisterRestApi() {
 	api.echo.GET("/fimp/api/registry/things", func(c echo.Context) error {
 
 		var things []registry.Thing
@@ -50,13 +48,13 @@ func (api * RegistryApi) RegisterRestApi() {
 		locationIdStr := c.QueryParam("locationId")
 		thingIdStr := c.QueryParam("thingId")
 		thingId, _ := strconv.Atoi(thingIdStr)
-		locationId , _ := strconv.Atoi(locationIdStr)
-		filterWithoutAliasStr:= c.QueryParam("filterWithoutAlias")
+		locationId, _ := strconv.Atoi(locationIdStr)
+		filterWithoutAliasStr := c.QueryParam("filterWithoutAlias")
 		var filterWithoutAlias bool
 		if filterWithoutAliasStr == "true" {
 			filterWithoutAlias = true
 		}
-		services, err := api.reg.GetExtendedServices(serviceName,filterWithoutAlias,registry.ID(thingId),registry.ID(locationId))
+		services, err := api.reg.GetExtendedServices(serviceName, filterWithoutAlias, registry.ID(thingId), registry.ID(locationId))
 		if err == nil {
 			return c.JSON(http.StatusOK, services)
 		} else {
@@ -66,7 +64,7 @@ func (api * RegistryApi) RegisterRestApi() {
 
 	api.echo.GET("/fimp/api/registry/service", func(c echo.Context) error {
 		serviceAddress := c.QueryParam("address")
-		log.Info("<REST> Service search , address =  ",serviceAddress)
+		log.Info("<REST> Service search , address =  ", serviceAddress)
 		services, err := api.reg.GetServiceByFullAddress(serviceAddress)
 		if err == nil {
 			return c.JSON(http.StatusOK, services)
@@ -131,7 +129,6 @@ func (api * RegistryApi) RegisterRestApi() {
 		}
 	})
 
-
 	api.echo.GET("/fimp/api/registry/thing/:tech/:address", func(c echo.Context) error {
 		things, err := api.reg.GetThingExtendedViewByAddress(c.Param("tech"), c.Param("address"))
 		if err == nil {
@@ -184,9 +181,8 @@ func (api * RegistryApi) RegisterRestApi() {
 		if err == nil {
 			return c.NoContent(http.StatusOK)
 		}
-		log.Error("<REST> Failed to delete thing . Error : ",err)
+		log.Error("<REST> Failed to delete thing . Error : ", err)
 		return c.JSON(http.StatusInternalServerError, err)
 	})
-
 
 }

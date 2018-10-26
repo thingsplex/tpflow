@@ -15,11 +15,9 @@ type ThingRegistryStore struct {
 	thingRegistryStoreFile string
 	db                     *storm.DB
 	// in memory store
-	things []Thing
-	services []Service
+	things    []Thing
+	services  []Service
 	locations []Location
-
-
 }
 
 func NewThingRegistryStore(storeFile string) *ThingRegistryStore {
@@ -84,7 +82,7 @@ func (st *ThingRegistryStore) GetThingById(Id ID) (*Thing, error) {
 	//err := st.db.One("ID", Id, &thing)
 	for i := range st.things {
 		if st.things[i].ID == Id {
-			return &st.things[i],nil
+			return &st.things[i], nil
 		}
 	}
 	return nil, nil
@@ -96,7 +94,7 @@ func (st *ThingRegistryStore) GetServiceById(Id ID) (*Service, error) {
 	//return &service, err
 	for i := range st.services {
 		if st.things[i].ID == Id {
-			return &st.services[i],nil
+			return &st.services[i], nil
 		}
 	}
 	return nil, nil
@@ -106,13 +104,13 @@ func (st *ThingRegistryStore) GetServiceByFullAddress(address string) (*ServiceE
 	var serv ServiceExtendedView
 
 	for i := range st.services {
-		if utils.RouteIncludesTopic("+/+"+st.services[i].Address,address)  {
+		if utils.RouteIncludesTopic("+/+"+st.services[i].Address, address) {
 			serv.Service = st.services[i]
-			location , _ := st.GetLocationById(st.services[i].LocationId)
+			location, _ := st.GetLocationById(st.services[i].LocationId)
 			if location != nil {
 				serv.LocationAlias = location.Alias
 			}
-			return &serv,nil
+			return &serv, nil
 		}
 	}
 	return &serv, errors.New("Not found")
@@ -124,7 +122,7 @@ func (st *ThingRegistryStore) GetLocationById(Id ID) (*Location, error) {
 	//return &location, err
 	for i := range st.locations {
 		if st.locations[i].ID == Id {
-			return &st.locations[i],nil
+			return &st.locations[i], nil
 		}
 	}
 	return nil, nil
@@ -134,14 +132,14 @@ func (st *ThingRegistryStore) GetAllThings() ([]Thing, error) {
 	//var things []Thing
 	//err := st.db.All(&things)
 	//return things, err
-	return st.things , nil
+	return st.things, nil
 }
 
-func (st *ThingRegistryStore) ExtendThingsWithLocation(things []Thing) ([]ThingWithLocationView) {
-	response := make([]ThingWithLocationView,len(things))
+func (st *ThingRegistryStore) ExtendThingsWithLocation(things []Thing) []ThingWithLocationView {
+	response := make([]ThingWithLocationView, len(things))
 	for i := range things {
 		response[i].Thing = things[i]
-		loc , _ := st.GetLocationById(things[i].LocationId)
+		loc, _ := st.GetLocationById(things[i].LocationId)
 		if loc != nil {
 			response[i].LocationAlias = loc.Alias
 		}
@@ -154,41 +152,41 @@ func (st *ThingRegistryStore) GetAllServices() ([]Service, error) {
 	//var services []Service
 	//err := st.db.All(&services)
 	//return services, err
-	return st.services,nil
+	return st.services, nil
 }
+
 // GetThingExtendedViewById return thing enhanced with linked services and location Alias
 func (st *ThingRegistryStore) GetThingExtendedViewById(Id ID) (*ThingExtendedView, error) {
-	var thingExView  ThingExtendedView
+	var thingExView ThingExtendedView
 	//err := st.db.One("ID", Id, &thing)
-	thingp,err := st.GetThingById(Id)
+	thingp, err := st.GetThingById(Id)
 
 	thingExView.Thing = *thingp
-	services , err := st.GetExtendedServices("",false,Id,IDnil)
-	thingExView.Services = make([]ServiceExtendedView,len(services))
+	services, err := st.GetExtendedServices("", false, Id, IDnil)
+	thingExView.Services = make([]ServiceExtendedView, len(services))
 	for i := range services {
 		thingExView.Services[i] = services[i]
 	}
-	location , _ := st.GetLocationById(thingp.LocationId)
+	location, _ := st.GetLocationById(thingp.LocationId)
 	if location != nil {
 		thingExView.LocationAlias = location.Alias
 	}
 	return &thingExView, err
 }
 
-func (st *ThingRegistryStore) GetServiceByAddress(serviceName string ,serviceAddress string) (*Service, error) {
+func (st *ThingRegistryStore) GetServiceByAddress(serviceName string, serviceAddress string) (*Service, error) {
 	//service := Service{}
 	//err := st.db.Select(q.And(q.Eq("Name", serviceName), q.Eq("Address", serviceAddress))).First(&service)
 	for i := range st.services {
-		if st.services[i].Name == serviceName && st.services[i].Address == serviceAddress{
-			return &st.services[i],nil
+		if st.services[i].Name == serviceName && st.services[i].Address == serviceAddress {
+			return &st.services[i], nil
 		}
 	}
-	return nil,errors.New("Not found")
+	return nil, errors.New("Not found")
 }
 
-
 // GetExtendedServices return services enhanced with location Alias
-func (st *ThingRegistryStore) GetExtendedServices(serviceNameFilter string,filterWithoutAlias bool,thingIdFilter ID,locationIdFilter ID) ([]ServiceExtendedView, error) {
+func (st *ThingRegistryStore) GetExtendedServices(serviceNameFilter string, filterWithoutAlias bool, thingIdFilter ID, locationIdFilter ID) ([]ServiceExtendedView, error) {
 	var services []Service
 	//var matcher []q.Matcher
 	//if serviceNameFilter != "" {
@@ -207,7 +205,7 @@ func (st *ThingRegistryStore) GetExtendedServices(serviceNameFilter string,filte
 	//	matcher = append(matcher, q.Eq("ParentContainerId", thingIdFilter))
 	//	matcher = append(matcher, q.Eq("ParentContainerType", ThingContainer))
 	//}
-   for i := range st.services {
+	for i := range st.services {
 		if serviceNameFilter != "" {
 			if st.services[i].Name != serviceNameFilter {
 				continue
@@ -231,7 +229,7 @@ func (st *ThingRegistryStore) GetExtendedServices(serviceNameFilter string,filte
 				continue
 			}
 		}
-		services = append(services,st.services[i])
+		services = append(services, st.services[i])
 
 	}
 
@@ -242,12 +240,12 @@ func (st *ThingRegistryStore) GetExtendedServices(serviceNameFilter string,filte
 	//}
 	var result []ServiceExtendedView
 	for si := range services {
-			serviceResponse := ServiceExtendedView{Service:services[si]}
-			location , _ := st.GetLocationById(serviceResponse.LocationId)
-			if location != nil {
-						serviceResponse.LocationAlias = location.Alias
-			}
-			result = append(result,serviceResponse)
+		serviceResponse := ServiceExtendedView{Service: services[si]}
+		location, _ := st.GetLocationById(serviceResponse.LocationId)
+		if location != nil {
+			serviceResponse.LocationAlias = location.Alias
+		}
+		result = append(result, serviceResponse)
 	}
 	return result, nil
 }
@@ -256,7 +254,7 @@ func (st *ThingRegistryStore) GetAllLocations() ([]Location, error) {
 	//var locations []Location
 	//err := st.db.All(&locations)
 	//return locations, err
-	return st.locations , nil
+	return st.locations, nil
 }
 
 func (st *ThingRegistryStore) GetThingByAddress(technology string, address string) (*Thing, error) {
@@ -265,16 +263,16 @@ func (st *ThingRegistryStore) GetThingByAddress(technology string, address strin
 	//return &thing,err
 	for i := range st.things {
 		if st.things[i].Address == address && st.things[i].CommTechnology == technology {
-			return &st.things[i],nil
+			return &st.things[i], nil
 		}
 	}
-	return nil,  errors.New("Not found")
+	return nil, errors.New("Not found")
 }
 
 func (st *ThingRegistryStore) GetThingExtendedViewByAddress(technology string, address string) (*ThingExtendedView, error) {
-	thing , err := st.GetThingByAddress(technology,address)
+	thing, err := st.GetThingByAddress(technology, address)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	return st.GetThingExtendedViewById(thing.ID)
 }
@@ -285,7 +283,7 @@ func (st *ThingRegistryStore) GetThingsByLocationId(locationId ID) ([]Thing, err
 	//return things, err
 	for i := range st.things {
 		if st.things[i].LocationId == locationId {
-			things = append( things, st.things[i])
+			things = append(things, st.things[i])
 		}
 	}
 	return things, nil
@@ -297,7 +295,7 @@ func (st *ThingRegistryStore) GetThingByIntegrationId(id string) (*Thing, error)
 	//return &thing, err
 	for i := range st.things {
 		if st.things[i].IntegrationId == id {
-			return &st.things[i],nil
+			return &st.things[i], nil
 		}
 	}
 	return nil, errors.New("Not found")
@@ -310,7 +308,7 @@ func (st *ThingRegistryStore) GetLocationByIntegrationId(id string) (*Location, 
 
 	for i := range st.locations {
 		if st.locations[i].IntegrationId == id {
-			return &st.locations[i],nil
+			return &st.locations[i], nil
 		}
 	}
 	return nil, errors.New("Not found")
@@ -394,14 +392,14 @@ func (st *ThingRegistryStore) UpsertThing(thing *Thing) (ID, error) {
 	if thing.ID == IDnil {
 		err = st.db.Save(thing)
 		if err == nil {
-			st.things = append(st.things,*thing)
+			st.things = append(st.things, *thing)
 		}
 
 	} else {
 		err = st.db.Update(thing)
 		if err == nil {
-			th,_ := st.GetThingById(thing.ID)
-			mergo.Merge(th,*thing,mergo.WithOverride)
+			th, _ := st.GetThingById(thing.ID)
+			mergo.Merge(th, *thing, mergo.WithOverride)
 
 		}
 
@@ -415,17 +413,17 @@ func (st *ThingRegistryStore) UpsertThing(thing *Thing) (ID, error) {
 	}
 
 	// Updating linked services
-	services ,_ := st.GetExtendedServices("",false,thing.ID,IDnil)
-	var isChanged bool;
-	for i := range services{
+	services, _ := st.GetExtendedServices("", false, thing.ID, IDnil)
+	var isChanged bool
+	for i := range services {
 		isChanged = false
 		//if services[i].Alias == "" {
-			services[i].Alias = thing.Alias
-			isChanged = true
+		services[i].Alias = thing.Alias
+		isChanged = true
 		//}
 		//if services[i].LocationId == IDnil {
-			services[i].LocationId = thing.LocationId
-			//isChanged = true
+		services[i].LocationId = thing.LocationId
+		//isChanged = true
 		//}
 		if isChanged {
 			st.UpsertService(&services[i].Service)
@@ -438,7 +436,7 @@ func (st *ThingRegistryStore) UpsertService(service *Service) (ID, error) {
 	var err error
 	// Check if service is already registered in system , if record already exits , updating the record
 	if service.ID == IDnil {
-		serviceCheck,err := st.GetServiceByAddress(service.Name,service.Address)
+		serviceCheck, err := st.GetServiceByAddress(service.Name, service.Address)
 		//serviceCheck := Service{}
 		//err = st.db.Select(q.And(q.Eq("Name", service.Name), q.Eq("Address", service.Address))).First(&serviceCheck)
 		if err == nil {
@@ -449,13 +447,13 @@ func (st *ThingRegistryStore) UpsertService(service *Service) (ID, error) {
 		// Create new service
 		err = st.db.Save(service)
 		if err == nil {
-			st.services = append(st.services,*service)
+			st.services = append(st.services, *service)
 		}
 	} else {
 		err = st.db.Update(service)
 		if err == nil {
-			sv , _ := st.GetServiceByAddress(service.Name,service.Address)
-			mergo.Merge(sv,*service,mergo.WithOverride)
+			sv, _ := st.GetServiceByAddress(service.Name, service.Address)
+			mergo.Merge(sv, *service, mergo.WithOverride)
 		}
 
 	}
@@ -470,18 +468,17 @@ func (st *ThingRegistryStore) UpsertService(service *Service) (ID, error) {
 	return service.ID, nil
 }
 
-
 func (st *ThingRegistryStore) UpsertLocation(location *Location) (ID, error) {
 	var err error
 	if location.ID == 0 {
 		err = st.db.Save(location)
 		if err == nil {
-			st.locations = append(st.locations,*location)
+			st.locations = append(st.locations, *location)
 		}
 	} else {
 		err = st.db.Update(location)
 		if err == nil {
-			loc , _ := st.GetLocationById(location.ID)
+			loc, _ := st.GetLocationById(location.ID)
 			*loc = *location
 		}
 
@@ -505,12 +502,12 @@ func (st *ThingRegistryStore) DeleteThing(id ID) error {
 	}
 	st.db.DeleteStruct(thing)
 	// Deleting all linked services
-	services ,_ := st.GetExtendedServices("",false,id,IDnil)
+	services, _ := st.GetExtendedServices("", false, id, IDnil)
 	var servIDs []ID
-	for i := range services{
-		servIDs = append(servIDs,services[i].ID)
+	for i := range services {
+		servIDs = append(servIDs, services[i].ID)
 	}
-	for _,id := range servIDs{
+	for _, id := range servIDs {
 		st.DeleteService(id)
 	}
 
@@ -562,9 +559,9 @@ func (st *ThingRegistryStore) DeleteLocation(id ID) error {
 
 func (st *ThingRegistryStore) ReindexAll() error {
 	log.Info("Starting reindex")
-	err:=st.db.ReIndex(&Thing{})
-	err =st.db.ReIndex(&Location{})
-	err =st.db.ReIndex(&Service{})
+	err := st.db.ReIndex(&Thing{})
+	err = st.db.ReIndex(&Location{})
+	err = st.db.ReIndex(&Service{})
 	log.Info("Reindex is complete")
 	return err
 }
@@ -602,10 +599,10 @@ func (st *ThingRegistryStore) ClearAll() error {
 
 // Method to comply with Connector interface
 
-func (st *ThingRegistryStore) LoadConfig(config interface{})error {
+func (st *ThingRegistryStore) LoadConfig(config interface{}) error {
 	return nil
 }
-func (st *ThingRegistryStore) Init()error {
+func (st *ThingRegistryStore) Init() error {
 	return nil
 }
 func (st *ThingRegistryStore) Stop() {

@@ -9,38 +9,33 @@ import (
 )
 
 type Connector struct {
-	name string
+	name    string
 	influxC influx.Client
 	state   string
 	config  ConnectorConfig
-
 }
 
 type ConnectorConfig struct {
-	Address string
-	Username string
-	Password string
-	Db       string
+	Address             string
+	Username            string
+	Password            string
+	Db                  string
 	RetentionPolicyName string
-	RetentionDuration string
+	RetentionDuration   string
 }
 
-
-
-func NewConnectorInstance(name string ,config interface{}) model.ConnInterface {
-	con := Connector{name:name}
+func NewConnectorInstance(name string, config interface{}) model.ConnInterface {
+	con := Connector{name: name}
 	con.LoadConfig(config)
 	con.Init()
 	return &con
 }
 
-
-func (conn *Connector) LoadConfig(config interface{})error {
-	return mapstructure.Decode(config,&conn.config)
+func (conn *Connector) LoadConfig(config interface{}) error {
+	return mapstructure.Decode(config, &conn.config)
 }
 
-
-func (conn *Connector) Init()error {
+func (conn *Connector) Init() error {
 	var err error
 	conn.state = "INIT_FAILED"
 	log.Info("<InfluxdbConn> Initializing influx client.")
@@ -59,32 +54,32 @@ func (conn *Connector) Init()error {
 	if response, err := conn.influxC.Query(q); err == nil && response.Error() == nil {
 		log.Infof("<InfluxdbConn> Database %s was created with status :%s", conn.config.Db, response.Results)
 	} else {
-		log.Error("<InfluxdbConn> Database init failed . Error:",err)
+		log.Error("<InfluxdbConn> Database init failed . Error:", err)
 		return err
 	}
 	// Setting up retention policies
 	log.Info("<InfluxdbConn>  Setting up retention policies")
- 	q = influx.NewQuery(fmt.Sprintf("CREATE RETENTION POLICY %s ON %s DURATION %s REPLICATION 1", conn.config.RetentionPolicyName, conn.config.Db, conn.config.RetentionDuration), conn.config.Db, "")
+	q = influx.NewQuery(fmt.Sprintf("CREATE RETENTION POLICY %s ON %s DURATION %s REPLICATION 1", conn.config.RetentionPolicyName, conn.config.Db, conn.config.RetentionDuration), conn.config.Db, "")
 	if response, err := conn.influxC.Query(q); err == nil && response.Error() == nil {
-			log.Infof("<InfluxdbConn> Retention policy %s was created with status :%s", conn.config.RetentionPolicyName, response.Results)
+		log.Infof("<InfluxdbConn> Retention policy %s was created with status :%s", conn.config.RetentionPolicyName, response.Results)
 	} else {
-			log.Errorf("<InfluxdbConn> Configuration of retention policy %s failed with status : %s ", conn.config.RetentionPolicyName, response.Error())
+		log.Errorf("<InfluxdbConn> Configuration of retention policy %s failed with status : %s ", conn.config.RetentionPolicyName, response.Error())
 	}
 	conn.state = "RUNNING"
 	return err
 
 }
 
-func (conn *Connector) Stop(){
+func (conn *Connector) Stop() {
 	conn.state = "STOPPED"
 	conn.influxC.Close()
 
 }
 
-func (conn *Connector) GetConnection() interface{}{
+func (conn *Connector) GetConnection() interface{} {
 	return conn.influxC
 }
 
-func (conn *Connector) GetState() string{
+func (conn *Connector) GetState() string {
 	return conn.state
 }

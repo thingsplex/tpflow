@@ -5,46 +5,42 @@ import (
 	"github.com/alivinco/tpflow/connector"
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node"
-	"github.com/alivinco/tpflow/utils"
 	"github.com/pkg/errors"
+	"sync"
 	"time"
 )
 
 type Flow struct {
-	Id                  string
-	Name                string
-	Description         string
-	FlowMeta            *model.FlowMeta
-	globalContext       *model.Context
-	opContext           model.FlowOperationalContext
-	currentNodeIds      [] model.NodeID
-	//currentMsg          model.Message
-	nodes               []model.Node
-	//nodeInboundStreams  map[model.NodeID]model.MsgPipeline
-	nodeOutboundStream  chan model.ReactorEvent
-	activeSubscriptions []string
-	msgInStream         model.MsgPipeline
-	TriggerCounter      int64
-	ErrorCounter        int64
-	StartedAt           time.Time
-	WaitingSince        time.Time
-	LastExecutionTime   time.Duration
-	logFields           log.Fields
- 	connectorRegistry   * connector.Registry
+	Id             string
+	Name           string
+	Description    string
+	FlowMeta       *model.FlowMeta
+	globalContext  *model.Context
+	opContext      model.FlowOperationalContext
+	currentNodeIds []model.NodeID
+	nodes          []model.Node
+	//nodeOutboundStream  chan model.ReactorEvent
+	//activeSubscriptions []string
+	TriggerCounter    int64
+	ErrorCounter      int64
+	StartedAt         time.Time
+	WaitingSince      time.Time
+	LastExecutionTime time.Duration
+	logFields         log.Fields
+	connectorRegistry *connector.Registry
+	subflowsCounter   int
+	mtx               sync.Mutex
 }
 
 func NewFlow(metaFlow model.FlowMeta, globalContext *model.Context) *Flow {
 	flow := Flow{globalContext: globalContext}
-
 	flow.nodes = make([]model.Node, 0)
-	flow.currentNodeIds = make([]model.NodeID,1)
-
-	//flow.currentNodeIds = make([]model.NodeID,1)
-	//flow.nodeInboundStreams = make(map[model.NodeID]model.MsgPipeline)
-	//flow.msgTransport = msgTransport
+	flow.currentNodeIds = make([]model.NodeID, 1)
 	flow.globalContext = globalContext
-	flow.opContext = model.FlowOperationalContext{NodeIsReady:make(chan bool),NodeControlSignalChannel:make(chan int),State:"LOADED"}
+	flow.opContext = model.FlowOperationalContext{NodeIsReady: make(chan bool), NodeControlSignalChannel: make(chan int), State: "LOADED"}
 	flow.initFromMetaFlow(&metaFlow)
+	flow.subflowsCounter = 0
+	flow.mtx = sync.Mutex{}
 
 	return &flow
 }
@@ -64,7 +60,7 @@ func (fl *Flow) initFromMetaFlow(meta *model.FlowMeta) {
 	fl.FlowMeta = meta
 	fl.opContext.FlowId = meta.Id
 	//fl.localMsgInStream = make(map[model.NodeID]model.MsgPipeline,10)
-	fl.logFields = log.Fields{"fid":fl.Id,"comp":"flow"}
+	fl.logFields = log.Fields{"fid": fl.Id, "comp": "flow"}
 	fl.globalContext.RegisterFlow(fl.Id)
 }
 
@@ -72,26 +68,25 @@ func (fl *Flow) initFromMetaFlow(meta *model.FlowMeta) {
 func (fl *Flow) LoadAndConfigureAllNodes() {
 	defer func() {
 		if r := recover(); r != nil {
-			fl.getLog().Error(" Flow process CRASHED with error while doing node configuration : ",r)
+			fl.getLog().Error(" Flow process CRASHED with error while doing node configuration : ", r)
 			fl.opContext.State = "INIT_FAIL"
 		}
 	}()
-	fl.getLog().Infof(" ---------Initializing Flow Id = %s , Name = %s -----------",fl.Id,fl.Name)
-	fl.nodeOutboundStream = make(chan model.ReactorEvent)
+	fl.getLog().Infof(" ---------Initializing Flow Id = %s , Name = %s -----------", fl.Id, fl.Name)
 	var isNewNode = false
-	for _,metaNode := range fl.FlowMeta.Nodes {
+	for _, metaNode := range fl.FlowMeta.Nodes {
 		newNode := fl.GetNodeById(metaNode.Id)
 		if newNode == nil {
 			isNewNode = true
-			fl.getLog().Infof(" Loading node NEW . Type = %s , Label = %s",metaNode.Type,metaNode.Label)
-			constructor ,ok := node.Registry[metaNode.Type]
+			fl.getLog().Infof(" Loading node NEW . Type = %s , Label = %s", metaNode.Type, metaNode.Label)
+			constructor, ok := node.Registry[metaNode.Type]
 			if ok {
-				newNode = constructor(&fl.opContext,metaNode,fl.globalContext)
-			}else {
-				fl.getLog().Errorf(" Node type = %s isn't supported",metaNode.Type)
+				newNode = constructor(&fl.opContext, metaNode, fl.globalContext)
+			} else {
+				fl.getLog().Errorf(" Node type = %s isn't supported", metaNode.Type)
 				continue
 			}
-		}else {
+		} else {
 			fl.getLog().Infof(" Reusing existing node ")
 		}
 		newNode.SetConnectorRegistry(fl.connectorRegistry)
@@ -103,13 +98,13 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 				go newNode.WaitForEvent(nil)
 			}
 			fl.getLog().Info(" Node is loaded and added.")
-		}else {
-			fl.getLog().Errorf(" Node type %s can't be loaded . Error : %s",metaNode.Type,err)
+		} else {
+			fl.getLog().Errorf(" Node type %s can't be loaded . Error : %s", metaNode.Type, err)
 		}
 	}
 }
 
-func (fl*Flow) GetContext()*model.Context {
+func (fl *Flow) GetContext() *model.Context {
 	return fl.globalContext
 }
 
@@ -136,28 +131,33 @@ func (fl *Flow) GetNodeById(id model.NodeID) model.Node {
 	return nil
 }
 
-func (fl *Flow)GetFlowStats() (*model.FlowStatsReport) {
+func (fl *Flow) GetFlowStats() *model.FlowStatsReport {
 	stats := model.FlowStatsReport{}
 	currentNode := fl.GetNodeById(fl.currentNodeIds[0])
 	if currentNode != nil {
 		stats.CurrentNodeId = currentNode.GetMetaNode().Id
 		stats.CurrentNodeLabel = currentNode.GetMetaNode().Label
-		stats.IsAtStartingPoint = currentNode.IsStartNode()
 	}
+	var actTriggers = 0
+	for i := range fl.nodes {
+		if fl.nodes[i].IsStartNode() {
+			actTriggers++
+		}
+	}
+	stats.NumberOfActiveSubflows = fl.subflowsCounter
+	stats.NumberOfActiveTriggers = actTriggers
 	stats.StartedAt = fl.StartedAt
 	stats.WaitingSince = fl.WaitingSince
-	stats.LastExecutionTime = int64(fl.LastExecutionTime/time.Millisecond)
+	stats.LastExecutionTime = int64(fl.LastExecutionTime / time.Millisecond)
 	return &stats
 }
-
 
 func (fl *Flow) AddNode(node model.Node) {
 	fl.nodes = append(fl.nodes, node)
 }
 
-
 func (fl *Flow) IsNodeIdValid(currentNodeId model.NodeID, transitionNodeId model.NodeID) bool {
-	if transitionNodeId == ""{
+	if transitionNodeId == "" {
 		return true
 	}
 
@@ -179,8 +179,8 @@ func (fl *Flow) IsFlowValid() bool {
 	for i := range fl.nodes {
 		node := fl.nodes[i].GetMetaNode()
 		if node.Type == "trigger" || node.Type == "action" || node.Type == "receive" {
-			if node.Address == "" ||  node.ServiceInterface == "" || node.Service == ""	{
-				fl.getLog().Error(" Flow is not valid , node is not configured . Node ",node.Label)
+			if node.Address == "" || node.ServiceInterface == "" || node.Service == "" {
+				fl.getLog().Error(" Flow is not valid , node is not configured . Node ", node.Label)
 				return false
 			}
 		}
@@ -194,21 +194,28 @@ func (fl *Flow) IsFlowValid() bool {
 	}
 	return true
 }
+
 // Invoked by trigger node in it's own goroutine
 func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
+	fl.mtx.Lock()
+	fl.subflowsCounter++
+	fl.mtx.Unlock()
 	var transitionNodeId model.NodeID
 	defer func() {
+		fl.mtx.Lock()
+		fl.subflowsCounter--
+		fl.mtx.Unlock()
 		if r := recover(); r != nil {
-			fl.getLog().Error(" Flow process CRASHED with error : ",r)
-			fl.getLog().Errorf(" Crashed while processing message from Current Node = %v Next Node = %v ",fl.currentNodeIds[0], transitionNodeId)
+			fl.getLog().Error(" Flow process CRASHED with error : ", r)
+			fl.getLog().Errorf(" Crashed while processing message from Current Node = %v Next Node = %v ", fl.currentNodeIds[0], transitionNodeId)
 			transitionNodeId = ""
-		}else {
-			fl.getLog().Infof(" Flow completed")
 		}
+		fl.getLog().Infof(" ------Flow %s completed ----------- ", fl.Name)
+
 	}()
 
 	fl.LastExecutionTime = time.Since(fl.StartedAt)
-	fl.getLog().Infof(" ------Flow %s started ----------- ",fl.Name)
+	fl.getLog().Infof(" ------Flow %s started ----------- ", fl.Name)
 	// Initial message received by trigger , which is passed further throughout the flow.
 	fl.WaitingSince = time.Now()
 
@@ -224,14 +231,14 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 
 	//fl.currentNodeId = fl.nodes[i].GetMetaNode().Id
 	transitionNodeId = reactorEvent.TransitionNodeId
-	fl.getLog().Debug(" Next node id = ",transitionNodeId)
+	fl.getLog().Debug(" Next node id = ", transitionNodeId)
 	//fl.getLog().Debug(" Current nodes = ",fl.currentNodeIds)
 	if !fl.IsNodeIdValid(fl.currentNodeIds[0], transitionNodeId) {
 		fl.getLog().Errorf(" Unknown transition node %s from first node.Switching back to first node", transitionNodeId)
 		transitionNodeId = ""
 		return
 	}
-
+	var nodeOutboundStream chan model.ReactorEvent
 	for {
 		if !fl.opContext.IsFlowRunning {
 			break
@@ -245,35 +252,47 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 				var nextNodes []model.NodeID
 				fl.currentNodeIds[0] = fl.nodes[i].GetMetaNode().Id
 				if fl.nodes[i].IsMsgReactorNode() {
-					if ! fl.nodes[i].IsReactorRunning(){
-						go fl.nodes[i].WaitForEvent(fl.nodeOutboundStream)
+					// lazy channel init
+					if nodeOutboundStream == nil {
+						nodeOutboundStream = make(chan model.ReactorEvent)
+					}
+					if !fl.nodes[i].IsReactorRunning() {
+						go fl.nodes[i].WaitForEvent(nodeOutboundStream)
 					}
 					// Blocking wait
-					reactorEvent :=<- fl.nodeOutboundStream
-					fl.getLog().Debug(" New event from reactor node.")
-					currentMsg = reactorEvent.Msg
-					transitionNodeId = reactorEvent.TransitionNodeId
-					err = reactorEvent.Err
-				}else {
+					select {
+					case reactorEvent := <-nodeOutboundStream:
+						fl.getLog().Debug(" New event from reactor node.")
+						currentMsg = reactorEvent.Msg
+						transitionNodeId = reactorEvent.TransitionNodeId
+						err = reactorEvent.Err
+					case signal := <-fl.opContext.NodeControlSignalChannel:
+						fl.getLog().Debug("Control signal ")
+						if signal == model.SIGNAL_STOP {
+							return
+						}
+					}
+
+				} else {
 					nextNodes, err = fl.nodes[i].OnInput(&currentMsg)
 
-					if len(nextNodes)>0 {
+					if len(nextNodes) > 0 {
 						transitionNodeId = nextNodes[0]
-					}else {
+					} else {
 						transitionNodeId = ""
 					}
 				}
 
 				if err != nil {
 					fl.ErrorCounter++
-					fl.getLog().Errorf(" Node executed with error . Doing error transition to %s. Error : %s", transitionNodeId,err)
+					fl.getLog().Errorf(" Node executed with error . Doing error transition to %s. Error : %s", transitionNodeId, err)
 				}
 
 				if !fl.IsNodeIdValid(fl.currentNodeIds[0], transitionNodeId) {
 					fl.getLog().Errorf(" Unknown transition node %s.Switching back to first node", transitionNodeId)
 					transitionNodeId = ""
 				}
-				fl.getLog().Debug(" Next node id = ",transitionNodeId)
+				fl.getLog().Debug(" Next node id = ", transitionNodeId)
 
 			} else if transitionNodeId == "" {
 				// Flow is finished . Returning to first step.
@@ -288,29 +307,15 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 
 }
 
-func (fl *Flow) IsFlowInterestedInMessage(topic string ) bool {
-	for i :=range fl.activeSubscriptions {
-		if utils.RouteIncludesTopic(fl.activeSubscriptions[i],topic) {
-			return true
-		}else {
-			//fl.getLog().Debug(" Not interested in topic : ",topic)
-		}
-	}
-	return false
-}
-
-//func (fl *Flow) CloseAllInboundStreams() {
-//	for _,stream := range fl.nodeInboundStreams {
-//		cancelMsg := model.Message{CancelOp:true}
-//		select {
-//		case stream <- cancelMsg:
-//			continue
-//		default:
-//			continue
+//func (fl *Flow) IsFlowInterestedInMessage(topic string ) bool {
+//	for i :=range fl.activeSubscriptions {
+//		if utils.RouteIncludesTopic(fl.activeSubscriptions[i],topic) {
+//			return true
+//		}else {
+//			//fl.getLog().Debug(" Not interested in topic : ",topic)
 //		}
-//		close(stream)
 //	}
-//	fl.getLog().Debug(" All node inbound streams were closed")
+//	return false
 //}
 
 // Starts Flow loop in its own goroutine and sets isFlowRunning flag to true
@@ -324,7 +329,7 @@ func (fl *Flow) Start() error {
 	fl.opContext.IsFlowRunning = true
 	fl.LoadAndConfigureAllNodes()
 	isFlowValid := fl.IsFlowValid()
-	if isFlowValid{
+	if isFlowValid {
 		// Init all nodes
 		for i := range fl.nodes {
 			fl.nodes[i].Init()
@@ -333,9 +338,9 @@ func (fl *Flow) Start() error {
 		//fl.StartMsgStreamRouter()
 		fl.getLog().Infof(" Flow %s is running", fl.Name)
 		//go fl.Run()
-	}else {
+	} else {
 		fl.opContext.State = "NOT_CONFIGURED"
-		fl.getLog().Errorf(" Flow %s is not valid and will not be started.Flow should have at least one trigger or wait node ",fl.Name)
+		fl.getLog().Errorf(" Flow %s is not valid and will not be started.Flow should have at least one trigger or wait node ", fl.Name)
 		return errors.New("Flow should have at least one trigger or wait node")
 	}
 	return nil
@@ -343,38 +348,66 @@ func (fl *Flow) Start() error {
 
 // Terminates flow loop , stops goroutine .
 func (fl *Flow) Stop() error {
+	if fl.GetFlowState() == "STOPPING" {
+		log.Info("Flow is already stopping")
+		return nil
+	}
 	fl.getLog().Info(" Stopping flow  ", fl.Name)
-	// is invoked when node flow is stopped
-	//TODO: Unsubscribe int node.
-	//for _,topic := range fl.activeSubscriptions {
-	//	fl.getLog().Info(" Unsubscribing from topic : ",topic)
-	//	fl.msgTransport.Unsubscribe(topic)
-	//}
-	fl.activeSubscriptions = nil
 	fl.opContext.IsFlowRunning = false
-	select {
-	case fl.opContext.NodeControlSignalChannel <- model.SIGNAL_STOP:
-	default:
-		//fl.getLog().Debug(" No signal listener.")
+	fl.opContext.State = "STOPPING"
+	var breakLoop = false
+	for {
+		// Sending STOP signal to all active triggers
+		fl.getLog().Debug(" Sending STOP signals to all reactors")
+		select {
+		case fl.opContext.NodeControlSignalChannel <- model.SIGNAL_STOP:
+		default:
+			breakLoop = true
+		}
+		if breakLoop {
+			break
+		}
+
+	}
+	var isSomeNodeRunning bool
+	//Check if all triggers has stopped
+	for {
+		isSomeNodeRunning = false
+		for i := range fl.nodes {
+			if fl.nodes[i].IsMsgReactorNode() {
+				if fl.nodes[i].IsReactorRunning() {
+					isSomeNodeRunning = true
+					break
+				}
+
+			}
+		}
+		if isSomeNodeRunning {
+			fl.getLog().Debug(" Some reactors are still running . Waiting.....")
+			time.Sleep(time.Second * 2)
+		} else {
+			break
+		}
 	}
 
-	select {
-	case fl.msgInStream <- model.Message{CancelOp:true}:
-	default:
-		//fl.getLog().Debug(" No msgInStream.")
+	// Wait until all subflows are stopped
+
+	for {
+		if fl.subflowsCounter == 0 {
+			break
+		} else {
+			fl.getLog().Debug(" Some subflows are still running . Waiting.....")
+			time.Sleep(time.Second * 2)
+		}
 	}
 
-	select {
-	case fl.nodeOutboundStream <- model.ReactorEvent{}:
-	default:
-		//fl.getLog().Debug(" No signal listener.")
-	}
 	fl.getLog().Debug(" Starting node cleanup")
 	for i := range fl.nodes {
 		fl.nodes[i].Cleanup()
 	}
 	fl.getLog().Debug(" nodes cleanup completed")
 	fl.getLog().Info(" Stopped .  ", fl.Name)
+	fl.opContext.State = "STOPPED"
 	return nil
 }
 
@@ -383,12 +416,9 @@ func (fl *Flow) CleanupBeforeDelete() {
 		fl.getLog().Info(" Nothing to cleanup ")
 		return
 	}
-	//fl.CloseAllInboundStreams()
-	close(fl.nodeOutboundStream)
 	fl.getLog().Info(" All streams and running goroutins were closed  ")
 	fl.globalContext.UnregisterFlow(fl.Id)
 }
-
 
 func (fl *Flow) GetFlowState() string {
 	return fl.opContext.State
@@ -402,37 +432,6 @@ func (fl *Flow) IsNodeCurrentNode(nodeId model.NodeID) bool {
 	}
 	return false
 }
-
-//func (fl *Flow) StartMsgStreamRouter() {
-//	// Message broadcast from flow incomming stream to reactor nodes
-//	go func() {
-//		fl.getLog().Info(" !!! Starting flow msg router !!! ")
-//		defer func() {
-//			fl.getLog().Info(" !!! Router is stopped !!! ")
-//		}()
-//		for msg := range fl.msgInStream {
-//			for nodeId,stream := range fl.nodeInboundStreams {
-//				if fl.IsNodeCurrentNode(nodeId){
-//					fl.getLog().Debug("Router got new msg , forwarding it to node = ", nodeId)
-//					select {
-//					case stream <- msg:
-//					default:
-//						fl.getLog().Debug(" Message is dropped (no listeners) nodeId = ", nodeId)
-//					}
-//				}
-//			}
-//			if msg.CancelOp {
-//				return
-//			}
-//
-//		}
-//	}()
-//
-//}
-
-//func (fl *Flow) SetMessageStream(msgInStream model.MsgPipeline) {
-//	fl.msgInStream = msgInStream
-//}
 
 func (fl *Flow) SetConnectorRegistry(resources *connector.Registry) {
 	fl.connectorRegistry = resources

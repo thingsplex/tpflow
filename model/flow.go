@@ -19,8 +19,8 @@ type Message struct {
 }
 
 type ReactorEvent struct {
-	Msg Message
-	Err error
+	Msg              Message
+	Err              error
 	TransitionNodeId NodeID
 }
 
@@ -37,23 +37,24 @@ type FlowMeta struct {
 
 const (
 	SIGNAL_STOP = 1
-
 )
 
 type FlowOperationalContext struct {
-	FlowId string
-	IsFlowRunning bool
-	State string
-	NodeControlSignalChannel chan int // the channel should be used to stop all waiting nodes .
-	NodeIsReady chan bool // Flow should notify message router when next node is ready to process new message .
-	StoragePath string
+	FlowId                   string
+	IsFlowRunning            bool
+	State                    string
+	NodeControlSignalChannel chan int  // the channel should be used to stop all waiting nodes .
+	NodeIsReady              chan bool // Flow should notify message router when next node is ready to process new message .
+	StoragePath              string
 }
 
 type FlowStatsReport struct {
-	CurrentNodeId NodeID
-	CurrentNodeLabel string
-	IsAtStartingPoint bool
-	StartedAt time.Time
-	WaitingSince time.Time
-	LastExecutionTime int64
+	CurrentNodeId          NodeID
+	CurrentNodeLabel       string
+	NumberOfActiveTriggers int
+	NumberOfActiveSubflows int
+	State                  string
+	StartedAt              time.Time
+	WaitingSince           time.Time
+	LastExecutionTime      int64
 }

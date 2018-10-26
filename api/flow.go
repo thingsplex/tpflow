@@ -13,11 +13,11 @@ import (
 
 type FlowApi struct {
 	flowManager *flow.Manager
-	echo *echo.Echo
+	echo        *echo.Echo
 }
 
-func NewFlowApi(flowManager *flow.Manager,echo *echo.Echo) *FlowApi {
-	ctxApi := FlowApi{flowManager:flowManager,echo:echo}
+func NewFlowApi(flowManager *flow.Manager, echo *echo.Echo) *FlowApi {
+	ctxApi := FlowApi{flowManager: flowManager, echo: echo}
 	ctxApi.RegisterRestApi()
 	return &ctxApi
 }
@@ -40,23 +40,21 @@ func (ctx *FlowApi) RegisterRestApi() {
 		return c.JSON(http.StatusOK, resp)
 	})
 
-
 	ctx.echo.GET("/fimp/connector/template/:id", func(c echo.Context) error {
 		id := c.Param("id")
 		result := plugins.GetConfigurationTemplate(id)
-		return c.JSON(http.StatusOK,result)
+		return c.JSON(http.StatusOK, result)
 	})
 
 	ctx.echo.GET("/fimp/connector/plugins", func(c echo.Context) error {
 		result := plugins.GetPlugins()
-		return c.JSON(http.StatusOK,result)
+		return c.JSON(http.StatusOK, result)
 	})
 
 	ctx.echo.GET("/fimp/connector/list", func(c echo.Context) error {
 		result := ctx.flowManager.GetConnectorRegistry().GetAllInstances()
-		return c.JSON(http.StatusOK,result)
+		return c.JSON(http.StatusOK, result)
 	})
-
 
 	ctx.echo.POST("/fimp/flow/definition/:id", func(c echo.Context) error {
 		id := c.Param("id")
@@ -75,9 +73,9 @@ func (ctx *FlowApi) RegisterRestApi() {
 			return err
 		}
 		request := ImportFlowFromUrlRequest{}
-		err = json.Unmarshal(body,&request)
+		err = json.Unmarshal(body, &request)
 		if err != nil {
-			log.Error("Can't parse request ",err)
+			log.Error("Can't parse request ", err)
 		}
 
 		// Get the data
@@ -87,7 +85,7 @@ func (ctx *FlowApi) RegisterRestApi() {
 		}
 		flow, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Error("Can't read file from url ",err)
+			log.Error("Can't read file from url ", err)
 			return err
 		}
 		log.Info("Importing flow")
@@ -95,20 +93,19 @@ func (ctx *FlowApi) RegisterRestApi() {
 		return c.NoContent(http.StatusOK)
 	})
 
-
 	ctx.echo.POST("/fimp/flow/ctrl/:id/:op", func(c echo.Context) error {
 		id := c.Param("id")
 		op := c.Param("op")
 
 		switch op {
-		case "send-inclusion-report" :
+		case "send-inclusion-report":
 			ctx.flowManager.GetFlowById(id).SendInclusionReport()
-		case "send-exclusion-report" :
+		case "send-exclusion-report":
 			ctx.flowManager.GetFlowById(id).SendExclusionReport()
-		case "start" :
-			ctx.flowManager.ControlFlow("START",id)
-		case "stop" :
-			ctx.flowManager.ControlFlow("STOP",id)
+		case "start":
+			ctx.flowManager.ControlFlow("START", id)
+		case "stop":
+			ctx.flowManager.ControlFlow("STOP", id)
 
 		}
 
@@ -128,6 +125,6 @@ func (ctx *FlowApi) RegisterMqttApi() {
 }
 
 type ImportFlowFromUrlRequest struct {
-	Url string
+	Url   string
 	Token string
 }

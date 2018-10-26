@@ -8,23 +8,23 @@ import (
 
 func TestContextInMemoryStore_Store(t *testing.T) {
 
-	v := Variable{ValueType:"float",Value:nil}
-	if v.isTypeValid(){
+	v := Variable{ValueType: "float", Value: nil}
+	if v.isTypeValid() {
 		t.Error("Wrong type")
 		t.Fail()
 	}
 
-	rec := ContextRecord{Name:"var1",Variable:Variable{ValueType:"string",Value:"a1"}}
+	rec := ContextRecord{Name: "var1", Variable: Variable{ValueType: "string", Value: "a1"}}
 	ctx := ContextInMemoryStore{}
-	ctx.Store(rec,"global")
-	rec2 := ContextRecord{Name:"var2",Variable:Variable{ValueType:"int",Value:55}}
-	ctx.Store(rec2,"global")
-	result,_ := ctx.GetRecordsForFlow("global")
-	if len(result)!=2 {
+	ctx.Store(rec, "global")
+	rec2 := ContextRecord{Name: "var2", Variable: Variable{ValueType: "int", Value: 55}}
+	ctx.Store(rec2, "global")
+	result, _ := ctx.GetRecordsForFlow("global")
+	if len(result) != 2 {
 		t.Error("Error")
 	}
 	t.Log(len(result))
-	t.Log(ctx.Get("global","var1"))
+	t.Log(ctx.Get("global", "var1"))
 }
 
 func TestContextInMemoryStore_Get(t *testing.T) {
@@ -41,7 +41,7 @@ func TestContextInMemoryStore_Get(t *testing.T) {
 		args   args
 		want   *ContextRecord
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -67,7 +67,7 @@ func TestContextInMemoryStore_DeleteFlow(t *testing.T) {
 		fields fields
 		args   args
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -93,7 +93,7 @@ func TestContextInMemoryStore_GetRecordsForFlow(t *testing.T) {
 		want    []ContextRecord
 		wantErr bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

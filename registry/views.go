@@ -2,18 +2,18 @@ package registry
 
 type ServiceExtendedView struct {
 	Service
-	LocationAlias string      `json:"location_alias"`
+	LocationAlias string `json:"location_alias"`
 }
 
-type ThingWithLocationView struct{
+type ThingWithLocationView struct {
 	Thing
-	LocationAlias string     `json:"location_alias"`
+	LocationAlias string `json:"location_alias"`
 }
 
 type ThingExtendedView struct {
 	Thing
-	Services       []ServiceExtendedView `json:"services"`
-	LocationAlias string                 `json:"location_alias"`
+	Services      []ServiceExtendedView `json:"services"`
+	LocationAlias string                `json:"location_alias"`
 }
 
 type InterfaceFlatView struct {

@@ -5,13 +5,20 @@ import (
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/connector"
 	"github.com/alivinco/tpflow/model"
-	flownode "github.com/alivinco/tpflow/node"
+	actfimp "github.com/alivinco/tpflow/node/action/fimp"
+	"github.com/alivinco/tpflow/node/action/rest"
+	"github.com/alivinco/tpflow/node/control/ifn"
+	"github.com/alivinco/tpflow/node/control/loop"
+	"github.com/alivinco/tpflow/node/data/setvar"
+	"github.com/alivinco/tpflow/node/data/transform"
+	trigfimp "github.com/alivinco/tpflow/node/trigger/fimp"
+	trigtime "github.com/alivinco/tpflow/node/trigger/time"
 	"os"
 	"testing"
 	"time"
 )
 
-var msgChan = make(model.MsgPipeline,10)
+var msgChan = make(model.MsgPipeline, 10)
 
 func onMsg(topic string, addr *fimpgo.Address, iotMsg *fimpgo.FimpMessage, rawMessage []byte) {
 	log.Info("New message from topic = ", topic)
@@ -88,34 +95,37 @@ func TestIfFlow(t *testing.T) {
 	node = model.MetaNode{Id: "1.2", Label: "Button trigger 1", Type: "trigger", Address: "pt:j1/mt:evt/rt:dev/rn:test/ad:1/sv:sensor_lumin/ad:300_0", Service: "sensor_lumin", ServiceInterface: "evt.sensor.report", SuccessTransition: "1.1"}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
-	node = model.MetaNode{Id: "1.1", Label: "IF node", Type: "if", Config: flownode.IFExpressions{TrueTransition: "2", FalseTransition: "3", Expression: []flownode.IFExpression{
+	node = model.MetaNode{Id: "1.1", Label: "IF node", Type: "if", Config: ifn.IFExpressions{TrueTransition: "2", FalseTransition: "3", Expression: []ifn.IFExpression{
 		{RightVariable: model.Variable{Value: int64(100), ValueType: "int"}, Operand: "gt", BooleanOperator: "and"},
 		{RightVariable: model.Variable{Value: int64(200), ValueType: "int"}, Operand: "lt"}}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "2", Label: "Bulb 1.Room light intensity is > 100 lux", Type: "action", Address: "pt:j1/mt:cmd/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:200_0", Service: "out_bin_switch", ServiceInterface: "cmd.binary.set", SuccessTransition: "4",
-		Config: flownode.ActionNodeConfig{DefaultValue:model.Variable{ValueType: "bool", Value: true}}}
+		Config: actfimp.NodeConfig{DefaultValue: model.Variable{ValueType: "bool", Value: true}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "3", Label: "Bulb 2.Room light intensity is < 100 lux", Type: "action", Address: "pt:j1/mt:cmd/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:200_0", Service: "out_bin_switch", ServiceInterface: "cmd.binary.set", SuccessTransition: "5",
-		Config: flownode.ActionNodeConfig{DefaultValue:model.Variable{ValueType: "bool", Value: true}}}
+		Config: actfimp.NodeConfig{DefaultValue: model.Variable{ValueType: "bool", Value: true}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "4", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: flownode.SetVariableNodeConfig{Name: "mode", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "correct", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "mode", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "correct", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "5", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: flownode.SetVariableNodeConfig{Name: "mode", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "wrong", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "mode", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "wrong", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	//data, err := json.Marshal(flowMeta)
 	//if err == nil {
 	//	ioutil.WriteFile("testflow.json", data, 0644)
 	//}
-
+	conReg := connector.NewRegistry("../testdata/var/connectors")
+	if err := conReg.LoadInstancesFromDisk(); err != nil {
+		t.Error("Failed init registry")
+	}
 	flow := NewFlow(flowMeta, ctx)
-	flow.LoadAndConfigureAllNodes()
+	flow.SetConnectorRegistry(conReg)
 	flow.Start()
 	time.Sleep(time.Second * 1)
 	// send msg
@@ -158,20 +168,20 @@ func TestNewFlow3(t *testing.T) {
 	node := model.MetaNode{Id: "1", Label: "Button trigger", Type: "trigger", Address: "pt:j1/mt:evt/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:199_0", Service: "out_bin_switch", ServiceInterface: "evt.binary.report", SuccessTransition: "1.1"}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
-	node = model.MetaNode{Id: "1.1", Label: "IF node", Type: "if", Config: flownode.IFExpressions{TrueTransition: "2", FalseTransition: "3", Expression: []flownode.IFExpression{
+	node = model.MetaNode{Id: "1.1", Label: "IF node", Type: "if", Config: ifn.IFExpressions{TrueTransition: "2", FalseTransition: "3", Expression: []ifn.IFExpression{
 		{RightVariable: model.Variable{Value: false, ValueType: "bool"}, Operand: "eq"}}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "2", Label: "Lights ON", Type: "action", Address: "pt:j1/mt:cmd/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:200_0", Service: "out_bin_switch", ServiceInterface: "cmd.binary.set", SuccessTransition: "",
-		Config: flownode.ActionNodeConfig{DefaultValue:model.Variable{ValueType: "bool", Value: true}}}
+		Config: actfimp.NodeConfig{DefaultValue: model.Variable{ValueType: "bool", Value: true}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "3", Label: "Lights OFF", Type: "action", Address: "pt:j1/mt:cmd/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:200_0", Service: "out_bin_switch", ServiceInterface: "cmd.binary.set", SuccessTransition: "",
-		Config: flownode.ActionNodeConfig{DefaultValue:model.Variable{ValueType: "bool", Value: true}}}
+		Config: actfimp.NodeConfig{DefaultValue: model.Variable{ValueType: "bool", Value: true}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	conReg := connector.NewRegistry("../testdata/var/connectors")
-	if err := conReg.LoadInstancesFromDisk();err != nil {
+	if err := conReg.LoadInstancesFromDisk(); err != nil {
 		t.Error("Failed init registry")
 	}
 	time.Sleep(time.Second * 1)
@@ -211,14 +221,18 @@ func TestSetVariableFlow(t *testing.T) {
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "2", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: flownode.SetVariableNodeConfig{Name: "volume", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: 65, ValueType: "int"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "volume", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: 65, ValueType: "int"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 	//data, err := json.Marshal(flowMeta)
 	//if err == nil {
 	//	ioutil.WriteFile("testflow2.json", data, 0644)
 	//}
+	conReg := connector.NewRegistry("../testdata/var/connectors")
+	if err := conReg.LoadInstancesFromDisk(); err != nil {
+		t.Error("Failed init registry")
+	}
 	flow := NewFlow(flowMeta, ctx)
-	flow.LoadAndConfigureAllNodes()
+	flow.SetConnectorRegistry(conReg)
 	flow.Start()
 	time.Sleep(time.Second * 1)
 	// send msg
@@ -262,7 +276,7 @@ func TestTransformFlipFlow(t *testing.T) {
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "2", Label: "Set variable", Type: "transform", SuccessTransition: "",
-		Config:flownode.TransformNodeConfig{Operation:"flip"}}
+		Config: transform.NodeConfig{Operation: "flip"}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 	flow := NewFlow(flowMeta, ctx)
 	flow.LoadAndConfigureAllNodes()
@@ -307,8 +321,8 @@ func TestRestActionFlow(t *testing.T) {
 	//	Config:flownode.RestActionNodeConfig{Method:"POST",Url:"https://httpbin.org/post",RequestTemplate:"{'param1':{{.Variable}} }"}}
 
 	node = model.MetaNode{Id: "2", Label: "Turn off yamaha", Type: "rest_action", SuccessTransition: "",
-		Config:flownode.RestActionNodeConfig{Method:"POST",Url:"http://yamaha.st/YamahaRemoteControl/ctrl",
-		RequestTemplate:"<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Power_Control><Power>On</Power></Power_Control></Main_Zone></YAMAHA_AV>"}}
+		Config: rest.NodeConfig{Method: "POST", Url: "http://yamaha.st/YamahaRemoteControl/ctrl",
+			RequestTemplate: "<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Power_Control><Power>On</Power></Power_Control></Main_Zone></YAMAHA_AV>"}}
 
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 	flow := NewFlow(flowMeta, ctx)
@@ -350,10 +364,14 @@ func TestTransformAddFlow(t *testing.T) {
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "2", Label: "Add transform", Type: "transform", SuccessTransition: "",
-		Config:flownode.TransformNodeConfig{Operation:"add",RValue:model.Variable{ValueType:"int",Value:int(2)}}}
+		Config: transform.NodeConfig{Operation: "add", RValue: model.Variable{ValueType: "int", Value: int(2)}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
+	conReg := connector.NewRegistry("../testdata/var/connectors")
+	if err := conReg.LoadInstancesFromDisk(); err != nil {
+		t.Error("Failed init registry")
+	}
 	flow := NewFlow(flowMeta, ctx)
-	flow.LoadAndConfigureAllNodes()
+	flow.SetConnectorRegistry(conReg)
 	flow.Start()
 	time.Sleep(time.Second * 1)
 	msg := fimpgo.NewFloatMessage("evt.sensor.report", "sensor_temp", 12.5, nil, nil, nil)
@@ -393,26 +411,30 @@ func TestReceiveFlow(t *testing.T) {
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "2", Label: "Receive", Type: "receive", Address: "pt:j1/mt:evt/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:200_0", Service: "out_bin_switch", ServiceInterface: "evt.binary.report",
-		SuccessTransition: "3",TimeoutTransition:"5" , Config:flownode.ReceiveConfig{Timeout:5}}
+		SuccessTransition: "3", TimeoutTransition: "5", Config: trigfimp.ReceiveConfig{Timeout: 5}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "3", Label: "Receive", Type: "receive", Address: "pt:j1/mt:evt/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:201_0", Service: "out_bin_switch", ServiceInterface: "evt.binary.report",
-		SuccessTransition: "4",TimeoutTransition:"5" , Config:flownode.ReceiveConfig{Timeout:1}}
+		SuccessTransition: "4", TimeoutTransition: "5", Config: trigfimp.ReceiveConfig{Timeout: 1}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "4", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: flownode.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "in_time", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "in_time", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "5", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: flownode.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "timeout", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "timeout", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 	//data, err := json.Marshal(flowMeta)
 	//if err == nil {
 	//	ioutil.WriteFile("testflow2.json", data, 0644)
 	//}
+	conReg := connector.NewRegistry("../testdata/var/connectors")
+	if err := conReg.LoadInstancesFromDisk(); err != nil {
+		t.Error("Failed init registry")
+	}
 	flow := NewFlow(flowMeta, ctx)
-	flow.LoadAndConfigureAllNodes()
+	flow.SetConnectorRegistry(conReg)
 	flow.Start()
 	time.Sleep(time.Second * 1)
 	// send msg
@@ -430,10 +452,10 @@ func TestReceiveFlow(t *testing.T) {
 	mqtt.Publish(&adr, msg)
 
 	time.Sleep(time.Second * 1)
-	variable, err := flow.GetContext().GetVariable("status", "TestReceiveFlow")
+	variable, err := ctx.GetVariable("status", "TestReceiveFlow")
 	if err != nil {
 		t.Error("Variable is not set", err)
-	}else if variable.Value.(string) == "in_time" {
+	} else if variable.Value.(string) == "in_time" {
 		t.Log("Ok , result is in time")
 	} else {
 		t.Error("Error timed out")
@@ -464,16 +486,16 @@ func TestLoopFlow(t *testing.T) {
 		SuccessTransition: "2"}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
-	node = model.MetaNode{Id: "2", Label: "Loop", Type: "loop", SuccessTransition: "4",ErrorTransition:"5",
-		Config: flownode.LoopNodeConfig{StartValue:0,EndValue:4}}
+	node = model.MetaNode{Id: "2", Label: "Loop", Type: "loop", SuccessTransition: "4", ErrorTransition: "5",
+		Config: loop.NodeConfig{StartValue: 0, EndValue: 4}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "4", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: flownode.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "counting", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "counting", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "5", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: flownode.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "reset", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "reset", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 	//data, err := json.Marshal(flowMeta)
 	//if err == nil {
@@ -485,7 +507,7 @@ func TestLoopFlow(t *testing.T) {
 	time.Sleep(time.Second * 1)
 	// send msg
 
-	for i:=0;i<4;i++ {
+	for i := 0; i < 4; i++ {
 		msg := fimpgo.NewBoolMessage("evt.binary.report", "out_bin_switch", true, nil, nil, nil)
 		adr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeDevice, ResourceName: "test", ResourceAddress: "1", ServiceName: "out_bin_switch", ServiceAddress: "199_0"}
 		mqtt.Publish(&adr, msg)
@@ -494,12 +516,11 @@ func TestLoopFlow(t *testing.T) {
 
 	//time.Sleep(time.Millisecond * 10)
 
-
 	time.Sleep(time.Second * 1)
 	variable, err := flow.GetContext().GetVariable("status", "TestLoopFlow")
 	if err != nil {
 		t.Error("Variable is not set", err)
-	}else if variable.Value.(string) == "reset" {
+	} else if variable.Value.(string) == "reset" {
 		t.Log("Ok ")
 	} else {
 		t.Error("Error.")
@@ -527,33 +548,37 @@ func TestTimeTriggerFlow(t *testing.T) {
 	flowMeta := model.FlowMeta{Id: "TestTimeTriggerFlow"}
 
 	node := model.MetaNode{Id: "1", Label: "Turn ever 1 second", Type: "time_trigger",
-		SuccessTransition: "2", Config:flownode.TimeTriggerConfig{Expressions:[]flownode.TimeExpression{ {Name:"every second",Expression:"@every 1s"} } }}
+		SuccessTransition: "2", Config: trigtime.NodeConfig{Expressions: []trigtime.TimeExpression{{Name: "every second", Expression: "@every 1s"}}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
-	node = model.MetaNode{Id: "2", Label: "Loop", Type: "loop", SuccessTransition: "4",ErrorTransition:"5",
-		Config: flownode.LoopNodeConfig{StartValue:0,EndValue:3}}
+	node = model.MetaNode{Id: "2", Label: "Loop", Type: "loop", SuccessTransition: "4", ErrorTransition: "5",
+		Config: loop.NodeConfig{StartValue: 0, EndValue: 3}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "4", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: flownode.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "counting", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "counting", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "5", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: flownode.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "reset", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, PersistOnUpdate: true, DefaultValue: model.Variable{Value: "reset", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 	//data, err := json.Marshal(flowMeta)
 	//if err == nil {
 	//	ioutil.WriteFile("testflow2.json", data, 0644)
 	//}
+	conReg := connector.NewRegistry("../testdata/var/connectors")
+	if err := conReg.LoadInstancesFromDisk(); err != nil {
+		t.Error("Failed init registry")
+	}
 	flow := NewFlow(flowMeta, ctx)
-	flow.LoadAndConfigureAllNodes()
+	flow.SetConnectorRegistry(conReg)
 	flow.Start()
 	time.Sleep(time.Second * 3)
 	// send msg
 	variable, err := flow.GetContext().GetVariable("status", "TestTimeTriggerFlow")
 	if err != nil {
 		t.Error("Variable is not set", err)
-	}else if variable.Value.(string) == "reset" {
+	} else if variable.Value.(string) == "reset" {
 		t.Log("Ok ")
 	} else {
 		t.Error("Error.")
@@ -564,4 +589,3 @@ func TestTimeTriggerFlow(t *testing.T) {
 	os.Remove("TestTimeTriggerFlow.db")
 
 }
-

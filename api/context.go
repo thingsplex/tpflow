@@ -11,20 +11,20 @@ import (
 )
 
 type ContextApi struct {
-	ctx *model.Context
+	ctx  *model.Context
 	echo *echo.Echo
 }
 
-func NewContextApi(ctx *model.Context,echo *echo.Echo) *ContextApi {
-	ctxApi := ContextApi{ctx:ctx,echo:echo}
+func NewContextApi(ctx *model.Context, echo *echo.Echo) *ContextApi {
+	ctxApi := ContextApi{ctx: ctx, echo: echo}
 	ctxApi.RegisterRestApi()
 	return &ctxApi
 }
 
-func (ctx * ContextApi) RegisterRestApi() {
+func (ctx *ContextApi) RegisterRestApi() {
 	ctx.echo.GET("/fimp/api/flow/context/:flowid", func(c echo.Context) error {
 		id := c.Param("flowid")
-		if id != "-"{
+		if id != "-" {
 			result := ctx.ctx.GetRecords(id)
 			return c.JSON(http.StatusOK, result)
 		}
@@ -45,7 +45,7 @@ func (ctx * ContextApi) RegisterRestApi() {
 			log.Error("<ContextApi> Can't unmarshal context record.")
 			return err
 		}
-		ctx.ctx.PutRecord(&rec,flowId,false)
+		ctx.ctx.PutRecord(&rec, flowId, false)
 
 		return c.JSON(http.StatusOK, rec)
 	})
@@ -53,15 +53,15 @@ func (ctx * ContextApi) RegisterRestApi() {
 	ctx.echo.DELETE("/fimp/api/flow/context/record/:flowid", func(c echo.Context) error {
 		// flowId is variable name here
 		name := c.Param("flowid")
-		log.Info("<ctx> Request to delete record with name ",name)
-		if name != ""{
-			err := ctx.ctx.DeleteRecord(name,"global",false)
+		log.Info("<ctx> Request to delete record with name ", name)
+		if name != "" {
+			err := ctx.ctx.DeleteRecord(name, "global", false)
 			return c.JSON(http.StatusOK, err)
 		}
-		return c.JSON(http.StatusOK,nil)
+		return c.JSON(http.StatusOK, nil)
 	})
 }
 
-func (ctx * ContextApi) RegisterMqttApi() {
+func (ctx *ContextApi) RegisterMqttApi() {
 
 }

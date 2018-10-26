@@ -19,11 +19,11 @@ import (
 
 // SetupLog configures default logger
 // Supported levels : info , degug , warn , error
-func SetupLog(logfile string, level string,logFormat string ) {
+func SetupLog(logfile string, level string, logFormat string) {
 	if logFormat == "json" {
-		log.SetFormatter(&log.JSONFormatter{TimestampFormat:"2006-01-02 15:04:05.999"})
-	}else {
-		log.SetFormatter(&log.TextFormatter{FullTimestamp: true, ForceColors: true,TimestampFormat:"2006-01-02T15:04:05.999"})
+		log.SetFormatter(&log.JSONFormatter{TimestampFormat: "2006-01-02 15:04:05.999"})
+	} else {
+		log.SetFormatter(&log.TextFormatter{FullTimestamp: true, ForceColors: true, TimestampFormat: "2006-01-02T15:04:05.999"})
 	}
 
 	logLevel, err := log.ParseLevel(level)
@@ -61,7 +61,7 @@ func main() {
 		panic("Can't load config file.")
 	}
 
-	SetupLog(configs.LogFile, configs.LogLevel,configs.LogFormat)
+	SetupLog(configs.LogFile, configs.LogLevel, configs.LogFormat)
 	log.Info("--------------Starting Thingsplex-Flow----------------")
 
 	//---------THINGS REGISTRY-------------
@@ -75,8 +75,7 @@ func main() {
 	if err != nil {
 		log.Error("Can't Init Flow manager . Error :", err)
 	}
-	flowManager.GetConnectorRegistry().AddConnection("thing_registry","thing_registry","thing_registry",thingRegistryStore)
-	flowManager.InitMessagingTransport()
+	flowManager.GetConnectorRegistry().AddConnection("thing_registry", "thing_registry", "thing_registry", thingRegistryStore)
 	err = flowManager.LoadAllFlowsFromStorage()
 	if err != nil {
 		log.Error("Can't load Flows from storage . Error :", err)
@@ -86,13 +85,12 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	fapi.NewContextApi(flowManager.GetGlobalContext(),e)
-	fapi.NewFlowApi(flowManager,e)
-	fapi.NewRegistryApi(thingRegistryStore,e)
-
+	fapi.NewContextApi(flowManager.GetGlobalContext(), e)
+	fapi.NewFlowApi(flowManager, e)
+	fapi.NewRegistryApi(thingRegistryStore, e)
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost:4200", "http:://localhost:8082","http:://localhost:8083"},
+		AllowOrigins: []string{"http://localhost:4200", "http:://localhost:8082", "http:://localhost:8083"},
 		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
 	}))
 
@@ -106,5 +104,5 @@ func main() {
 	thingRegistryStore.Disconnect()
 
 	log.Info("<main> Application is terminated")
-	
+
 }
