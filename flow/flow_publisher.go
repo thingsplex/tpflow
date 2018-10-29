@@ -5,6 +5,7 @@ import (
 	"github.com/alivinco/fimpgo/fimptype"
 	actfimp "github.com/alivinco/tpflow/node/action/fimp"
 	trigfimp "github.com/alivinco/tpflow/node/trigger/fimp"
+	"github.com/imdario/mergo"
 	"github.com/mitchellh/mapstructure"
 	"strings"
 )
@@ -87,7 +88,7 @@ func (fl *Flow) SendInclusionReport() {
 
 					if len(config.VirtualServiceProps) > 0 {
 						fl.getLog().Debug("Setting service props from Trigger :", config.VirtualServiceProps)
-						service.Props = config.VirtualServiceProps
+						mergo.Merge(&service.Props,config.VirtualServiceProps)
 					}
 					if new {
 						services = append(services, *service)

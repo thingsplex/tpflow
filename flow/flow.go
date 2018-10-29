@@ -138,14 +138,16 @@ func (fl *Flow) GetFlowStats() *model.FlowStatsReport {
 		stats.CurrentNodeId = currentNode.GetMetaNode().Id
 		stats.CurrentNodeLabel = currentNode.GetMetaNode().Label
 	}
-	var actTriggers = 0
+	var numberOfActiveTriggers = 0
+	var numberOfTrigger = 0
 	for i := range fl.nodes {
-		if fl.nodes[i].IsStartNode() {
-			actTriggers++
+		if fl.nodes[i].IsStartNode() && fl.nodes[i].IsReactorRunning() {
+			numberOfActiveTriggers++
 		}
 	}
 	stats.NumberOfActiveSubflows = fl.subflowsCounter
-	stats.NumberOfActiveTriggers = actTriggers
+	stats.NumberOfTriggers = numberOfTrigger
+	stats.NumberOfActiveTriggers = numberOfActiveTriggers
 	stats.StartedAt = fl.StartedAt
 	stats.WaitingSince = fl.WaitingSince
 	stats.LastExecutionTime = int64(fl.LastExecutionTime / time.Millisecond)

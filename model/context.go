@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	log "github.com/Sirupsen/logrus"
+
 	"github.com/boltdb/bolt"
 	"github.com/pkg/errors"
 	"math"

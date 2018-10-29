@@ -137,13 +137,14 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 	}
 	for {
 		start := time.Now()
-		node.GetLog().Debug("Waiting for msg")
+		//node.GetLog().Debug("Waiting for msg")
 		select {
 		case newMsg := <-node.msgInStream:
-			node.GetLog().Debug("--New message--")
+			//node.GetLog().Debug("--New message--")
 			if utils.RouteIncludesTopic(node.Meta().Address, newMsg.Topic) &&
 				(newMsg.Payload.Service == node.Meta().Service || node.Meta().Service == "*") &&
 				(newMsg.Payload.Type == node.Meta().ServiceInterface || node.Meta().ServiceInterface == "*") {
+				node.GetLog().Debug("--New message--")
 
 				if !node.config.IsValueFilterEnabled || ((newMsg.Payload.Value == node.config.ValueFilter.Value) && node.config.IsValueFilterEnabled) {
 					rMsg := model.Message{AddressStr: newMsg.Topic, Address: *newMsg.Addr, Payload: *newMsg.Payload}
@@ -154,7 +155,7 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 					go node.FlowRunner()(newEvent)
 				}
 			} else {
-				node.GetLog().Debug("Not interested .")
+				//node.GetLog().Debug("Not interested .")
 			}
 
 			if node.config.Timeout > 0 {

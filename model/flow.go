@@ -51,6 +51,7 @@ type FlowOperationalContext struct {
 type FlowStatsReport struct {
 	CurrentNodeId          NodeID
 	CurrentNodeLabel       string
+	NumberOfTriggers       int
 	NumberOfActiveTriggers int
 	NumberOfActiveSubflows int
 	State                  string
