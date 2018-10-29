@@ -75,7 +75,7 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 		}
 	}()
 	fl.getLog().Infof(" ---------Initializing Flow Id = %s , Name = %s -----------", fl.Id, fl.Name)
-	//var isNewNode = false
+	var err error
 	for _, metaNode := range fl.FlowMeta.Nodes {
 		if !fl.IsNodeValid(&metaNode) {
 			fl.getLog().Errorf(" Node %s contains invalid configuration parameters ",metaNode.Label)
@@ -84,34 +84,35 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 		}
 		newNode := fl.GetNodeById(metaNode.Id)
 		if newNode == nil {
-			//isNewNode = true
 			fl.getLog().Infof(" Loading node NEW . Type = %s , Label = %s", metaNode.Type, metaNode.Label)
 			constructor, ok := node.Registry[metaNode.Type]
 			if ok {
 				newNode = constructor(&fl.opContext, metaNode, fl.globalContext)
+				newNode.SetConnectorRegistry(fl.connectorRegistry)
+				err = newNode.LoadNodeConfig()
+				if err != nil {
+					fl.getLog().Errorf(" Node type %s can't be loaded . Error : %s", metaNode.Type, err)
+					fl.opContext.State = "CONFIG_ERROR"
+					return
+				}
 			} else {
-				fl.getLog().Errorf(" Node type = %s isn't supported", metaNode.Type)
-				//continue
+				fl.getLog().Errorf(" Node type = %s isn't supported. Node is skipped", metaNode.Type)
+				continue
 			}
 		} else {
 			fl.getLog().Infof(" Reusing existing node ")
 		}
 
-		newNode.SetConnectorRegistry(fl.connectorRegistry)
-		err := newNode.LoadNodeConfig()
-		if err == nil {
-			fl.getLog().Info(" Running Init() function of the node")
-			newNode.Init()
-			fl.getLog().Info(" Done")
-			fl.AddNode(newNode)
-			if newNode.IsStartNode() {
-				newNode.SetFlowRunner(fl.Run)
-				go newNode.WaitForEvent(nil)
-			}
-			fl.getLog().Info(" Node is loaded and added.")
-		} else {
-			fl.getLog().Errorf(" Node type %s can't be loaded . Error : %s", metaNode.Type, err)
+		fl.getLog().Info(" Running Init() function of the node")
+		newNode.Init()
+		fl.getLog().Info(" Done")
+		fl.AddNode(newNode)
+		if newNode.IsStartNode() {
+			newNode.SetFlowRunner(fl.Run)
+			go newNode.WaitForEvent(nil)
 		}
+		fl.getLog().Info(" Node is loaded and added.")
+
 	}
 	fl.opContext.State = "CONFIGURED"
 }

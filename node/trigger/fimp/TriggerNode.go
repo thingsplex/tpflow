@@ -78,6 +78,8 @@ func (node *TriggerNode) initSubscriptions() {
 
 		}
 	}
+	node.msgInStream = make(fimpgo.MessageCh, 10)
+	node.transport.RegisterChannel(node.msgInStreamName, node.msgInStream)
 }
 
 func (node *TriggerNode) LoadNodeConfig() error {
@@ -109,8 +111,7 @@ func (node *TriggerNode) LoadNodeConfig() error {
 		node.GetLog().Error("Connector registry doesn't have fimp instance")
 		return errors.New("can't find fimp connector")
 	}
-	node.msgInStream = make(fimpgo.MessageCh, 10)
-	node.transport.RegisterChannel(node.msgInStreamName, node.msgInStream)
+
 	return err
 }
 

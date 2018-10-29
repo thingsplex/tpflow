@@ -74,6 +74,8 @@ func (node *ReceiveNode) initSubscriptions() {
 			node.GetLog().Error("Can't subscribe to service with empty address")
 		}
 	}
+	node.msgInStream = make(fimpgo.MessageCh, 10)
+	node.transport.RegisterChannel(node.msgInStreamName, node.msgInStream)
 }
 
 func (node *ReceiveNode) LoadNodeConfig() error {
@@ -105,8 +107,7 @@ func (node *ReceiveNode) LoadNodeConfig() error {
 		node.GetLog().Error("Connector registry doesn't have fimp instance")
 		return errors.New("can't find fimp connector")
 	}
-	node.msgInStream = make(fimpgo.MessageCh, 10)
-	node.transport.RegisterChannel(node.msgInStreamName, node.msgInStream)
+
 
 	return err
 }
