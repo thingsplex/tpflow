@@ -119,7 +119,7 @@ func (node *ReceiveNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 		node.GetLog().Debug("Reactor-WaitForEvent is stopped ")
 	}()
 	node.GetLog().Debug("Reactor-Waiting for event .chan size = ", len(node.msgInStream))
-	start := time.Now()
+	//start := time.Now()
 	timeout := node.config.Timeout
 	if timeout == 0 {
 		timeout = 86400 // 24 hours
@@ -153,10 +153,10 @@ func (node *ReceiveNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 					}
 				}
 			}
-			if node.config.Timeout > 0 {
-				elapsed := time.Since(start)
-				timeout = timeout - int64(elapsed.Seconds())
-			}
+			//if node.config.Timeout > 0 {
+			//	elapsed := time.Since(start)
+			//	timeout = timeout - int64(elapsed.Seconds())
+			//}
 			node.GetLog().Debug("Not interested .")
 
 		case <-time.After(time.Second * time.Duration(timeout)):

@@ -138,7 +138,7 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 		timeout = 86400 // 24 hours
 	}
 	for {
-		start := time.Now()
+		//start := time.Now()
 		//node.GetLog().Debug("Waiting for msg")
 		select {
 		case newMsg := <-node.msgInStream:
@@ -160,10 +160,10 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 				//node.GetLog().Debug("Not interested .")
 			}
 
-			if node.config.Timeout > 0 {
-				elapsed := time.Since(start)
-				timeout = timeout - int64(elapsed.Seconds())
-			}
+			//if node.config.Timeout > 0 {
+			//	elapsed := time.Since(start)
+			//	timeout = timeout - int64(elapsed.Seconds())
+			//}
 
 		case <-time.After(time.Second * time.Duration(timeout)):
 			node.GetLog().Debug("Timeout ")

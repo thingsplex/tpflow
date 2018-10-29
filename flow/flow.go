@@ -229,15 +229,12 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 			fl.getLog().Errorf(" Crashed while processing message from Current Node = %v Next Node = %v ", fl.currentNodeIds[0], transitionNodeId)
 			transitionNodeId = ""
 		}
+		fl.LastExecutionTime = time.Since(fl.StartedAt)
 		fl.getLog().Infof(" ------Flow %s completed ----------- ", fl.Name)
 
 	}()
 
-	fl.LastExecutionTime = time.Since(fl.StartedAt)
 	fl.getLog().Infof(" ------Flow %s started ----------- ", fl.Name)
-	// Initial message received by trigger , which is passed further throughout the flow.
-	fl.WaitingSince = time.Now()
-
 	fl.StartedAt = time.Now()
 	//fl.getLog().Debug(" msg.payload : ",fl.currentMsg)
 	if reactorEvent.Err != nil {
