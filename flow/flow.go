@@ -69,29 +69,38 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 	defer func() {
 		if r := recover(); r != nil {
 			fl.getLog().Error(" Flow process CRASHED with error while doing node configuration : ", r)
-			fl.opContext.State = "INIT_FAIL"
+			fl.opContext.State = "CONFIG_ERROR"
 		}
 	}()
 	fl.getLog().Infof(" ---------Initializing Flow Id = %s , Name = %s -----------", fl.Id, fl.Name)
-	var isNewNode = false
+	//var isNewNode = false
 	for _, metaNode := range fl.FlowMeta.Nodes {
+		if !fl.IsNodeValid(&metaNode) {
+			fl.getLog().Errorf(" Node %s contains invalid configuration parameters ",metaNode.Label)
+			fl.opContext.State = "CONFIG_ERROR"
+			return
+		}
 		newNode := fl.GetNodeById(metaNode.Id)
 		if newNode == nil {
-			isNewNode = true
+			//isNewNode = true
 			fl.getLog().Infof(" Loading node NEW . Type = %s , Label = %s", metaNode.Type, metaNode.Label)
 			constructor, ok := node.Registry[metaNode.Type]
 			if ok {
 				newNode = constructor(&fl.opContext, metaNode, fl.globalContext)
 			} else {
 				fl.getLog().Errorf(" Node type = %s isn't supported", metaNode.Type)
-				continue
+				//continue
 			}
 		} else {
 			fl.getLog().Infof(" Reusing existing node ")
 		}
+
 		newNode.SetConnectorRegistry(fl.connectorRegistry)
 		err := newNode.LoadNodeConfig()
-		if err == nil && isNewNode {
+		if err == nil {
+			fl.getLog().Info(" Running Init() function of the node")
+			newNode.Init()
+			fl.getLog().Info(" Done")
 			fl.AddNode(newNode)
 			if newNode.IsStartNode() {
 				newNode.SetFlowRunner(fl.Run)
@@ -102,6 +111,7 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 			fl.getLog().Errorf(" Node type %s can't be loaded . Error : %s", metaNode.Type, err)
 		}
 	}
+	fl.opContext.State = "CONFIGURED"
 }
 
 func (fl *Flow) GetContext() *model.Context {
@@ -141,8 +151,11 @@ func (fl *Flow) GetFlowStats() *model.FlowStatsReport {
 	var numberOfActiveTriggers = 0
 	var numberOfTrigger = 0
 	for i := range fl.nodes {
-		if fl.nodes[i].IsStartNode() && fl.nodes[i].IsReactorRunning() {
-			numberOfActiveTriggers++
+		if fl.nodes[i].IsStartNode() {
+			numberOfTrigger++
+			if fl.nodes[i].IsReactorRunning() {
+				numberOfActiveTriggers++
+			}
 		}
 	}
 	stats.NumberOfActiveSubflows = fl.subflowsCounter
@@ -176,24 +189,24 @@ func (fl *Flow) IsNodeIdValid(currentNodeId model.NodeID, transitionNodeId model
 	return false
 }
 
-func (fl *Flow) IsFlowValid() bool {
-	var flowHasStartNode bool
-	for i := range fl.nodes {
-		node := fl.nodes[i].GetMetaNode()
+func (fl *Flow) IsNodeValid(node *model.MetaNode) bool {
+	//var flowHasStartNode bool
+	//for i := range fl.nodes {
+	//	node := fl.nodes[i].GetMetaNode()
 		if node.Type == "trigger" || node.Type == "action" || node.Type == "receive" {
 			if node.Address == "" || node.ServiceInterface == "" || node.Service == "" {
 				fl.getLog().Error(" Flow is not valid , node is not configured . Node ", node.Label)
 				return false
 			}
 		}
-		if fl.nodes[i].IsStartNode() {
-			flowHasStartNode = true
-		}
-	}
-	if !flowHasStartNode {
-		fl.getLog().Error(" Flow is not valid, start node not found")
-		return false
-	}
+		//if fl.nodes[i].IsStartNode() {
+		//	flowHasStartNode = true
+		//}
+	//}
+	//if !flowHasStartNode {
+	//	fl.getLog().Error(" Flow is not valid, start node not found")
+	//	return false
+	//}
 	return true
 }
 
@@ -309,18 +322,8 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 
 }
 
-//func (fl *Flow) IsFlowInterestedInMessage(topic string ) bool {
-//	for i :=range fl.activeSubscriptions {
-//		if utils.RouteIncludesTopic(fl.activeSubscriptions[i],topic) {
-//			return true
-//		}else {
-//			//fl.getLog().Debug(" Not interested in topic : ",topic)
-//		}
-//	}
-//	return false
-//}
-
 // Starts Flow loop in its own goroutine and sets isFlowRunning flag to true
+// Init sequence : STARTING -> RUNNING , STATING -> NOT_CONFIGURED ,
 func (fl *Flow) Start() error {
 	if fl.GetFlowState() == "RUNNING" {
 		log.Info("Flow is already running")
@@ -330,16 +333,14 @@ func (fl *Flow) Start() error {
 	fl.opContext.State = "STARTING"
 	fl.opContext.IsFlowRunning = true
 	fl.LoadAndConfigureAllNodes()
-	isFlowValid := fl.IsFlowValid()
-	if isFlowValid {
+	if fl.opContext.State == "CONFIGURED" {
 		// Init all nodes
-		for i := range fl.nodes {
-			fl.nodes[i].Init()
-		}
+		//for i := range fl.nodes {
+		//	fl.nodes[i].Init()
+		//}
 		fl.opContext.State = "RUNNING"
-		//fl.StartMsgStreamRouter()
+		fl.opContext.IsFlowRunning = true
 		fl.getLog().Infof(" Flow %s is running", fl.Name)
-		//go fl.Run()
 	} else {
 		fl.opContext.State = "NOT_CONFIGURED"
 		fl.getLog().Errorf(" Flow %s is not valid and will not be started.Flow should have at least one trigger or wait node ", fl.Name)

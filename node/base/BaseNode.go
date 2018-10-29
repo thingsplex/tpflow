@@ -101,7 +101,7 @@ func (node *BaseNode) IsReactorRunning() bool {
 	return node.isReactorRunning
 }
 
-// is invoked when node is started
+// is invoked right before is started but after node was configured
 func (node *BaseNode) Init() error {
 	return nil
 }

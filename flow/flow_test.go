@@ -436,6 +436,9 @@ func TestReceiveFlow(t *testing.T) {
 	flow := NewFlow(flowMeta, ctx)
 	flow.SetConnectorRegistry(conReg)
 	flow.Start()
+	// Start stop test
+	flow.Stop()
+	flow.Start()
 	time.Sleep(time.Second * 1)
 	// send msg
 
