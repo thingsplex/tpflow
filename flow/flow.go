@@ -6,6 +6,7 @@ import (
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node"
 	"github.com/pkg/errors"
+	"runtime/debug"
 	"sync"
 	"time"
 )
@@ -69,6 +70,7 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 	defer func() {
 		if r := recover(); r != nil {
 			fl.getLog().Error(" Flow process CRASHED with error while doing node configuration : ", r)
+			debug.PrintStack()
 			fl.opContext.State = "CONFIG_ERROR"
 		}
 	}()

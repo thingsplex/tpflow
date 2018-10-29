@@ -47,6 +47,7 @@ func NewTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode
 }
 
 func (node *TriggerNode) Init() error {
+	node.activeSubscriptions = []string{}
 	node.initSubscriptions()
 	return nil
 }

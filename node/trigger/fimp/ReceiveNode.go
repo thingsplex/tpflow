@@ -46,6 +46,7 @@ func NewReceiveNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode
 }
 
 func (node *ReceiveNode) Init() error {
+	node.activeSubscriptions = []string{}
 	node.initSubscriptions()
 	return nil
 }
