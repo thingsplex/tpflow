@@ -394,6 +394,91 @@ func TestTransformAddFlow(t *testing.T) {
 
 }
 
+
+func TestTransformJsonFlow(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+	mqtt := fimpgo.NewMqttTransport("tcp://localhost:1883", "flow_test", "", "", true, 1, 1)
+	err := mqtt.Start()
+	t.Log("Connected")
+	if err != nil {
+		t.Error("Error connecting to broker ", err)
+	}
+
+	mqtt.SetMessageHandler(onMsg)
+	time.Sleep(time.Second * 1)
+
+	ctx, err := model.NewContextDB("TestTransform.db")
+	flowMeta := model.FlowMeta{Id: "TestTransformFlow"}
+
+	node := model.MetaNode{Id: "1", Label: "Thermostat trigger 1", Type: "trigger", Address: "pt:j1/mt:cmd/rt:dev/rn:test/ad:1/sv:thermostat/ad:199_0", Service: "thermostat", ServiceInterface: "cmd.setpoint.set", SuccessTransition: "2"}
+	flowMeta.Nodes = append(flowMeta.Nodes, node)
+
+	node2 := model.MetaNode{Id: "1.1", Label: "Thermostat trigger 2", Type: "trigger", Address: "pt:j1/mt:cmd/rt:dev/rn:test/ad:1/sv:thermostat/ad:199_2", Service: "thermostat", ServiceInterface: "cmd.setpoint.set", SuccessTransition: "2.2"}
+	flowMeta.Nodes = append(flowMeta.Nodes, node2)
+
+	node = model.MetaNode{Id: "2", Label: "Add transform 1", Type: "transform", SuccessTransition: "",
+		Config: transform.NodeConfig{TransformType:"jpath",XPathMapping: []transform.TransformXPathRecord{
+			{
+				Name:                   "",
+				Path:                   "$.val.setpoint",
+				TargetVariableName:     "setpoint",
+				TargetVariableType:     "string",
+				IsTargetVariableGlobal: false,
+				UpdateInputVariable:    false,
+			},
+		}}}
+	flowMeta.Nodes = append(flowMeta.Nodes, node)
+
+
+	node = model.MetaNode{Id: "2.2", Label: "Add transform 2", Type: "transform", SuccessTransition: "",
+		Config: transform.NodeConfig{TransformType:"jpath",XPathMapping: []transform.TransformXPathRecord{
+			{
+				Name:                   "",
+				Path:                   "$.val.setpoint",
+				TargetVariableName:     "",
+				TargetVariableType:     "",
+				IsTargetVariableGlobal: false,
+				UpdateInputVariable:    true,
+			},
+		}}}
+	flowMeta.Nodes = append(flowMeta.Nodes, node)
+
+	conReg := connector.NewRegistry("../testdata/var/connectors")
+	if err := conReg.LoadInstancesFromDisk(); err != nil {
+		t.Error("Failed init registry")
+	}
+	flow := NewFlow(flowMeta, ctx)
+	flow.SetConnectorRegistry(conReg)
+	flow.Start()
+	time.Sleep(time.Second * 1)
+	val := make(map[string]string)
+	val["setpoint"] = "21.5"
+	val["type"] = "heating"
+	msg := fimpgo.NewStrMapMessage("cmd.setpoint.set", "thermostat",val , nil, nil, nil)
+	adr := fimpgo.Address{MsgType: fimpgo.MsgTypeCmd, ResourceType: fimpgo.ResourceTypeDevice, ResourceName: "test", ResourceAddress: "1", ServiceName: "thermostat", ServiceAddress: "199_0"}
+	mqtt.Publish(&adr, msg)
+
+	msg = fimpgo.NewStrMapMessage("cmd.setpoint.set", "thermostat",val , nil, nil, nil)
+	adr = fimpgo.Address{MsgType: fimpgo.MsgTypeCmd, ResourceType: fimpgo.ResourceTypeDevice, ResourceName: "test", ResourceAddress: "1", ServiceName: "thermostat", ServiceAddress: "199_2"}
+	mqtt.Publish(&adr, msg)
+
+	time.Sleep(time.Second * 3)
+	variable, err := flow.GetContext().GetVariable("setpoint", "TestTransformFlow")
+	//inputMessage := flow.GetCurrentMessage()
+	//t.Log("Result = ",inputMessage.Payload.Value)
+	if variable.Value.(string) == "21.5" {
+		t.Log("OK")
+	}else {
+		t.Error("Wrong value " )
+	}
+	flow.Stop()
+	// end
+	time.Sleep(time.Second * 2)
+	os.Remove("TestTransform.db")
+
+}
+
+
 func TestReceiveFlow(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	mqtt := fimpgo.NewMqttTransport("tcp://localhost:1883", "flow_test", "", "", true, 1, 1)

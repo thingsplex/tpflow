@@ -242,17 +242,23 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		} else if node.nodeConfig.TransformType == "jpath" || node.nodeConfig.TransformType == "xpath" {
 			node.GetLog().Info(" Doing XPATH transformation ")
 			for i := range node.nodeConfig.XPathMapping {
-				if node.nodeConfig.LVariableName != "" && lValue.ValueType=="object"{
-					rawPayload,err := json.Marshal(lValue.Value)
-					if err !=nil {
+
+				var rawPayload []byte
+
+				if node.nodeConfig.LVariableName == ""  {
+					rawPayload,err = json.Marshal(msg.Payload)
+				}else {
+					rawPayload,err = json.Marshal(lValue.Value)
+				}
+
+
+				if err !=nil {
 						node.GetLog().Warn(" Error while Marshaling variable : ", err)
 						return []model.NodeID{node.Meta().ErrorTransition}, err
-					}
-					msg2 := model.Message{RawPayload:rawPayload}
-					result.Value, err = model.GetValueByPath(&msg2, node.nodeConfig.TransformType, node.nodeConfig.XPathMapping[i].Path, node.nodeConfig.XPathMapping[i].TargetVariableType)
-				}else {
-					result.Value, err = model.GetValueByPath(msg, node.nodeConfig.TransformType, node.nodeConfig.XPathMapping[i].Path, node.nodeConfig.XPathMapping[i].TargetVariableType)
 				}
+				msg2 := model.Message{RawPayload:rawPayload}
+				result.Value, err = model.GetValueByPath(&msg2, node.nodeConfig.TransformType, node.nodeConfig.XPathMapping[i].Path, node.nodeConfig.XPathMapping[i].TargetVariableType)
+
 				result.ValueType = node.nodeConfig.XPathMapping[i].TargetVariableType
 				node.GetLog().Info(" Extracted value : ", result.Value)
 				if err != nil {
