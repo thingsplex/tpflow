@@ -95,6 +95,7 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 					fl.opContext.State = "CONFIG_ERROR"
 					return
 				}
+				fl.AddNode(newNode)
 			} else {
 				fl.getLog().Errorf(" Node type = %s isn't supported. Node is skipped", metaNode.Type)
 				continue
@@ -106,7 +107,6 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 		fl.getLog().Info(" Running Init() function of the node")
 		newNode.Init()
 		fl.getLog().Info(" Done")
-		fl.AddNode(newNode)
 		if newNode.IsStartNode() {
 			newNode.SetFlowRunner(fl.Run)
 			go newNode.WaitForEvent(nil)
@@ -161,6 +161,7 @@ func (fl *Flow) GetFlowStats() *model.FlowStatsReport {
 			}
 		}
 	}
+	stats.NumberOfNodes = len(fl.nodes)
 	stats.NumberOfActiveSubflows = fl.subflowsCounter
 	stats.NumberOfTriggers = numberOfTrigger
 	stats.NumberOfActiveTriggers = numberOfActiveTriggers
