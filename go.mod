@@ -6,7 +6,7 @@ require (
 	github.com/DataDog/zstd v1.3.4 // indirect
 	github.com/Sereal/Sereal v0.0.0-20180727013122-68c42fd7bfdf // indirect
 	github.com/Sirupsen/logrus v1.0.6
-	github.com/alivinco/fimpgo v1.0.0
+	github.com/alivinco/fimpgo v1.1.0
 	github.com/asdine/storm v2.1.1+incompatible
 	github.com/boltdb/bolt v1.3.1
 	github.com/buger/jsonparser v0.0.0-20180808090653-f4dd9f5a6b44 // indirect
@@ -35,16 +35,13 @@ require (
 	github.com/pkg/errors v0.8.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
-	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.0.6 // indirect
 	github.com/stretchr/testify v1.2.2 // indirect
 	github.com/valyala/bytebufferpool v0.0.0-20160817181652-e746df99fe4a // indirect
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 	github.com/vmihailenco/msgpack v4.0.0+incompatible // indirect
-	golang.org/x/crypto v0.0.0-20180830192347-182538f80094 // indirect
 	golang.org/x/net v0.0.0-20180826012351-8a410e7b638d // indirect
 	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f // indirect
-	golang.org/x/sys v0.0.0-20180831094639-fa5fdf94c789 // indirect
 	golang.org/x/text v0.3.0 // indirect
 	google.golang.org/appengine v1.1.0 // indirect
 	gopkg.in/airbrake/gobrake.v2 v2.0.9 // indirect

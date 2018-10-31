@@ -6,7 +6,6 @@ import (
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node/base"
 	"github.com/alivinco/tpflow/registry"
-	"github.com/alivinco/tpflow/utils"
 	"github.com/mitchellh/mapstructure"
 	"time"
 )
@@ -79,7 +78,12 @@ func (node *TriggerNode) initSubscriptions() {
 		}
 	}
 	node.msgInStream = make(fimpgo.MessageCh, 10)
-	node.transport.RegisterChannel(node.msgInStreamName, node.msgInStream)
+	node.transport.RegisterChannelWithFilter(node.msgInStreamName, node.msgInStream,fimpgo.FimpFilter{
+		Topic:     node.Meta().Address,
+		Service:   node.Meta().Service,
+		Interface: node.Meta().ServiceInterface,
+	})
+
 }
 
 func (node *TriggerNode) LoadNodeConfig() error {
@@ -143,21 +147,15 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 		select {
 		case newMsg := <-node.msgInStream:
 			//node.GetLog().Debug("--New message--")
-			if utils.RouteIncludesTopic(node.Meta().Address, newMsg.Topic) &&
-				(newMsg.Payload.Service == node.Meta().Service || node.Meta().Service == "*") &&
-				(newMsg.Payload.Type == node.Meta().ServiceInterface || node.Meta().ServiceInterface == "*") {
-				node.GetLog().Debug("--New message--")
+			node.GetLog().Debug("--New message--")
 
-				if !node.config.IsValueFilterEnabled || ((newMsg.Payload.Value == node.config.ValueFilter.Value) && node.config.IsValueFilterEnabled) {
+			if !node.config.IsValueFilterEnabled || ((newMsg.Payload.Value == node.config.ValueFilter.Value) && node.config.IsValueFilterEnabled) {
 					rMsg := model.Message{AddressStr: newMsg.Topic, Address: *newMsg.Addr, Payload: *newMsg.Payload}
 					newEvent := model.ReactorEvent{Msg: rMsg, TransitionNodeId: node.Meta().SuccessTransition}
 					if node.config.LookupServiceNameAndLocation {
 						node.LookupAddressToAlias(newEvent.Msg.AddressStr)
 					}
 					go node.FlowRunner()(newEvent)
-				}
-			} else {
-				//node.GetLog().Debug("Not interested .")
 			}
 
 			//if node.config.Timeout > 0 {

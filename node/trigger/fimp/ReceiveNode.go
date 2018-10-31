@@ -6,7 +6,6 @@ import (
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node/base"
 	"github.com/alivinco/tpflow/registry"
-	"github.com/alivinco/tpflow/utils"
 	"github.com/mitchellh/mapstructure"
 	"time"
 )
@@ -75,7 +74,11 @@ func (node *ReceiveNode) initSubscriptions() {
 		}
 	}
 	node.msgInStream = make(fimpgo.MessageCh, 10)
-	node.transport.RegisterChannel(node.msgInStreamName, node.msgInStream)
+	node.transport.RegisterChannelWithFilter(node.msgInStreamName, node.msgInStream,fimpgo.FimpFilter{
+		Topic:     node.Meta().Address,
+		Service:   node.Meta().Service,
+		Interface: node.Meta().ServiceInterface,
+	})
 }
 
 func (node *ReceiveNode) LoadNodeConfig() error {
@@ -129,10 +132,7 @@ func (node *ReceiveNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 		select {
 		case newMsg := <-node.msgInStream:
 			node.GetLog().Info("New message :")
-			if utils.RouteIncludesTopic(node.Meta().Address, newMsg.Topic) &&
-				(newMsg.Payload.Service == node.Meta().Service || node.Meta().Service == "*") &&
-				(newMsg.Payload.Type == node.Meta().ServiceInterface || node.Meta().ServiceInterface == "*") {
-				if !node.config.IsValueFilterEnabled {
+			if !node.config.IsValueFilterEnabled {
 					rMsg := model.Message{AddressStr: newMsg.Topic, Address: *newMsg.Addr, Payload: *newMsg.Payload}
 					newEvent := model.ReactorEvent{Msg: rMsg, TransitionNodeId: node.Meta().SuccessTransition}
 					select {
@@ -142,7 +142,7 @@ func (node *ReceiveNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 						node.GetLog().Debug("Message is dropped (no listeners) ")
 					}
 
-				} else if newMsg.Payload.Value == node.config.ValueFilter.Value {
+			} else if newMsg.Payload.Value == node.config.ValueFilter.Value {
 					rMsg := model.Message{AddressStr: newMsg.Topic, Address: *newMsg.Addr, Payload: *newMsg.Payload}
 					newEvent := model.ReactorEvent{Msg: rMsg, TransitionNodeId: node.Meta().SuccessTransition}
 					select {
@@ -151,13 +151,11 @@ func (node *ReceiveNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 					default:
 						node.GetLog().Debug("Message is dropped (no listeners) ")
 					}
-				}
 			}
 			//if node.config.Timeout > 0 {
 			//	elapsed := time.Since(start)
 			//	timeout = timeout - int64(elapsed.Seconds())
 			//}
-			node.GetLog().Debug("Not interested .")
 
 		case <-time.After(time.Second * time.Duration(timeout)):
 			node.GetLog().Debug(" Timeout ")
