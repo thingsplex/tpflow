@@ -137,7 +137,7 @@ func NewContextDB(storageLocation string) (*Context, error) {
 		return nil, err
 	}
 	ctx.RegisterFlow("global")
-	ctx.DeleteRecord("weather.temp", "global", false)
+	//ctx.DeleteRecord("weather.temp", "global", false)
 	return &ctx, nil
 }
 func (ctx *Context) Close() {

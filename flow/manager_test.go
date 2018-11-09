@@ -5,6 +5,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow"
+	"io/ioutil"
 	"testing"
 	"time"
 )
@@ -84,6 +85,26 @@ func TestManager_GenerateNewFlow(t *testing.T) {
 	data, _ := json.Marshal(flow)
 	man.UpdateFlowFromJsonAndSaveToStorage(flow.Id, data)
 }
+
+func TestManager_ImportFlow(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+	config := tpflow.Configs{FlowStorageDir: "../testdata/var/flow_storage",ContextStorageDir:"../testdata/var/flow_storage/context.db"}
+	man, err := NewManager(config)
+	if err != nil {
+		t.Error(err)
+	}
+
+	sourceFlow ,err := ioutil.ReadFile("../testdata/var/flow_storage/import_source.json")
+	if err != nil {
+		t.Error("Can't load source file")
+		return
+	}
+	err = man.ImportFlow(sourceFlow)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 
 func TestManager_GetFlowList(t *testing.T) {
 	log.SetLevel(log.DebugLevel)

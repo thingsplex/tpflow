@@ -29,6 +29,8 @@ type FlowMeta struct {
 	ClassId     string // Class id , all instances share the same ClassId
 	Author      string
 	Version     int
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 	Name        string
 	Group       string
 	Description string

@@ -8,6 +8,8 @@ import (
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node/trigger/fimp"
 	"github.com/alivinco/tpflow/utils"
+	"time"
+
 	//thingsplexmodel "github.com/alivinco/thingsplex/model"
 	"io/ioutil"
 	"os"
@@ -40,6 +42,10 @@ func NewManager(config tpflow.Configs) (*Manager, error) {
 	man.msgStreams = make(map[string]model.MsgPipeline)
 	man.flowRegistry = make([]*Flow, 0)
 	man.globalContext, err = model.NewContextDB(config.ContextStorageDir)
+	if err !=nil {
+		log.Error("Can't initialize context DB")
+		return nil,err
+	}
 	man.globalContext.RegisterFlow("global")
 	man.connectorRegistry = *connector.NewRegistry(config.ConnectorStorageDir)
 	man.connectorRegistry.LoadInstancesFromDisk()
@@ -50,6 +56,9 @@ func (mg *Manager) GenerateNewFlow() model.FlowMeta {
 	fl := model.FlowMeta{}
 	fl.Nodes = []model.MetaNode{{Id: "1", Type: "trigger", Label: "no label", Config: fimp.TriggerConfig{Timeout: 0, ValueFilter: model.Variable{}, IsValueFilterEnabled: false}}}
 	fl.Id = utils.GenerateId(15)
+	fl.ClassId = fl.Id
+	fl.CreatedAt = time.Now()
+	fl.UpdatedAt = fl.CreatedAt
 	return fl
 }
 
@@ -125,14 +134,33 @@ func (mg *Manager) ImportFlow(flowJsonDef []byte) error {
 	flowMeta := model.FlowMeta{}
 	err := json.Unmarshal(flowJsonDef, &flowMeta)
 	if err != nil {
-		log.Error("<FlMan> Can't unmarshel imported flow.")
+		log.Error("<FlMan> Can't unmarshel imported flow 1.")
 		return err
 	}
 	oldId := flowMeta.Id
+	// Replacing all old flow id's with new id.
 	flowAsString := string(flowJsonDef)
 	flowAsStringUpdated := strings.Replace(flowAsString, oldId, newId, -1)
+
+	// Updating class id
+	err = json.Unmarshal([]byte(flowAsStringUpdated), &flowMeta)
+	if err != nil {
+		log.Error("<FlMan> Can't unmarshel imported flow 2.")
+		return err
+	}
+
+	flowMeta.ClassId = oldId
+	flowMeta.CreatedAt = time.Now()
+	flowMeta.UpdatedAt = flowMeta.CreatedAt
+	flowMetaByte,err := json.Marshal(&flowMeta)
+
+	if err != nil {
+		log.Error("<FlMan> Can't marshar imported flow ")
+		return err
+	}
+
 	fileName := mg.GetFlowFileNameById(newId)
-	err = ioutil.WriteFile(fileName, []byte(flowAsStringUpdated), 0644)
+	err = ioutil.WriteFile(fileName, flowMetaByte, 0644)
 	if err != nil {
 		log.Error("Can't save flow to file . Error : ", err)
 		return err
@@ -145,7 +173,7 @@ func (mg *Manager) ImportFlow(flowJsonDef []byte) error {
 func (mg *Manager) UpdateFlowFromJsonAndSaveToStorage(id string, flowJsonDef []byte) error {
 	fileName := mg.GetFlowFileNameById(id)
 	log.Debugf("<FlMan> Saving flow to file %s , data size %d :", fileName, len(flowJsonDef))
-
+	// TODO: Update UpdateAt field .
 	err := ioutil.WriteFile(fileName, flowJsonDef, 0644)
 	if err != nil {
 		log.Error("Can't save flow to file . Error : ", err)
