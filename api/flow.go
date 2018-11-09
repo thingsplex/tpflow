@@ -66,7 +66,16 @@ func (ctx *FlowApi) RegisterRestApi() {
 		return c.NoContent(http.StatusOK)
 	})
 
-	ctx.echo.POST("/fimp/flow/definition/import_from_url", func(c echo.Context) error {
+	ctx.echo.PUT("/fimp/flow/definition/import", func(c echo.Context) error {
+		body, err := ioutil.ReadAll(c.Request().Body)
+		if err != nil {
+			return err
+		}
+		ctx.flowManager.ImportFlow(body)
+		return c.NoContent(http.StatusOK)
+	})
+
+	ctx.echo.PUT("/fimp/flow/definition/import_from_url", func(c echo.Context) error {
 
 		body, err := ioutil.ReadAll(c.Request().Body)
 		if err != nil {

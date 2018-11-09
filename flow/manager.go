@@ -8,6 +8,7 @@ import (
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node/trigger/fimp"
 	"github.com/alivinco/tpflow/utils"
+	"runtime/debug"
 	"time"
 
 	//thingsplexmodel "github.com/alivinco/thingsplex/model"
@@ -92,6 +93,12 @@ func (mg *Manager) LoadAllFlowsFromStorage() error {
 }
 
 func (mg *Manager) LoadFlowFromFile(fileName string) error {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("-------ERROR 1 Flow can't be loaded from file : ", r)
+			debug.PrintStack()
+		}
+	}()
 	log.Info("<FlMan> Loading flow from file : ", fileName)
 	file, err := ioutil.ReadFile(fileName)
 	if err != nil {
@@ -225,6 +232,12 @@ func (mg *Manager) ControlFlow(cmd string, flowId string) error {
 }
 
 func (mg *Manager) StartFlow(flowId string) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("-------ERROR 2 Flow can't be loaded from file : ", r)
+			debug.PrintStack()
+		}
+	}()
 	flow := mg.GetFlowById(flowId)
 	if flow.GetFlowState() != "RUNNING" {
 		//flow.SetMessageStream(mg.GetNewStream(flow.Id))
