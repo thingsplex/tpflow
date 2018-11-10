@@ -13,6 +13,8 @@ import (
 func TestNode_OnInput_Calc(t *testing.T) {
 
 	ctx, err := model.NewContextDB("TestTransform.db")
+	ctx.SetVariable("temp","float",20.0,"","test",true)
+	ctx.SetVariable("var2","float",10.0,"","test",true)
 	meta  := model.MetaNode{
 		Id:                "2",
 		Type:              "transform",
@@ -24,13 +26,14 @@ func TestNode_OnInput_Calc(t *testing.T) {
 		Service:           "",
 		ServiceInterface:  "",
 		Config:            NodeConfig{
-			TargetVariableName:     "",
-			TargetVariableType:     "",
+			TargetVariableName:     "result_var",
+			TargetVariableType:     "bool",
 			IsTargetVariableGlobal: false,
+			IsTargetVariableInMemory:true,
 			TransformType:          "calc",
 			IsRVariableGlobal:      false,
 			IsLVariableGlobal:      false,
-			Operation:              "add",
+			Expression:             "(temp+var2+input)==35",
 			RType:                  "",
 			RValue:                 model.Variable{ValueType: "int", Value: int(2)},
 			RVariableName:          "",
@@ -74,8 +77,12 @@ func TestNode_OnInput_Calc(t *testing.T) {
 	}
 
 
-	if msg.Payload.Value.(int64) != 7 {
-		t.Error("Wrong result = ",msg.Payload.Value.(int))
+	//if msg.Payload.Value.(int64) != 7 {
+	//	t.Error("Wrong result = ",msg.Payload.Value.(int))
+	//}
+	rvar,err := ctx.GetVariable("result_var","test")
+	if !rvar.Value.(bool) {
+		t.Error("Wrong result = ",rvar.Value)
 	}
 
 	ctx.Close()
@@ -105,7 +112,7 @@ func TestNode_OnInput_Jpath(t *testing.T) {
 			TransformType:          "jpath",
 			IsRVariableGlobal:      false,
 			IsLVariableGlobal:      false,
-			Operation:              "",
+			Expression:              "",
 			RType:                  "",
 			RVariableName:          "",
 			LVariableName:          "temp_report",

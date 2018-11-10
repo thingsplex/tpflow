@@ -4,6 +4,7 @@ require (
 	github.com/BurntSushi/toml v0.3.0 // indirect
 	github.com/ChrisTrenkamp/goxpath v0.0.0-20170922090931-c385f95c6022
 	github.com/DataDog/zstd v1.3.4 // indirect
+	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/Sereal/Sereal v0.0.0-20180727013122-68c42fd7bfdf // indirect
 	github.com/Sirupsen/logrus v1.0.6
 	github.com/alivinco/fimpgo v1.1.0

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/Knetic/govaluate"
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node/base"
 	"github.com/mitchellh/mapstructure"
@@ -15,16 +16,18 @@ type Node struct {
 	ctx        *model.Context
 	nodeConfig NodeConfig
 	template   *template.Template
+	expression *govaluate.EvaluableExpression
 }
 
 type NodeConfig struct {
 	TargetVariableName     string // Variable
 	TargetVariableType     string
 	IsTargetVariableGlobal bool
+	IsTargetVariableInMemory bool
 	TransformType          string               // map , calc , str-to-json ,json-to-str , jpath , xpath , template
 	IsRVariableGlobal      bool                 // true - update global variable ; false - update local variable
 	IsLVariableGlobal      bool                 // true - update global variable ; false - update local variable
-	Operation              string               // type of transform operation , flip , add , subtract , multiply , divide , to_bool
+	Expression             string               // type of transform operation , flip , add , subtract , multiply , divide , to_bool
 	RType                  string               // var , const
 	RValue                 model.Variable       // Constant Right variable value .
 	RVariableName          string               // Right variable name , if empty , RValue will be used instead
@@ -96,6 +99,12 @@ func (node *Node) LoadNodeConfig() error {
 			node.GetLog().Error(" Failed while parsing request template.Error:", err)
 			return err
 		}
+	}else if node.nodeConfig.TransformType == "calc" {
+		node.expression, err = govaluate.NewEvaluableExpression(node.nodeConfig.Expression)
+		if err != nil {
+			node.GetLog().Error("Can't parse calc expression",err)
+		}
+
 	}
 
 	return nil
@@ -156,73 +165,26 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			node.nodeConfig.TransformType == "template" || node.nodeConfig.TransformType == "map") {
 
 		if node.nodeConfig.TransformType == "calc" {
-			switch node.nodeConfig.Operation {
-			case "flip":
-				if lValue.ValueType == "bool" {
-					val, ok := rValue.Value.(bool)
-					if ok {
-						result.Value = !val
-						result.ValueType = rValue.ValueType
-					} else {
-						node.GetLog().Error(" Value type is not bool. Has to bool")
-						return []model.NodeID{node.Meta().ErrorTransition}, err
-					}
-				} else {
-					node.GetLog().Warn(" Only bool variable can be flipped")
-					return []model.NodeID{node.Meta().ErrorTransition}, err
-				}
-			case "to_bool":
-				if lValue.IsNumber() {
-					val, err := lValue.ToNumber()
-					if err == nil {
-						if val == 0 {
-							result.Value = false
-						} else {
-							result.Value = true
-						}
-						result.ValueType = "bool"
-					} else {
-						node.GetLog().Error(" Value type is not number.")
-					}
-				} else {
-					node.GetLog().Warn(" Only numeric value can be converted into bool")
-					return []model.NodeID{node.Meta().ErrorTransition}, err
-				}
-			case "add", "subtract", "multiply", "divide":
-				if lValue.IsNumber() {
-					rval, err := rValue.ToNumber()
-					lval, err := lValue.ToNumber()
-					var calcResult float64
-					if err == nil {
-						switch node.nodeConfig.Operation {
-						case "add":
-							calcResult = lval + rval
-						case "subtract":
-							calcResult = lval - rval
-						case "multiply":
-							calcResult = lval * rval
-						case "divide":
-							calcResult = lval / rval
-						default:
-							node.GetLog().Warn(" Unknown arithmetic operator")
-						}
-						if rValue.ValueType == "float" {
-							result.Value = calcResult
-						} else {
-							result.Value = int64(calcResult)
-						}
-						result.ValueType = lValue.ValueType
 
-					} else {
-						node.GetLog().Error(" Value type is not number.")
-						return []model.NodeID{node.Meta().ErrorTransition}, err
-					}
-				} else {
-					node.GetLog().Warn(" Only numeric value can be used for arithmetic operations")
-					return []model.NodeID{node.Meta().ErrorTransition}, err
-				}
-
+			if node.expression == nil {
+				node.GetLog().Warn(" Wrong expression")
+				return []model.NodeID{node.Meta().ErrorTransition}, err
 			}
+			parameters := make(map[string]interface{}, 8)
+			parameters["input"] = msg.Payload.Value
+
+			records := node.ctx.GetRecords(node.FlowOpCtx().FlowId)
+
+			for i := range records{
+				parameters[records[i].Name] = records[i].Variable.Value
+			}
+			r , err := node.expression.Evaluate(parameters)
+			if err != nil {
+				return []model.NodeID{node.Meta().ErrorTransition}, err
+			}
+			result.Value = r
+			result.ValueType = node.nodeConfig.TargetVariableType
+
 		} else if node.nodeConfig.TransformType == "map" {
 			for i := range node.nodeConfig.ValueMapping {
 				//node.GetLog().Debug(" record Value ",node.nodeConfig.ValueMapping[i].LValue.Value)
@@ -274,9 +236,9 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 					// Save default value from node config to variable
 					node.GetLog().Info(" Setting transformed variable : ")
 					if node.nodeConfig.XPathMapping[i].IsTargetVariableGlobal {
-						node.ctx.SetVariable(node.nodeConfig.XPathMapping[i].TargetVariableName, result.ValueType, result.Value, "", "global", false)
+						node.ctx.SetVariable(node.nodeConfig.XPathMapping[i].TargetVariableName, result.ValueType, result.Value, "", "global", node.nodeConfig.IsTargetVariableInMemory)
 					} else {
-						node.ctx.SetVariable(node.nodeConfig.XPathMapping[i].TargetVariableName, result.ValueType, result.Value, "", node.FlowOpCtx().FlowId, false)
+						node.ctx.SetVariable(node.nodeConfig.XPathMapping[i].TargetVariableName, result.ValueType, result.Value, "", node.FlowOpCtx().FlowId, node.nodeConfig.IsTargetVariableInMemory)
 					}
 
 				}
@@ -313,9 +275,9 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		// Save value into variable
 		// Save default value from node config to variable
 		if node.nodeConfig.IsTargetVariableGlobal {
-			node.ctx.SetVariable(node.nodeConfig.TargetVariableName, result.ValueType, result.Value, "", "global", false)
+			node.ctx.SetVariable(node.nodeConfig.TargetVariableName, result.ValueType, result.Value, "", "global", node.nodeConfig.IsTargetVariableInMemory)
 		} else {
-			node.ctx.SetVariable(node.nodeConfig.TargetVariableName, result.ValueType, result.Value, "", node.FlowOpCtx().FlowId, false)
+			node.ctx.SetVariable(node.nodeConfig.TargetVariableName, result.ValueType, result.Value, "", node.FlowOpCtx().FlowId, node.nodeConfig.IsTargetVariableInMemory)
 		}
 
 	}
