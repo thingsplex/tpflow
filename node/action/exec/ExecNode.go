@@ -92,6 +92,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		}
 	}
 	output, err := cmd.CombinedOutput()
+
 	node.GetLog().Debug("Normal output : ", string(output))
 	if err != nil {
 		node.GetLog().Debug("Err output : ", err.Error())

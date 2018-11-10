@@ -118,6 +118,7 @@ type ContextRecord struct {
 	Description string
 	UpdatedAt   time.Time
 	Variable    Variable
+	InMemory    bool
 }
 
 type Context struct {
@@ -235,6 +236,7 @@ func (ctx *Context) GetRecord(name string, flowId string) (*ContextRecord, error
 	// check memmory first
 	rec := ctx.inMemoryStore.Get(flowId, name)
 	if rec != nil {
+		rec.InMemory = true
 		return rec, nil
 	}
 
@@ -289,6 +291,9 @@ func (ctx *Context) GetRecords(flowId string) []ContextRecord {
 	//
 	memResult, err := ctx.inMemoryStore.GetRecordsForFlow(flowId)
 	if err == nil {
+		for i := range memResult {
+			memResult[i].InMemory = true
+		}
 		result = append(result, memResult...)
 	} else {
 		log.Error("Can't get records from memory store , err :", err)

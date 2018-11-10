@@ -172,6 +172,8 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			}
 			parameters := make(map[string]interface{}, 8)
 			parameters["input"] = msg.Payload.Value
+			parameters["variable"] = lValue.Value
+
 
 			records := node.ctx.GetRecords(node.FlowOpCtx().FlowId)
 
