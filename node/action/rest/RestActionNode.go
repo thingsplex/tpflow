@@ -296,6 +296,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	}
 
 	if node.config.HeadersVariableName != "" {
+		node.GetLog().Debug("HeadersVariableName is set")
 		headers , err := node.ctx.GetVariable(node.config.HeadersVariableName,node.FlowOpCtx().FlowId)
 		if err == nil {
 			headersMap , ok := headers.Value.(map[string]string)
@@ -303,8 +304,13 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 				for k := range headersMap {
 					req.Header.Add(k,headersMap[k])
 				}
+			}else {
+				node.GetLog().Debug("Can't cast header variable")
 			}
+		}else {
+			node.GetLog().Debug("Can't load headers variable, err:",err)
 		}
+
 	}
 
 	if err != nil {

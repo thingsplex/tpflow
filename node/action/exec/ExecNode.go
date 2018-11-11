@@ -26,6 +26,7 @@ type NodeConfig struct {
 	IsInputVariableGlobal  bool
 	OutputVariableName     string
 	IsOutputVariableGlobal bool
+
 	IsOutputJson           bool
 	IsInputJson            bool
 }
