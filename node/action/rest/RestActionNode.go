@@ -55,6 +55,7 @@ type NodeConfig struct {
 	RequestPayloadType   string // json,xml,string
 	RequestTemplate      string
 	Headers              []Header
+	HeadersVariableName  string // header variable should be of type map_str
 	ResponseMapping      []ResponseToVariableMap
 	LogResponse          bool
 	Auth                 OAuth
@@ -294,6 +295,18 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		req.Header.Add(node.config.Headers[i].Name, node.config.Headers[i].Value)
 	}
 
+	if node.config.HeadersVariableName != "" {
+		headers , err := node.ctx.GetVariable(node.config.HeadersVariableName,node.FlowOpCtx().FlowId)
+		if err == nil {
+			headersMap , ok := headers.Value.(map[string]string)
+			if ok {
+				for k := range headersMap {
+					req.Header.Add(k,headersMap[k])
+				}
+			}
+		}
+	}
+
 	if err != nil {
 		return []model.NodeID{node.Meta().ErrorTransition}, err
 	}
@@ -315,6 +328,8 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		}
 		return nil
 	}
+
+	node.GetLog().Debugf("Request headers :%v",req.Header)
 
 	resp, err := node.httpClient.Do(req)
 	if err != nil {

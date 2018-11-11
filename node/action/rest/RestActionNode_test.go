@@ -22,6 +22,7 @@ func TestNode_OnInput_Jpath(t *testing.T) {
 			RequestPayloadType:   "",
 			RequestTemplate:      "{'param1':{{.Variable}} }",
 			Headers:              nil,
+			HeadersVariableName:"customHeaders",
 			ResponseMapping: []ResponseToVariableMap{{
 				Name:                 "Host",
 				Path:                 "$.headers.Host",
@@ -78,6 +79,11 @@ func TestNode_OnInput_Jpath(t *testing.T) {
 		CreationTime:  time.Time{},
 		UID:           "",
 	}}
+
+	customHeaders := make(map[string]string)
+	customHeaders["Object"]= "one"
+
+	ctx.SetVariable("customHeaders","map_str",customHeaders,"",flowId,true)
 	_, err = node.OnInput(&msg)
 
 	if err != nil {
