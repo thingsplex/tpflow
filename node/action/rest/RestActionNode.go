@@ -299,10 +299,11 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		node.GetLog().Debug("HeadersVariableName is set")
 		headers , err := node.ctx.GetVariable(node.config.HeadersVariableName,node.FlowOpCtx().FlowId)
 		if err == nil {
-			headersMap , ok := headers.Value.(map[string]string)
+			headersMap , ok := headers.Value.(map[string]interface{})
 			if ok {
 				for k := range headersMap {
-					req.Header.Add(k,headersMap[k])
+					v,_ := headersMap[k].(string)
+					req.Header.Add(k,v)
 				}
 			}else {
 				node.GetLog().Debug("Can't cast header variable")
