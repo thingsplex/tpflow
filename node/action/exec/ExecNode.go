@@ -74,21 +74,31 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	case "sh-cmd":
 		cmd = exec.Command("bash", "-c", node.config.Command)
 	case "python":
-		if node.config.IsInputJson {
-
-			if msg.Payload.ValueType == "object" {
-				var val interface{}
-				msg.Payload.GetObjectValue(&val)
-				msg.Payload.Value = val
-				node.GetLog().Debug("Input value : ", val)
-			}
-			strMsg, err := json.Marshal(msg)
-			if err != nil {
-				return []model.NodeID{node.Meta().ErrorTransition}, err
-			}
-			cmd = exec.Command("python3", node.scriptFullPath, string(strMsg))
+		var iValue model.Variable
+		if node.config.InputVariableName == "" {
+			// Use input message
+			iValue.Value = msg.Payload.Value
+			iValue.ValueType = msg.Payload.ValueType
 		} else {
-			cmd = exec.Command("python3", node.scriptFullPath)
+			// Use variable
+			if node.config.IsInputVariableGlobal {
+				iValue, _ = node.ctx.GetVariable(node.config.InputVariableName, "global")
+			} else {
+				iValue, _ = node.ctx.GetVariable(node.config.InputVariableName, node.FlowOpCtx().FlowId)
+			}
+		}
+		if node.config.IsInputJson {
+			if iValue.ValueType == "object" {
+				node.GetLog().Debug("Input value : ", iValue.Value)
+				strMsg, err := json.Marshal(iValue.Value)
+				if err != nil {
+					return []model.NodeID{node.Meta().ErrorTransition}, err
+				}
+				cmd = exec.Command("python3", node.scriptFullPath, string(strMsg))
+			}
+		} else {
+			param,_ := iValue.Value.(string)
+			cmd = exec.Command("python3", node.scriptFullPath,param)
 		}
 	}
 	output, err := cmd.CombinedOutput()

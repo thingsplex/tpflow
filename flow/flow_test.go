@@ -279,7 +279,7 @@ func TestTransformFlipFlow(t *testing.T) {
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "2", Label: "Set variable", Type: "transform", SuccessTransition: "",
-		Config: transform.NodeConfig{Operation: "flip"}}
+		Config: transform.NodeConfig{Expression: "flip"}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 	flow := NewFlow(flowMeta, ctx)
 	flow.LoadAndConfigureAllNodes()
@@ -290,10 +290,7 @@ func TestTransformFlipFlow(t *testing.T) {
 	mqtt.Publish(&adr, msg)
 	time.Sleep(time.Second * 1)
 	//variable, err := flow.GetContext().GetVariable("volume", "TestSetVariableFlow")
-	//inputMessage := flow.GetCurrentMessage()
-	//if inputMessage.Payload.Value.(bool) != true {
-	//	t.Error("Wrong value " )
-	//}
+	//TODO :Validate result.
 	flow.Stop()
 	// end
 	time.Sleep(time.Second * 2)
@@ -320,27 +317,70 @@ func TestRestActionFlow(t *testing.T) {
 	node := model.MetaNode{Id: "1", Label: "Button trigger", Type: "trigger", Address: "pt:j1/mt:evt/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:199_0", Service: "out_bin_switch", ServiceInterface: "evt.binary.report", SuccessTransition: "2"}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
-	//node = model.MetaNode{Id: "2", Label: "Invoke httpbin", Type: "rest_action", SuccessTransition: "",
-	//	Config:flownode.RestActionNodeConfig{Method:"POST",Url:"https://httpbin.org/post",RequestTemplate:"{'param1':{{.Variable}} }"}}
+	node = model.MetaNode{Id: "2", Label: "Invoke httpbin", Type: "rest_action", SuccessTransition: "",
+		Config:rest.NodeConfig{
+			Url:                  "https://httpbin.org/post",
+			Method:               "POST",
+			TemplateVariableName: "",
+			IsVariableGlobal:     false,
+			RequestPayloadType:   "",
+			RequestTemplate:      "{'param1':{{.Variable}} }",
+			Headers:              nil,
+			ResponseMapping: []rest.ResponseToVariableMap{{
+				Name:                 "Host",
+				Path:                 "$.headers.Host",
+				PathType:             "json",
+				TargetVariableName:   "host",
+				IsVariableGlobal:     false,
+				TargetVariableType:   "string",
+				UpdateTriggerMessage: false,
+			},{
+				Name:                 "Connection",
+				Path:                 "$.headers.Connection",
+				PathType:             "json",
+				TargetVariableName:   "connection",
+				IsVariableGlobal:     false,
+				TargetVariableType:   "string",
+				UpdateTriggerMessage: false,
+			}},
+			LogResponse:          true,
+			Auth: rest.OAuth{
+				Enabled:      false,
+				GrantType:    "",
+				Url:          "",
+				ClientID:     "",
+				ClientSecret: "",
+				Scope:        "",
+				Username:     "",
+				Password:     "",
+			},
+		}}
 
-	node = model.MetaNode{Id: "2", Label: "Turn off yamaha", Type: "rest_action", SuccessTransition: "",
-		Config: rest.NodeConfig{Method: "POST", Url: "http://yamaha.st/YamahaRemoteControl/ctrl",
-			RequestTemplate: "<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Power_Control><Power>On</Power></Power_Control></Main_Zone></YAMAHA_AV>"}}
-
+	//node = model.MetaNode{Id: "2", Label: "Turn off yamaha", Type: "rest_action", SuccessTransition: "",
+	//	Config: rest.NodeConfig{Method: "POST", Url: "http://yamaha.st/YamahaRemoteControl/ctrl",
+	//		RequestTemplate: "<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Power_Control><Power>On</Power></Power_Control></Main_Zone></YAMAHA_AV>"}}
+	conReg := connector.NewRegistry("../testdata/var/connectors")
+	if err := conReg.LoadInstancesFromDisk(); err != nil {
+		t.Error("Failed init registry")
+	}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 	flow := NewFlow(flowMeta, ctx)
+	flow.SetConnectorRegistry(conReg)
 	flow.LoadAndConfigureAllNodes()
 	flow.Start()
 	time.Sleep(time.Second * 1)
 	msg := fimpgo.NewBoolMessage("evt.binary.report", "out_bin_switch", false, nil, nil, nil)
 	adr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeDevice, ResourceName: "test", ResourceAddress: "1", ServiceName: "out_bin_switch", ServiceAddress: "199_0"}
 	mqtt.Publish(&adr, msg)
-	time.Sleep(time.Second * 1)
-	//variable, err := flow.GetContext().GetVariable("volume", "TestSetVariableFlow")
+	time.Sleep(time.Second * 2)
+	variable1, err := flow.GetContext().GetVariable("connection", "TestRestActionFlow")
+	variable2, err := flow.GetContext().GetVariable("host", "TestRestActionFlow")
 	//inputMessage := flow.GetCurrentMessage()
-	//if inputMessage.Payload.Value.(bool) != true {
-	//	t.Error("Wrong value " )
-	//}
+	if variable1.Value.(string) == "close" && variable2.Value.(string) == "httpbin.org" {
+		t.Log("All good.")
+	}else {
+		t.Error("Wrong value " )
+	}
 	flow.Stop()
 	// end
 	time.Sleep(time.Second * 2)
@@ -367,7 +407,7 @@ func TestTransformAddFlow(t *testing.T) {
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "2", Label: "Add transform", Type: "transform", SuccessTransition: "",
-		Config: transform.NodeConfig{Operation: "add", RValue: model.Variable{ValueType: "int", Value: int(2)}}}
+		Config: transform.NodeConfig{Expression: "add", RValue: model.Variable{ValueType: "int", Value: int(2)}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 	conReg := connector.NewRegistry("../testdata/var/connectors")
 	if err := conReg.LoadInstancesFromDisk(); err != nil {

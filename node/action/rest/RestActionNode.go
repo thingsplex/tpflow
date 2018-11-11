@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/ChrisTrenkamp/goxpath"
+	"github.com/ChrisTrenkamp/goxpath/tree"
 	"github.com/ChrisTrenkamp/goxpath/tree/xmltree"
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node/base"
@@ -209,7 +210,7 @@ func (node *Node) Authenticate(username string, password string) {
 		node.accessToken = jresp.AccessToken
 		node.tokenExpiresAt = time.Now().Add(time.Second * time.Duration(jresp.ExpiresIn))
 
-		node.GetLog().Infof(" Auth successfully . Access toke expires after %d seconds , at ", jresp.ExpiresIn, node.tokenExpiresAt.Format("2006-01-02 15:04:05"))
+		node.GetLog().Infof(" Auth successfully . Access toke expires after %d seconds , at %s", jresp.ExpiresIn, node.tokenExpiresAt.Format("2006-01-02 15:04:05"))
 		node.ctx.SetVariable("access_token", "object", jresp.AccessToken, "", node.FlowOpCtx().FlowId, false)
 		node.ctx.SetVariable("refresh_token", "string", jresp.RefreshToken, "", node.FlowOpCtx().FlowId, false)
 		node.ctx.SetVariable("expires_at", "string", node.tokenExpiresAt, "", node.FlowOpCtx().FlowId, false)
@@ -260,7 +261,7 @@ func (node *Node) refreshToken() {
 		node.accessToken = jresp.AccessToken
 		node.tokenExpiresAt = time.Now().Add(time.Second * time.Duration(jresp.ExpiresIn))
 
-		node.GetLog().Infof(" Token refreshed successfully . Access toke expires after %d seconds , at ", jresp.ExpiresIn, node.tokenExpiresAt.Format("2006-01-02 15:04:05"))
+		node.GetLog().Infof(" Token refreshed successfully . Access toke expires after %d seconds , at %s", jresp.ExpiresIn, node.tokenExpiresAt.Format("2006-01-02 15:04:05"))
 		node.ctx.SetVariable("access_token", "string", jresp.AccessToken, "", node.FlowOpCtx().FlowId, false)
 		node.ctx.SetVariable("refresh_token", "string", jresp.RefreshToken, "", node.FlowOpCtx().FlowId, false)
 		node.ctx.SetVariable("expires_at", "string", node.tokenExpiresAt, "", node.FlowOpCtx().FlowId, false)
@@ -319,6 +320,14 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	if err != nil {
 		return []model.NodeID{node.Meta().ErrorTransition}, err
 	}
+	bResponse, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return []model.NodeID{node.Meta().ErrorTransition}, err
+	}
+	if node.config.LogResponse {
+		node.GetLog().Info(" Response:", string(bResponse))
+	}
+
 	if node.config.Auth.Enabled {
 		if resp.StatusCode == 401 || resp.StatusCode == 403 || resp.StatusCode == 400 {
 			node.GetLog().Infof(" Done . Name = %s,Status = %s", node.Meta().Label, resp.Status)
@@ -332,10 +341,16 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		}
 	}
 
+	var jData interface{}
+    var xTree tree.Node
 	for i := range node.config.ResponseMapping {
 		if node.config.ResponseMapping[i].PathType == "xml" {
-			xTree, err := xmltree.ParseXML(resp.Body)
-			if err == nil {
+			if xTree == nil {
+				rReader := bytes.NewReader(bResponse)
+				xTree, err = xmltree.ParseXML(rReader)
+			}
+
+			if xTree != nil {
 				var varValue interface{}
 				var xpExec = goxpath.MustParse(node.config.ResponseMapping[i].Path)
 
@@ -381,10 +396,14 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			}
 			//fmt.Println(res)
 		} else if node.config.ResponseMapping[i].PathType == "json" {
-			var jData interface{}
-			bData, err := ioutil.ReadAll(resp.Body)
-			if err == nil {
-				json.Unmarshal([]byte(bData), &jData)
+			if jData == nil {
+				err = json.Unmarshal(bResponse, &jData)
+				if err != nil {
+					node.GetLog().Error("JSON parsing error :",err)
+					continue
+				}
+			}
+			if jData != nil {
 				varValue, err := jsonpath.JsonPathLookup(jData, node.config.ResponseMapping[i].Path)
 				if err == nil {
 					flowId := node.FlowOpCtx().FlowId
@@ -394,16 +413,16 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 					node.ctx.SetVariable(node.config.ResponseMapping[i].TargetVariableName, node.config.ResponseMapping[i].TargetVariableType, varValue, "", flowId, false)
 
 				}
+			}else {
+				node.GetLog().Error("Emtpy json document")
 			}
+
+
 		}
 
 	}
 
-	if node.config.LogResponse {
-		var respBuff bytes.Buffer
-		respBuff.ReadFrom(resp.Body)
-		node.GetLog().Info(" Response:", respBuff.String())
-	}
+
 
 	node.GetLog().Infof(" Done . Name = %s,Status = %s", node.Meta().Label, resp.Status)
 	return []model.NodeID{node.Meta().SuccessTransition}, nil
