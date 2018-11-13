@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 )
 
 type Node struct {
@@ -25,6 +26,7 @@ type NodeConfig struct {
 	InputVariableName      string
 	IsInputVariableGlobal  bool
 	OutputVariableName     string
+	OutputVariableType     string
 	IsOutputVariableGlobal bool
 
 	IsOutputJson           bool
@@ -101,6 +103,9 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			param,_ := iValue.Value.(string)
 			cmd = exec.Command("python3", node.scriptFullPath,param)
 		}
+		cmd.Env = os.Environ()
+		cmd.Env = append(cmd.Env, "PYTHONPATH=$PATH:"+node.FlowOpCtx().ExtLibsDir+"/python")
+
 	}
 	output, err := cmd.CombinedOutput()
 
@@ -128,7 +133,34 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			node.GetLog().Debug("Output JSON : ", outputJson)
 			err = node.ctx.SetVariable(node.config.OutputVariableName, "object", outputJson, "", flowId, false)
 		} else {
-			err = node.ctx.SetVariable(node.config.OutputVariableName, "string", string(output), "", flowId, false)
+			if node.config.OutputVariableType == ""{
+				err = node.ctx.SetVariable(node.config.OutputVariableName, "string", string(output), "", flowId, false)
+			}else {
+				var val interface{}
+				switch node.config.OutputVariableType {
+				case "string":
+					val = string(output)
+				case "int":
+					val, err = strconv.Atoi(string(output))
+					if err != nil {
+						val = nil
+						node.GetLog().Error("Output var cast to int error:", err)
+					}
+				case "float":
+					val,err = strconv.ParseFloat(string(output),64)
+					if err != nil {
+						val = nil
+						node.GetLog().Error("Output var cast to floa error:",err)
+					}
+				}
+				if val != nil {
+					err = node.ctx.SetVariable(node.config.OutputVariableName,node.config.OutputVariableType ,val, "", flowId, false)
+				}else {
+					node.GetLog().Error("Output var convertion error")
+				}
+
+			}
+
 		}
 
 	} else {

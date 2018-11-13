@@ -5,11 +5,12 @@ import (
 	"os"
 	"testing"
 	"time"
-
+	log "github.com/Sirupsen/logrus"
 	"github.com/alivinco/tpflow/model"
 )
 
 func TestNode_OnInput_Jpath(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
 	flowId := "RestTest"
 	ctx, err := model.NewContextDB(flowId+".db")
 	ctx.RegisterFlow(flowId)
@@ -80,10 +81,10 @@ func TestNode_OnInput_Jpath(t *testing.T) {
 		UID:           "",
 	}}
 
-	customHeaders := make(map[string]string)
+	customHeaders := make(map[string]interface{})
 	customHeaders["Object"]= "one"
 
-	ctx.SetVariable("customHeaders","map_str",customHeaders,"",flowId,true)
+	ctx.SetVariable("customHeaders","object",customHeaders,"",flowId,true)
 	_, err = node.OnInput(&msg)
 
 	if err != nil {

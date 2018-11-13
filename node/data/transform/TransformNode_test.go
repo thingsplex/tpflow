@@ -124,6 +124,13 @@ func TestNode_OnInput_Jpath(t *testing.T) {
 				TargetVariableType:     "float",
 				IsTargetVariableGlobal: false,
 				UpdateInputVariable:    false,
+			},{
+				Name:                   "",
+				Path:                   "$.roomId",
+				TargetVariableName:     "roomId",
+				TargetVariableType:     "int",
+				IsTargetVariableGlobal: false,
+				UpdateInputVariable:    false,
 			}},
 			Template:               "",
 		},
@@ -157,7 +164,7 @@ func TestNode_OnInput_Jpath(t *testing.T) {
 	}}
 
 	var jvar interface{}
-	if err := json.Unmarshal([]byte("{\"temp\":23.5}"), &jvar); err != nil {
+	if err := json.Unmarshal([]byte("{\"temp\":23.5,\"roomId\":201701142110080000}"), &jvar); err != nil {
 		t.Error(err)
 	}
 
@@ -172,11 +179,21 @@ func TestNode_OnInput_Jpath(t *testing.T) {
 
 	temp := tempSensorValue.Value.(float64)
 
+	roomIdValue,err := ctx.GetVariable("roomId","test")
+
+	roomId := roomIdValue.Value.(int)
+
 	if temp != 23.5 {
 		t.Error("Wrong result = ",msg.Payload.Value.(int))
 	}
 
+	if roomId != 201701142110080000 {
+		t.Error("Wrong result = ",msg.Payload.Value.(int))
+	}
+
+
 	t.Log("Temperature = ",temp)
+	t.Logf("Room id  = %d",roomId)
 
 	ctx.Close()
 	os.Remove("TestTransform.db")

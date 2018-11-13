@@ -160,11 +160,8 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		return []model.NodeID{node.Meta().ErrorTransition}, err
 	}
 
-	if lValue.ValueType == rValue.ValueType || (lValue.IsNumber() && rValue.IsNumber()) ||
-		(node.nodeConfig.TransformType == "xpath" || node.nodeConfig.TransformType == "jpath" ||
-			node.nodeConfig.TransformType == "template" || node.nodeConfig.TransformType == "map") {
 
-		if node.nodeConfig.TransformType == "calc" {
+	if node.nodeConfig.TransformType == "calc" {
 
 			if node.expression == nil {
 				node.GetLog().Warn(" Wrong expression")
@@ -187,7 +184,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			result.Value = r
 			result.ValueType = node.nodeConfig.TargetVariableType
 
-		} else if node.nodeConfig.TransformType == "map" {
+	} else if node.nodeConfig.TransformType == "map" {
 			for i := range node.nodeConfig.ValueMapping {
 				//node.GetLog().Debug(" record Value ",node.nodeConfig.ValueMapping[i].LValue.Value)
 				//node.GetLog().Debug(" record input Value = ",lValue.Value )
@@ -246,7 +243,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 				}
 			}
 			return []model.NodeID{node.Meta().SuccessTransition}, nil
-		} else if node.nodeConfig.TransformType == "template" {
+	} else if node.nodeConfig.TransformType == "template" {
 			node.GetLog().Info(" Doing template transformation ")
 			var templateBuffer bytes.Buffer
 			var template = struct {
@@ -263,10 +260,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 
 			result.ValueType = node.nodeConfig.TargetVariableType
 		}
-	} else {
-		node.GetLog().Warn("Transformation can't be executed , one or several parameters are wrong. ")
-		return []model.NodeID{node.Meta().ErrorTransition}, err
-	}
+
 
 	if node.nodeConfig.TargetVariableName == "" {
 		node.GetLog().Debug("Updating input variable.")

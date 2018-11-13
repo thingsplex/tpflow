@@ -9,6 +9,7 @@ type Configs struct {
 	ConnectorStorageDir   string `json:"connector_storage_dir"`
 	RegistryDbFile        string `json:"registry_db_file"`
 	ContextStorageDir     string `json:"context_storage_dir"`
+	ExternalLibsDir       string `json:"ext_libs_dir"`
 	MqttClientIdPrefix    string `json:"mqtt_client_id_prefix"`
 	LogFile               string `json:"log_file"`
 	LogLevel              string `json:"log_level"`
