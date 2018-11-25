@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/alivinco/fimpgo"
 	tpflow "github.com/alivinco/tpflow"
 	fapi "github.com/alivinco/tpflow/api"
 	"github.com/alivinco/tpflow/flow"
@@ -42,6 +43,21 @@ func SetupLog(logfile string, level string, logFormat string) {
 		log.SetOutput(&l)
 	}
 
+}
+
+func InitApiMqttTransport(config tpflow.Configs) (*fimpgo.MqttTransport,error) {
+	log.Info("<main> Initializing fimp MQTT client.")
+	clientId := config.MqttClientIdPrefix + "tpflow_api"
+	msgTransport := fimpgo.NewMqttTransport(config.MqttServerURI, clientId, config.MqttUsername, config.MqttPassword, true, 1, 1)
+	msgTransport.SetGlobalTopicPrefix(config.MqttTopicGlobalPrefix)
+	err := msgTransport.Start()
+	log.Info("<main> Mqtt transport connected")
+	if err != nil {
+		log.Error("<main> Error connecting to broker : ", err)
+	} else {
+
+	}
+	return msgTransport,err
 }
 
 func main() {
@@ -86,13 +102,19 @@ func main() {
 	e.Use(middleware.Recover())
 
 	fapi.NewContextApi(flowManager.GetGlobalContext(), e)
-	fapi.NewFlowApi(flowManager, e)
+	flowApi := fapi.NewFlowApi(flowManager, e)
 	fapi.NewRegistryApi(thingRegistryStore, e)
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:4200", "http:://localhost:8082", "http:://localhost:8083"},
 		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
 	}))
+
+	apiMqttTransport,err := InitApiMqttTransport(configs)
+
+	if err == nil {
+		flowApi.RegisterMqttApi(apiMqttTransport)
+	}
 
 	log.Info("<main> Started")
 
