@@ -225,6 +225,16 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				}
 				fimp = fimpgo.NewMessage("evt.flow.ctr_report", "tpflow", "string", resp, nil, nil, newMsg.Payload)
 
+			case "cmd.flow.delete":
+				resp := "ok"
+				id,err := newMsg.Payload.GetStringValue()
+				if err == nil {
+					ctx.flowManager.DeleteFlowFromStorage(id)
+				}else {
+					resp = err.Error()
+				}
+				fimp = fimpgo.NewMessage("evt.flow.delete_report", "tpflow", "string", resp, nil, nil, newMsg.Payload)
+
 			case "cmd.flow.import_from_url":
 				resp := "ok"
 				val, err := newMsg.Payload.GetStrMapValue()

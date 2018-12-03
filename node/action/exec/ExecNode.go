@@ -80,6 +80,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		var iValue model.Variable
 		if node.config.InputVariableName == "" {
 			// Use input message
+			// TODO : set entire fimp message and ValueType should be set as object
 			iValue.Value = msg.Payload.Value
 			iValue.ValueType = msg.Payload.ValueType
 		} else {

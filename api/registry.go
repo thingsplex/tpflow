@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/registry"
 	"github.com/labstack/echo"
 	"github.com/labstack/gommon/log"
@@ -12,6 +13,7 @@ import (
 type RegistryApi struct {
 	reg  *registry.ThingRegistryStore
 	echo *echo.Echo
+	msgTransport *fimpgo.MqttTransport
 }
 
 func NewRegistryApi(ctx *registry.ThingRegistryStore, echo *echo.Echo) *RegistryApi {
@@ -184,5 +186,53 @@ func (api *RegistryApi) RegisterRestApi() {
 		log.Error("<REST> Failed to delete thing . Error : ", err)
 		return c.JSON(http.StatusInternalServerError, err)
 	})
+
+}
+
+func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
+	api.msgTransport = msgTransport
+	api.msgTransport.Subscribe("pt:j1/mt:cmd/rt:app/rn:registry/ad:1")
+	apiCh := make(fimpgo.MessageCh, 10)
+	api.msgTransport.RegisterChannel("registry-api",apiCh)
+	var fimp *fimpgo.FimpMessage
+	go func() {
+		for {
+
+			newMsg := <-apiCh
+			log.Debug("New message of type ", newMsg.Payload.Type)
+			switch newMsg.Payload.Type {
+			case "cmd.registry.get_things":
+				var things []registry.Thing
+				var locationId int
+				var err error
+				val,_ := newMsg.Payload.GetStrMapValue()
+				locationIdStr,_ := val["location_id"]
+
+				locationId, _ = strconv.Atoi(locationIdStr)
+
+				if locationId != 0 {
+					things, err = api.reg.GetThingsByLocationId(registry.ID(locationId))
+				} else {
+					things, err = api.reg.GetAllThings()
+				}
+				if err != nil {
+					log.Error("can't get things from registry err:",err)
+					break
+				}
+				thingsWithLocation := api.reg.ExtendThingsWithLocation(things)
+				fimp = fimpgo.NewMessage("evt.registry.things_report", "tpflow", "object", thingsWithLocation, nil, nil, newMsg.Payload)
+
+			case "cmd.registry.get_services":
+
+				fimp = fimpgo.NewMessage("evt.flow_ctx.update_report", "tpflow", "string", "ok", nil, nil, newMsg.Payload)
+
+			case "cmd.flow_ctx.delete":
+
+			}
+			addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
+			api.msgTransport.Publish(&addr, fimp)
+		}
+	}()
+
 
 }

@@ -138,13 +138,23 @@ func (rc *ApiRemoteClient) UpdateFlowBin(flowDef []byte) (string, error) {
 
 	return respMsg.GetStringValue()
 }
-
+// ControlFlow sends control command to flow manager.
+// cmd - command to send , id - flow id
 func (rc *ApiRemoteClient) ControlFlow(cmd string,id string) (string, error) {
 	cmdVal := make(map[string]string)
 	cmdVal["op"] = cmd
 	cmdVal["id"] = id
 
 	reqMsg := fimpgo.NewStrMapMessage("cmd.flow.ctrl","tpflow",cmdVal,nil,nil,nil)
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return "",err
+	}
+	return respMsg.GetStringValue()
+}
+
+func (rc *ApiRemoteClient) DeleteFlow(id string) (string, error) {
+	reqMsg := fimpgo.NewStringMessage("cmd.flow.get_connector_template","tpflow",id,nil,nil,nil)
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return "",err
@@ -164,5 +174,53 @@ func (rc *ApiRemoteClient) ImportFlowFromUrl(url string, token string) (string, 
 	}
 	return respMsg.GetStringValue()
 }
+
+func (rc *ApiRemoteClient) ContextGetRecords() ([]model.ContextRecord, error) {
+	var resp []model.ContextRecord
+	reqMsg := fimpgo.NewNullMessage("cmd.flow_ctx.get_records","tpflow",nil,nil,nil)
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return resp,err
+	}
+	err = json.Unmarshal(respMsg.GetRawObjectValue(), &resp)
+	if err != nil {
+		log.Error("Can't unmarshal ", err)
+		return resp,err
+	}
+	return resp,nil
+}
+
+func (rc *ApiRemoteClient) ContextUpdateRecord(flowId string , rec *model.ContextRecord) (string,error) {
+	var reqValue map[string]interface{}
+	reqValue["flow_id"] = flowId
+	reqValue["rec"] = flowId
+
+	reqMsg := fimpgo.NewMessage("cmd.flow_ctx.update_record","tpflow","object",reqValue,nil,nil,nil)
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return "",err
+	}
+
+	return respMsg.GetStringValue()
+}
+
+func (rc *ApiRemoteClient) ContextDeleteRec(name string,flowId string) (string, error) {
+	cmdVal := make(map[string]string)
+	cmdVal["name"] = name
+	cmdVal["flow_id"] = flowId
+	reqMsg := fimpgo.NewStrMapMessage("cmd.flow_ctx.delete","tpflow",cmdVal,nil,nil,nil)
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return "",err
+	}
+	return respMsg.GetStringValue()
+}
+
+
+
+
+
+
+
 
 

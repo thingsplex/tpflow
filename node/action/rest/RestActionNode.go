@@ -361,6 +361,10 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 				return []model.NodeID{node.Meta().ErrorTransition}, err
 			}
 		}
+	}else {
+		if resp.StatusCode < 400 {
+			return []model.NodeID{node.Meta().ErrorTransition}, err
+		}
 	}
 
 	var jData interface{}
