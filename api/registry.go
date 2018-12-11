@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/registry"
@@ -200,11 +201,12 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 
 			newMsg := <-apiCh
 			log.Debug("New message of type ", newMsg.Payload.Type)
+			var err error
 			switch newMsg.Payload.Type {
 			case "cmd.registry.get_things":
 				var things []registry.Thing
 				var locationId int
-				var err error
+
 				val,_ := newMsg.Payload.GetStrMapValue()
 				locationIdStr,_ := val["location_id"]
 
@@ -216,21 +218,114 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 					things, err = api.reg.GetAllThings()
 				}
 				if err != nil {
-					log.Error("can't get things from registry err:",err)
+					log.Error("<RegApi> can't get things from registry err:",err)
 					break
 				}
 				thingsWithLocation := api.reg.ExtendThingsWithLocation(things)
 				fimp = fimpgo.NewMessage("evt.registry.things_report", "tpflow", "object", thingsWithLocation, nil, nil, newMsg.Payload)
 
 			case "cmd.registry.get_services":
+				val,err := newMsg.Payload.GetStrMapValue()
+				if err != nil {
+					fimp = nil
+					break
+				}
+				serviceName,_ := val["service_name"]
+				locationIdStr,_ := val["location_id"]
+				thingIdStr,_ := val["thing_id"]
+				thingId, _ := strconv.Atoi(thingIdStr)
+				locationId, _ := strconv.Atoi(locationIdStr)
+				filterWithoutAliasStr,_ := val["filter_without_alias"]
+				var filterWithoutAlias bool
+				if filterWithoutAliasStr == "true" {
+					filterWithoutAlias = true
+				}
+				services, err := api.reg.GetExtendedServices(serviceName, filterWithoutAlias, registry.ID(thingId), registry.ID(locationId))
+				if err == nil {
+					fimp = fimpgo.NewMessage("evt.registry.services_report", "object", "string", services, nil, nil, newMsg.Payload)
+				} else {
+					log.Error("<RegApi> Can't get list of extended services . Error :",err)
+					fimp = nil
+				}
 
-				fimp = fimpgo.NewMessage("evt.flow_ctx.update_report", "tpflow", "string", "ok", nil, nil, newMsg.Payload)
+			case "cmd.registry.get_service":
+				val,err := newMsg.Payload.GetStrMapValue()
+				serviceAddress,_ := val["address"]
+				log.Info("<RegApi> Service search , address =  ", serviceAddress)
+				services, err := api.reg.GetServiceByFullAddress(serviceAddress)
+				if err == nil {
+					fimp = fimpgo.NewMessage("evt.registry.service_report", "object", "string", services, nil, nil, newMsg.Payload)
+				} else {
+					log.Error("<RegApi> Can't get service info . Error :",err)
+					fimp = nil
+				}
 
-			case "cmd.flow_ctx.delete":
+			case "cmd.registry.update_service":
+				service := registry.Service{}
+				serviceJsonDef := newMsg.Payload.GetRawObjectValue()
+				err := json.Unmarshal(serviceJsonDef, &service)
+				result := make(map[string]string)
+				result["status"] = ""
+				result["id"] = ""
+				if err != nil {
+					log.Error("<RegApi> Can't unmarshal  service.")
+					result["status"] = "error"
+					break
+				}
+				id , err := api.reg.UpsertService(&service)
+				if err == nil {
+					result["id"] = string(id)
+					result["status"] = "ok"
+				}
+
+				fimp = fimpgo.NewStrMapMessage("evt.registry.update_service_report", "tpflow", result, nil, nil, newMsg.Payload)
+
+
+			case "cmd.registry.update_location":
+				location := registry.Location{}
+				locationJsonDef := newMsg.Payload.GetRawObjectValue()
+				err := json.Unmarshal(locationJsonDef, &location)
+				result := make(map[string]string)
+				result["status"] = ""
+				result["id"] = ""
+				if err != nil {
+					log.Error("<RegApi> Can't unmarshal location.")
+					break
+				}
+				id , err := api.reg.UpsertLocation(&location)
+				if err == nil {
+					result["id"] = string(id)
+					result["status"] = "ok"
+				}
+				fimp = fimpgo.NewStrMapMessage("evt.registry.update_location_report", "tpflow", result, nil, nil, newMsg.Payload)
+
+			case "cmd.registry.get_locations":
+				locations, err := api.reg.GetAllLocations()
+				if err != nil {
+					log.Error("<RegApi> Can't get locations .Error:",err)
+				}
+				fimp = fimpgo.NewMessage("evt.registry.locations_report", "tpflow", "object", locations, nil, nil, newMsg.Payload)
+
+			case "cmd.registry.get_thing":
+				val,_ := newMsg.Payload.GetStrMapValue()
+				tech , _ := val["tech"]
+				address , _ := val["address"]
+
+				thing, err := api.reg.GetThingExtendedViewByAddress(tech,address)
+				if err != nil {
+					log.Error("<RegApi> Can't get thing .Error:",err)
+				}
+				fimp = fimpgo.NewMessage("evt.registry.thing_report", "tpflow", "object", thing, nil, nil, newMsg.Payload)
+
 
 			}
-			addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
-			api.msgTransport.Publish(&addr, fimp)
+			if fimp != nil {
+				addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
+				api.msgTransport.Publish(&addr, fimp)
+			}else {
+				log.Error("<reg-api> Error , nothing to return . Err:",err)
+			}
+
 		}
 	}()
 
