@@ -10,7 +10,7 @@ func getApiRemoteClient()*ApiRemoteClient  {
 	sClient := fimpgo.NewSyncClient(nil)
 	sClient.Connect("tcp://localhost:1883","api_client_test","","",true,1,1)
 
-	remoteApiClient := NewApiRemoteClient(sClient,"1",nil)
+	remoteApiClient := NewApiRemoteClient(sClient, "1")
 	return remoteApiClient
 }
 

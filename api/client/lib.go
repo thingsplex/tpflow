@@ -14,10 +14,9 @@ type ApiRemoteClient struct {
 	sClient * fimpgo.SyncClient
 	timeout int64
 	instanceAddress string
-	ctx *model.Context
 }
 
-func NewApiRemoteClient(sClient *fimpgo.SyncClient,instanceAddress string,ctx *model.Context) *ApiRemoteClient {
+func NewApiRemoteClient(sClient *fimpgo.SyncClient, instanceAddress string) *ApiRemoteClient {
 	sClient.AddSubscription("pt:j1/mt:evt/rt:app/rn:tpflow/ad:"+instanceAddress)
 	return &ApiRemoteClient{sClient: sClient,instanceAddress:instanceAddress,timeout:15}
 }
@@ -233,7 +232,7 @@ func (rc *ApiRemoteClient) RegistryGetListOfThings() ([]registry.ThingWithLocati
 }
 
 func (rc *ApiRemoteClient) RegistryGetListOfServices() ([]registry.ThingWithLocationView,error) {
-
+	return nil, nil
 
 }
 
