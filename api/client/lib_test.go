@@ -102,3 +102,15 @@ func TestApiRemoteClient_ControlFlow(t *testing.T) {
 }
 
 
+func TestApiRemoteClient_RegistryGetListOfThings(t *testing.T) {
+	remoteApiClient := getApiRemoteClient()
+	resp,err := remoteApiClient.RegistryGetListOfThings()
+
+	if err != nil || len(resp)==0 {
+		t.Error(err)
+	}else {
+		t.Log(resp)
+	}
+}
+
+

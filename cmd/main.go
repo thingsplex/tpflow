@@ -103,7 +103,7 @@ func main() {
 
 	fapi.NewContextApi(flowManager.GetGlobalContext(), e)
 	flowApi := fapi.NewFlowApi(flowManager, e)
-	fapi.NewRegistryApi(thingRegistryStore, e)
+	regApi := fapi.NewRegistryApi(thingRegistryStore, e)
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:4200", "http:://localhost:8082", "http:://localhost:8083"},
@@ -114,6 +114,7 @@ func main() {
 
 	if err == nil {
 		flowApi.RegisterMqttApi(apiMqttTransport)
+		regApi.RegisterMqttApi(apiMqttTransport)
 	}
 
 	log.Info("<main> Started")

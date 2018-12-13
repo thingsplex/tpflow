@@ -7,6 +7,7 @@ import (
 	conmodel "github.com/alivinco/tpflow/connector/model"
 	"github.com/alivinco/tpflow/flow"
 	"github.com/alivinco/tpflow/model"
+	"github.com/alivinco/tpflow/registry"
 )
 
 type ApiRemoteClient struct {
@@ -216,7 +217,25 @@ func (rc *ApiRemoteClient) ContextDeleteRec(name string,flowId string) (string, 
 	return respMsg.GetStringValue()
 }
 
+func (rc *ApiRemoteClient) RegistryGetListOfThings() ([]registry.ThingWithLocationView,error) {
+	var resp []registry.ThingWithLocationView
+	reqMsg := fimpgo.NewNullMessage("cmd.registry.get_things","tpflow",nil,nil,nil)
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return resp,err
+	}
+	err = json.Unmarshal(respMsg.GetRawObjectValue(), &resp)
+	if err != nil {
+		log.Error("Can't unmarshal ", err)
+		return resp,err
+	}
+	return resp,nil
+}
 
+func (rc *ApiRemoteClient) RegistryGetListOfServices() ([]registry.ThingWithLocationView,error) {
+
+
+}
 
 
 
