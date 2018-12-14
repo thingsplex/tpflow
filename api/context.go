@@ -78,10 +78,12 @@ func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 			switch newMsg.Payload.Type {
 			case "cmd.flow_ctx.get_records":
 				var result []model.ContextRecord
-				flowId,err := newMsg.Payload.GetStringValue()
-				if flowId != "-" && err == nil {
-					result = ctx.ctx.GetRecords(flowId)
+				val,_ := newMsg.Payload.GetStrMapValue()
+				flowId , _ := val["flow_id"]
+				if flowId == "-"|| flowId=="" {
+					flowId = "global"
 				}
+				result = ctx.ctx.GetRecords(flowId)
 				fimp = fimpgo.NewMessage("evt.flow_ctx.records_report", "tpflow", "string", result, nil, nil, newMsg.Payload)
 
 			case "cmd.flow_ctx.update_record":

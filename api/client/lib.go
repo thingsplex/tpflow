@@ -154,7 +154,7 @@ func (rc *ApiRemoteClient) ControlFlow(cmd string,id string) (string, error) {
 }
 
 func (rc *ApiRemoteClient) DeleteFlow(id string) (string, error) {
-	reqMsg := fimpgo.NewStringMessage("cmd.flow.get_connector_template","tpflow",id,nil,nil,nil)
+	reqMsg := fimpgo.NewStringMessage("cmd.flow.delete","tpflow",id,nil,nil,nil)
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return "",err
@@ -175,9 +175,11 @@ func (rc *ApiRemoteClient) ImportFlowFromUrl(url string, token string) (string, 
 	return respMsg.GetStringValue()
 }
 
-func (rc *ApiRemoteClient) ContextGetRecords() ([]model.ContextRecord, error) {
+func (rc *ApiRemoteClient) ContextGetRecords(flowId string) ([]model.ContextRecord, error) {
 	var resp []model.ContextRecord
-	reqMsg := fimpgo.NewNullMessage("cmd.flow_ctx.get_records","tpflow",nil,nil,nil)
+	reqValue := make(map[string]string)
+	reqValue["flow_id"] = flowId
+	reqMsg := fimpgo.NewStrMapMessage("cmd.flow_ctx.get_records","tpflow",reqValue,nil,nil,nil)
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return resp,err
@@ -193,7 +195,7 @@ func (rc *ApiRemoteClient) ContextGetRecords() ([]model.ContextRecord, error) {
 func (rc *ApiRemoteClient) ContextUpdateRecord(flowId string , rec *model.ContextRecord) (string,error) {
 	var reqValue map[string]interface{}
 	reqValue["flow_id"] = flowId
-	reqValue["rec"] = flowId
+	reqValue["rec"] = rec
 
 	reqMsg := fimpgo.NewMessage("cmd.flow_ctx.update_record","tpflow","object",reqValue,nil,nil,nil)
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
@@ -204,7 +206,7 @@ func (rc *ApiRemoteClient) ContextUpdateRecord(flowId string , rec *model.Contex
 	return respMsg.GetStringValue()
 }
 
-func (rc *ApiRemoteClient) ContextDeleteRec(name string,flowId string) (string, error) {
+func (rc *ApiRemoteClient) ContextDeleteRecord(name string,flowId string) (string, error) {
 	cmdVal := make(map[string]string)
 	cmdVal["name"] = name
 	cmdVal["flow_id"] = flowId
