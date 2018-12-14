@@ -202,6 +202,7 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 			newMsg := <-apiCh
 			log.Debug("New message of type ", newMsg.Payload.Type)
 			var err error
+			fimp = nil
 			switch newMsg.Payload.Type {
 			case "cmd.registry.get_things":
 				var things []registry.Thing

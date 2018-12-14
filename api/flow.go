@@ -142,6 +142,7 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 		for {
 
 			newMsg := <-apiCh
+			fimp = nil
 			log.Debug("New message of type ", newMsg.Payload.Type)
 			switch newMsg.Payload.Type {
 			case "cmd.flow.get_list":

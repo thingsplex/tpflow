@@ -179,7 +179,7 @@ func (rc *ApiRemoteClient) ContextGetRecords(flowId string) ([]model.ContextReco
 	var resp []model.ContextRecord
 	reqValue := make(map[string]string)
 	reqValue["flow_id"] = flowId
-	reqMsg := fimpgo.NewStrMapMessage("cmd.flow_ctx.get_records","tpflow",reqValue,nil,nil,nil)
+	reqMsg := fimpgo.NewStrMapMessage("cmd.flow.ctx_get_records","tpflow",reqValue,nil,nil,nil)
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return resp,err
@@ -197,7 +197,7 @@ func (rc *ApiRemoteClient) ContextUpdateRecord(flowId string , rec *model.Contex
 	reqValue["flow_id"] = flowId
 	reqValue["rec"] = rec
 
-	reqMsg := fimpgo.NewMessage("cmd.flow_ctx.update_record","tpflow","object",reqValue,nil,nil,nil)
+	reqMsg := fimpgo.NewMessage("cmd.flow.ctx_update_record","tpflow","object",reqValue,nil,nil,nil)
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return "",err
@@ -210,7 +210,7 @@ func (rc *ApiRemoteClient) ContextDeleteRecord(name string,flowId string) (strin
 	cmdVal := make(map[string]string)
 	cmdVal["name"] = name
 	cmdVal["flow_id"] = flowId
-	reqMsg := fimpgo.NewStrMapMessage("cmd.flow_ctx.delete","tpflow",cmdVal,nil,nil,nil)
+	reqMsg := fimpgo.NewStrMapMessage("cmd.flow.ctx_delete","tpflow",cmdVal,nil,nil,nil)
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return "",err

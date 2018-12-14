@@ -74,9 +74,10 @@ func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 		for {
 
 			newMsg := <-apiCh
+			fimp = nil
 			log.Debug("New message of type ", newMsg.Payload.Type)
 			switch newMsg.Payload.Type {
-			case "cmd.flow_ctx.get_records":
+			case "cmd.flow.ctx_get_records":
 				var result []model.ContextRecord
 				val,_ := newMsg.Payload.GetStrMapValue()
 				flowId , _ := val["flow_id"]
@@ -84,15 +85,15 @@ func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 					flowId = "global"
 				}
 				result = ctx.ctx.GetRecords(flowId)
-				fimp = fimpgo.NewMessage("evt.flow_ctx.records_report", "tpflow", "string", result, nil, nil, newMsg.Payload)
+				fimp = fimpgo.NewMessage("evt.flow.ctx_records_report", "tpflow", "string", result, nil, nil, newMsg.Payload)
 
-			case "cmd.flow_ctx.update_record":
+			case "cmd.flow.ctx_update_record":
 				var reqValue map[string]interface{}
 				reqRawObject := newMsg.Payload.GetRawObjectValue()
 				err := json.Unmarshal(reqRawObject, &reqValue)
 				if err != nil {
 					log.Error("<ctx> Can't unmarshal request")
-					fimp = fimpgo.NewMessage("evt.flow_ctx.update_report", "tpflow", "string", err, nil, nil, newMsg.Payload)
+					fimp = fimpgo.NewMessage("evt.flow.ctx_update_report", "tpflow", "string", err, nil, nil, newMsg.Payload)
 					break
 				}
 				flowId,ok1 := reqValue["flow_id"].(string)
@@ -101,17 +102,17 @@ func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				if ok1 && ok2 {
 					ctx.ctx.PutRecord(&rec, flowId, false)
 				}else {
-					fimp = fimpgo.NewMessage("evt.flow_ctx.update_report", "tpflow", "string", "wrong params", nil, nil, newMsg.Payload)
+					fimp = fimpgo.NewMessage("evt.flow.ctx_update_report", "tpflow", "string", "wrong params", nil, nil, newMsg.Payload)
 					break
 				}
-				fimp = fimpgo.NewMessage("evt.flow_ctx.update_report", "tpflow", "string", "ok", nil, nil, newMsg.Payload)
+				fimp = fimpgo.NewMessage("evt.flow.ctx_update_report", "tpflow", "string", "ok", nil, nil, newMsg.Payload)
 
-			case "cmd.flow_ctx.delete":
+			case "cmd.flow.ctx_delete":
 				// flowId is variable name here
 				req ,err := newMsg.Payload.GetStrMapValue()
 				if err != nil {
 					log.Error("<ctx> Can't unmarshal request.")
-					fimp = fimpgo.NewMessage("evt.flow_ctx.delete_report", "tpflow", "string", err, nil, nil, newMsg.Payload)
+					fimp = fimpgo.NewMessage("evt.flow.ctx_delete_report", "tpflow", "string", err, nil, nil, newMsg.Payload)
 	                break
 				}
 				log.Info("<ctx> Request to delete record with name ", req["Name"])
@@ -121,10 +122,10 @@ func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				}
 				err = ctx.ctx.DeleteRecord(req["Name"],flowId , false)
 				if err != nil {
-					fimp = fimpgo.NewMessage("evt.flow_ctx.delete_report", "tpflow", "string", err, nil, nil, newMsg.Payload)
+					fimp = fimpgo.NewMessage("evt.flow.ctx_delete_report", "tpflow", "string", err, nil, nil, newMsg.Payload)
 
 				}else {
-					fimp = fimpgo.NewMessage("evt.flow_ctx.delete_report", "tpflow", "string", "ok", nil, nil, newMsg.Payload)
+					fimp = fimpgo.NewMessage("evt.flow.ctx_delete_report", "tpflow", "string", "ok", nil, nil, newMsg.Payload)
 
 				}
 			}
