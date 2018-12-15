@@ -19,7 +19,7 @@ type ContextApi struct {
 
 func NewContextApi(ctx *model.Context, echo *echo.Echo) *ContextApi {
 	ctxApi := ContextApi{ctx: ctx, echo: echo}
-	ctxApi.RegisterRestApi()
+	//ctxApi.RegisterRestApi()
 	return &ctxApi
 }
 
@@ -78,14 +78,13 @@ func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 			log.Debug("New message of type ", newMsg.Payload.Type)
 			switch newMsg.Payload.Type {
 			case "cmd.flow.ctx_get_records":
-				var result []model.ContextRecord
 				val,_ := newMsg.Payload.GetStrMapValue()
 				flowId , _ := val["flow_id"]
 				if flowId == "-"|| flowId=="" {
 					flowId = "global"
 				}
-				result = ctx.ctx.GetRecords(flowId)
-				fimp = fimpgo.NewMessage("evt.flow.ctx_records_report", "tpflow", "string", result, nil, nil, newMsg.Payload)
+				result := ctx.ctx.GetRecords(flowId)
+				fimp = fimpgo.NewMessage("evt.flow.ctx_records_report", "tpflow", fimpgo.VTypeObject, result, nil, nil, newMsg.Payload)
 
 			case "cmd.flow.ctx_update_record":
 				var reqValue map[string]interface{}
@@ -129,8 +128,11 @@ func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 
 				}
 			}
-			addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
-			ctx.msgTransport.Publish(&addr, fimp)
+			if fimp != nil {
+				addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
+				ctx.msgTransport.Publish(&addr, fimp)
+			}
+
 		}
 	}()
 

@@ -20,7 +20,7 @@ type FlowApi struct {
 
 func NewFlowApi(flowManager *flow.Manager, echo *echo.Echo) *FlowApi {
 	ctxApi := FlowApi{flowManager: flowManager, echo: echo}
-	ctxApi.RegisterRestApi()
+	//ctxApi.RegisterRestApi()
 	return &ctxApi
 }
 
@@ -273,8 +273,11 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				fimp = fimpgo.NewMessage("evt.flow.import_report", "tpflow", "string", resp, nil, nil, newMsg.Payload)
 
 			}
-			addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
-			ctx.msgTransport.Publish(&addr, fimp)
+			if fimp != nil {
+				addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
+				ctx.msgTransport.Publish(&addr, fimp)
+			}
+
 		}
 	}()
 

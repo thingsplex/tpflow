@@ -19,7 +19,7 @@ type RegistryApi struct {
 
 func NewRegistryApi(ctx *registry.ThingRegistryStore, echo *echo.Echo) *RegistryApi {
 	ctxApi := RegistryApi{reg: ctx, echo: echo}
-	ctxApi.RegisterRestApi()
+	//ctxApi.RegisterRestApi()
 	return &ctxApi
 }
 
@@ -318,13 +318,32 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				}
 				fimp = fimpgo.NewMessage("evt.registry.thing_report", "tpflow", "object", thing, nil, nil, newMsg.Payload)
 
+			case "cmd.registry.delete_thing":
+				idStr , _ := newMsg.Payload.GetStringValue()
+				thingId, _ := strconv.Atoi(idStr)
+				err := api.reg.DeleteThing(registry.ID(thingId))
+				var resp string
+				if err != nil {
+					resp = err.Error()
+				}
+				fimp = fimpgo.NewMessage("evt.registry.delete_thing_report", "tpflow", "string", resp, nil, nil, newMsg.Payload)
+
+			case "cmd.registry.delete_location":
+				idStr , _ := newMsg.Payload.GetStringValue()
+				thingId, _ := strconv.Atoi(idStr)
+				err := api.reg.DeleteLocation(registry.ID(thingId))
+				var resp string
+				if err != nil {
+					resp = err.Error()
+				}
+				fimp = fimpgo.NewMessage("evt.registry.delete_location_report", "tpflow", "string", resp, nil, nil, newMsg.Payload)
 
 			}
 			if fimp != nil {
 				addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
 				api.msgTransport.Publish(&addr, fimp)
 			}else {
-				log.Error("<reg-api> Error , nothing to return . Err:",err)
+				//log.Error("<reg-api> Error , nothing to return . Err:",err)
 			}
 
 		}

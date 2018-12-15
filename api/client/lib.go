@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	log "github.com/Sirupsen/logrus"
 	"github.com/alivinco/fimpgo"
 	conmodel "github.com/alivinco/tpflow/connector/model"
@@ -193,7 +194,7 @@ func (rc *ApiRemoteClient) ContextGetRecords(flowId string) ([]model.ContextReco
 }
 
 func (rc *ApiRemoteClient) ContextUpdateRecord(flowId string , rec *model.ContextRecord) (string,error) {
-	var reqValue map[string]interface{}
+	reqValue := make(map[string]interface{})
 	reqValue["flow_id"] = flowId
 	reqValue["rec"] = rec
 
@@ -233,14 +234,153 @@ func (rc *ApiRemoteClient) RegistryGetListOfThings() ([]registry.ThingWithLocati
 	return resp,nil
 }
 
-func (rc *ApiRemoteClient) RegistryGetListOfServices() ([]registry.ThingWithLocationView,error) {
-	return nil, nil
+func (rc *ApiRemoteClient) RegistryGetListOfServices(serviceName,locationId,thingId,filterWithoutAlias string) ([]registry.ServiceExtendedView,error) {
+	var resp []registry.ServiceExtendedView
+	cmdVal := make(map[string]string)
+	cmdVal["service_name"] = serviceName
+	cmdVal["location_id"] = locationId
+	cmdVal["thing_id"] = thingId
+	cmdVal["filter_without_alias"] = filterWithoutAlias
 
+	reqMsg := fimpgo.NewStrMapMessage("cmd.registry.get_services","tpflow",cmdVal,nil,nil,nil)
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return nil,err
+	}
+	err = json.Unmarshal(respMsg.GetRawObjectValue(), &resp)
+	if err != nil {
+		log.Error("Can't unmarshal service response", err)
+		return resp,err
+	}
+	return resp,nil
 }
 
+func (rc *ApiRemoteClient) RegistryGetListOfLocations() ([]registry.Location,error) {
+	var resp []registry.Location
+	cmdVal := make(map[string]string)
+	reqMsg := fimpgo.NewStrMapMessage("cmd.registry.get_locations","tpflow",cmdVal,nil,nil,nil)
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return nil,err
+	}
+	err = json.Unmarshal(respMsg.GetRawObjectValue(), &resp)
+	if err != nil {
+		log.Error("Can't unmarshal service response", err)
+		return resp,err
+	}
+	return resp,nil
+}
 
+func (rc *ApiRemoteClient) RegistryGetThing(tech,address string) (registry.ThingExtendedView,error) {
+	var resp registry.ThingExtendedView
+	cmdVal := make(map[string]string)
+	cmdVal["tech"] = tech
+	cmdVal["address"] = address
 
+	reqMsg := fimpgo.NewStrMapMessage("cmd.registry.get_thing","tpflow",cmdVal,nil,nil,nil)
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return resp,err
+	}
+	err = json.Unmarshal(respMsg.GetRawObjectValue(), &resp)
+	if err != nil {
+		log.Error("Can't unmarshal thing response", err)
+		return resp,err
+	}
+	return resp,nil
+}
 
+func (rc *ApiRemoteClient) RegistryGetService(fullAddress string) (registry.ServiceExtendedView,error) {
+	var resp registry.ServiceExtendedView
+	cmdVal := make(map[string]string)
+	cmdVal["address"] =fullAddress
 
+	reqMsg := fimpgo.NewStrMapMessage("cmd.registry.get_service","tpflow",cmdVal,nil,nil,nil)
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return resp,err
+	}
+	err = json.Unmarshal(respMsg.GetRawObjectValue(), &resp)
+	if err != nil {
+		log.Error("Can't unmarshal service response", err)
+		return resp,err
+	}
+	return resp,nil
+}
 
+func (rc *ApiRemoteClient) RegistryUpdateLocationBin(locationBin []byte)(string, error) {
+	var location registry.Location
+	err := json.Unmarshal(locationBin,&location)
+	if err != nil {
+		log.Error("Can't unmarshal location ", err)
+		return "",err
+	}
+	return rc.RegistryUpdateLocation(&location)
+}
+
+func (rc *ApiRemoteClient) RegistryUpdateLocation(location *registry.Location)(string, error) {
+	reqMsg := fimpgo.NewMessage("cmd.registry.update_location","tpflow",fimpgo.VTypeObject,location,nil,nil,nil)
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return "",err
+	}
+	if err != nil {
+		log.Error("Can't unmarshal ", err)
+		return "",err
+	}
+	response,err := respMsg.GetStrMapValue()
+	locationId , _ := response["id"]
+	status , _ := response["status"]
+	if status != "ok" {
+		err = errors.New(status)
+	}
+	return locationId,err
+}
+
+func (rc *ApiRemoteClient) RegistryUpdateServiceBin(serviceBin []byte)(string, error) {
+	var service registry.Service
+	err := json.Unmarshal(serviceBin,&service)
+	if err != nil {
+		log.Error("Can't unmarshal service ", err)
+		return "",err
+	}
+	return rc.RegistryUpdateService(&service)
+}
+
+func (rc *ApiRemoteClient) RegistryUpdateService(service *registry.Service)(string, error)  {
+	reqMsg := fimpgo.NewMessage("cmd.registry.update_service","tpflow",fimpgo.VTypeObject,service,nil,nil,nil)
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return "",err
+	}
+	if err != nil {
+		log.Error("Can't unmarshal ", err)
+		return "",err
+	}
+	response,err := respMsg.GetStrMapValue()
+	serviceId , _ := response["id"]
+	status , _ := response["status"]
+	if status != "ok" {
+		err = errors.New(status)
+	}
+	return serviceId,err
+}
+
+func (rc *ApiRemoteClient) DeleteThing(id string) (string, error) {
+	reqMsg := fimpgo.NewStringMessage("cmd.registry.delete_thing","tpflow",id,nil,nil,nil)
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return "",err
+	}
+	return respMsg.GetStringValue()
+}
+
+func (rc *ApiRemoteClient) DeleteLocation(id string) (string, error) {
+	reqMsg := fimpgo.NewStringMessage("cmd.registry.delete_location","tpflow",id,nil,nil,nil)
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return "",err
+	}
+	return respMsg.GetStringValue()
+}
 

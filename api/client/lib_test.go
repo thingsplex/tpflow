@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"github.com/alivinco/fimpgo"
+	"github.com/alivinco/tpflow/registry"
 	"testing"
 )
 
@@ -112,5 +113,20 @@ func TestApiRemoteClient_RegistryGetListOfThings(t *testing.T) {
 		t.Log(resp)
 	}
 }
+
+
+func TestApiRemoteClient_UpdateLocation(t *testing.T) {
+	remoteApiClient := getApiRemoteClient()
+
+	location := registry.Location{Type:"room",Alias:"test_location_1"}
+
+	updateResp,err := remoteApiClient.RegistryUpdateLocation(&location)
+	if err == nil && updateResp != ""  {
+		t.Log(updateResp)
+	}else {
+		t.Error(err)
+	}
+}
+
 
 

@@ -6,12 +6,10 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/alivinco/fimpgo"
-	tpflow "github.com/alivinco/tpflow"
+	"github.com/alivinco/tpflow"
 	fapi "github.com/alivinco/tpflow/api"
 	"github.com/alivinco/tpflow/flow"
 	"github.com/alivinco/tpflow/registry"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io/ioutil"
 	"os"
@@ -97,29 +95,30 @@ func main() {
 		log.Error("Can't load Flows from storage . Error :", err)
 	}
 
-	e := echo.New()
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
+	//e := echo.New()
+	//e.Use(middleware.Logger())
+	//e.Use(middleware.Recover())
 
-	fapi.NewContextApi(flowManager.GetGlobalContext(), e)
-	flowApi := fapi.NewFlowApi(flowManager, e)
-	regApi := fapi.NewRegistryApi(thingRegistryStore, e)
+	ctxApi := fapi.NewContextApi(flowManager.GetGlobalContext(), nil)
+	flowApi := fapi.NewFlowApi(flowManager, nil)
+	regApi := fapi.NewRegistryApi(thingRegistryStore, nil)
 
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost:4200", "http:://localhost:8082", "http:://localhost:8083"},
-		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
-	}))
+	//e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+	//	AllowOrigins: []string{"http://localhost:4200", "http:://localhost:8082", "http:://localhost:8083"},
+	//	AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
+	//}))
 
 	apiMqttTransport,err := InitApiMqttTransport(configs)
 
 	if err == nil {
 		flowApi.RegisterMqttApi(apiMqttTransport)
 		regApi.RegisterMqttApi(apiMqttTransport)
+		ctxApi.RegisterMqttApi(apiMqttTransport)
 	}
 
 	log.Info("<main> Started")
 
-	e.Logger.Debug(e.Start(":8083"))
+	//e.Logger.Debug(e.Start(":8083"))
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c)
