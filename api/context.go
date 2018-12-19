@@ -75,7 +75,7 @@ func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 
 			newMsg := <-apiCh
 			fimp = nil
-			log.Debug("New message of type ", newMsg.Payload.Type)
+			log.Debug("New context message of type ", newMsg.Payload.Type)
 			switch newMsg.Payload.Type {
 			case "cmd.flow.ctx_get_records":
 				val,_ := newMsg.Payload.GetStrMapValue()
@@ -128,6 +128,7 @@ func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 
 				}
 			}
+
 			if fimp != nil {
 				addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
 				ctx.msgTransport.Publish(&addr, fimp)

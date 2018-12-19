@@ -548,7 +548,7 @@ func (st *ThingRegistryStore) DeleteLocation(id ID) error {
 	}
 	err = st.db.DeleteStruct(location)
 	if err == nil {
-		for i := range st.services {
+		for i := range st.locations {
 			if st.locations[i].ID == id {
 				st.locations = append(st.locations[:i], st.locations[i+1:]...)
 			}

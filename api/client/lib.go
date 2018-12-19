@@ -366,7 +366,7 @@ func (rc *ApiRemoteClient) RegistryUpdateService(service *registry.Service)(stri
 	return serviceId,err
 }
 
-func (rc *ApiRemoteClient) DeleteThing(id string) (string, error) {
+func (rc *ApiRemoteClient) RegistryDeleteThing(id string) (string, error) {
 	reqMsg := fimpgo.NewStringMessage("cmd.registry.delete_thing","tpflow",id,nil,nil,nil)
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
@@ -375,7 +375,7 @@ func (rc *ApiRemoteClient) DeleteThing(id string) (string, error) {
 	return respMsg.GetStringValue()
 }
 
-func (rc *ApiRemoteClient) DeleteLocation(id string) (string, error) {
+func (rc *ApiRemoteClient) RegistryDeleteLocation(id string) (string, error) {
 	reqMsg := fimpgo.NewStringMessage("cmd.registry.delete_location","tpflow",id,nil,nil,nil)
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {

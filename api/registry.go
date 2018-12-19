@@ -6,7 +6,7 @@ import (
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/registry"
 	"github.com/labstack/echo"
-	"github.com/labstack/gommon/log"
+	log "github.com/Sirupsen/logrus"
 	"net/http"
 	"strconv"
 )
@@ -58,6 +58,7 @@ func (api *RegistryApi) RegisterRestApi() {
 			filterWithoutAlias = true
 		}
 		services, err := api.reg.GetExtendedServices(serviceName, filterWithoutAlias, registry.ID(thingId), registry.ID(locationId))
+
 		if err == nil {
 			return c.JSON(http.StatusOK, services)
 		} else {
@@ -200,7 +201,7 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 		for {
 
 			newMsg := <-apiCh
-			log.Debug("New message of type ", newMsg.Payload.Type)
+			log.Debug("New registry message of type ", newMsg.Payload.Type)
 			var err error
 			fimp = nil
 			switch newMsg.Payload.Type {
@@ -226,9 +227,11 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				fimp = fimpgo.NewMessage("evt.registry.things_report", "tpflow", "object", thingsWithLocation, nil, nil, newMsg.Payload)
 
 			case "cmd.registry.get_services":
+				log.Debug("Getting services ")
 				val,err := newMsg.Payload.GetStrMapValue()
 				if err != nil {
 					fimp = nil
+					log.Debug("Error while requesting services . Error :",err)
 					break
 				}
 				serviceName,_ := val["service_name"]
@@ -241,9 +244,11 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				if filterWithoutAliasStr == "true" {
 					filterWithoutAlias = true
 				}
+				log.Debug("Getting extended services ")
 				services, err := api.reg.GetExtendedServices(serviceName, filterWithoutAlias, registry.ID(thingId), registry.ID(locationId))
+
 				if err == nil {
-					fimp = fimpgo.NewMessage("evt.registry.services_report", "object", "string", services, nil, nil, newMsg.Payload)
+					fimp = fimpgo.NewMessage("evt.registry.services_report", "tpflow", "object", services, nil, nil, newMsg.Payload)
 				} else {
 					log.Error("<RegApi> Can't get list of extended services . Error :",err)
 					fimp = nil
@@ -341,7 +346,8 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 			}
 			if fimp != nil {
 				addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
-				api.msgTransport.Publish(&addr, fimp)
+				err  = api.msgTransport.Publish(&addr, fimp)
+				log.Debug(err)
 			}else {
 				//log.Error("<reg-api> Error , nothing to return . Err:",err)
 			}

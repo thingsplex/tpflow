@@ -7,7 +7,7 @@ import (
 	"github.com/alivinco/tpflow/flow"
 	"github.com/alivinco/tpflow/model"
 	"github.com/labstack/echo"
-	"github.com/labstack/gommon/log"
+	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 )
@@ -143,7 +143,7 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 
 			newMsg := <-apiCh
 			fimp = nil
-			log.Debug("New message of type ", newMsg.Payload.Type)
+			log.Debug("New flow message of type ", newMsg.Payload.Type)
 			switch newMsg.Payload.Type {
 			case "cmd.flow.get_list":
 				val := ctx.flowManager.GetFlowList()
