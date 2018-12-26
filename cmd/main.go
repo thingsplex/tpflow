@@ -12,8 +12,6 @@ import (
 	"github.com/alivinco/tpflow/registry"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io/ioutil"
-	"os"
-	"os/signal"
 )
 
 // SetupLog configures default logger
@@ -100,7 +98,7 @@ func main() {
 	//e.Use(middleware.Recover())
 
 	ctxApi := fapi.NewContextApi(flowManager.GetGlobalContext(), nil)
-	flowApi := fapi.NewFlowApi(flowManager, nil)
+	flowApi := fapi.NewFlowApi(flowManager, nil,&configs)
 	regApi := fapi.NewRegistryApi(thingRegistryStore, nil)
 
 	//e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -120,9 +118,12 @@ func main() {
 
 	//e.Logger.Debug(e.Start(":8083"))
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c)
-	_ = <-c
+	//c := make(chan os.Signal, 1)
+	//signal.Notify(c)
+	//_ = <-c
+
+	select {}
+
 	thingRegistryStore.Disconnect()
 
 	log.Info("<main> Application is terminated")

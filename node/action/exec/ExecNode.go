@@ -105,6 +105,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			cmd = exec.Command("python3", node.scriptFullPath,param)
 		}
 		cmd.Env = os.Environ()
+		node.GetLog().Debug("Externa lib dir =",node.FlowOpCtx().ExtLibsDir)
 		cmd.Env = append(cmd.Env, "PYTHONPATH=$PATH:"+node.FlowOpCtx().ExtLibsDir+"/python")
 
 	}
@@ -113,6 +114,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	node.GetLog().Debug("Normal output : ", string(output))
 	if err != nil {
 		node.GetLog().Debug("Err output : ", err.Error())
+		return []model.NodeID{node.Meta().ErrorTransition}, err
 	}
 
 	flowId := node.FlowOpCtx().FlowId
@@ -151,7 +153,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 					val,err = strconv.ParseFloat(string(output),64)
 					if err != nil {
 						val = nil
-						node.GetLog().Error("Output var cast to floa error:",err)
+						node.GetLog().Error("Output var cast to float error:",err)
 					}
 				}
 				if val != nil {

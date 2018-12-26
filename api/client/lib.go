@@ -9,6 +9,8 @@ import (
 	"github.com/alivinco/tpflow/flow"
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/registry"
+	"github.com/alivinco/tpflow/utils"
+	"strconv"
 )
 
 type ApiRemoteClient struct {
@@ -384,3 +386,23 @@ func (rc *ApiRemoteClient) RegistryDeleteLocation(id string) (string, error) {
 	return respMsg.GetStringValue()
 }
 
+func (rc *ApiRemoteClient) GetFlowLog(limitLines int , flowId string)([]utils.LogEntry,error) {
+	cmdVal := make(map[string]string)
+	cmdVal["limit"] = strconv.Itoa(limitLines)
+	cmdVal["flowId"] = flowId
+	reqMsg := fimpgo.NewStrMapMessage("cmd.flow.get_log","tpflow",cmdVal,nil,nil,nil)
+
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return nil,err
+	}
+
+	var resp []utils.LogEntry
+	err = json.Unmarshal(respMsg.GetRawObjectValue(), &resp)
+	if err != nil {
+		log.Error("Can't unmarshal log entries ", err)
+		return nil , err
+	}
+	return resp,nil
+
+}

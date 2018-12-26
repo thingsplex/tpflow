@@ -119,6 +119,7 @@ func (mg *Manager) LoadFlowFromJson(flowJsonDef []byte) error {
 
 	flow := NewFlow(flowMeta, mg.globalContext)
 	flow.SetStoragePath(mg.config.FlowStorageDir)
+	flow.SetExternalLibsDir(mg.config.ExternalLibsDir)
 	flow.SetConnectorRegistry(&mg.connectorRegistry)
 	mg.flowRegistry = append(mg.flowRegistry, flow)
 	return nil

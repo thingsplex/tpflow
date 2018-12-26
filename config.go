@@ -1,6 +1,7 @@
 package tpflow
 
 type Configs struct {
+	InstanceAddress       string `json:"instance_address"`
 	MqttServerURI         string `json:"mqtt_server_uri"`
 	MqttUsername          string `json:"mqtt_server_username"`
 	MqttPassword          string `json:"mqtt_server_password"`

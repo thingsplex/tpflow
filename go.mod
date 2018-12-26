@@ -10,7 +10,7 @@ require (
 	github.com/alivinco/fimpgo v1.1.0
 	github.com/asdine/storm v2.1.1+incompatible
 	github.com/boltdb/bolt v1.3.1
-	github.com/buger/jsonparser v0.0.0-20180808090653-f4dd9f5a6b44 // indirect
+	github.com/buger/jsonparser v0.0.0-20180808090653-f4dd9f5a6b44
 	github.com/coreos/bbolt v1.3.0 // indirect
 	github.com/cpucycle/astrotime v0.0.0-20120927164819-9c7d514efdb5
 	github.com/davecgh/go-spew v1.1.1 // indirect

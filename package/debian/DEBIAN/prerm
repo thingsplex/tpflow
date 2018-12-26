@@ -1,0 +1,3 @@
+#!/bin/bash
+systemctl stop tpflow.service
+systemctl disable tpflow.service

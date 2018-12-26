@@ -1,0 +1,14 @@
+[Unit]
+Description=IoT Flow logic engine
+
+[Service]
+Type=simple
+ExecStart=/opt/thingsplex/tpflow/tpflow -c config.json
+User=thingsplex
+WorkingDirectory=/opt/thingsplex/tpflow
+Restart=always
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=multi-user.target

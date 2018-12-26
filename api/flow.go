@@ -3,23 +3,27 @@ package api
 import (
 	"encoding/json"
 	"github.com/alivinco/fimpgo"
+	"github.com/alivinco/tpflow"
 	"github.com/alivinco/tpflow/connector/plugins"
 	"github.com/alivinco/tpflow/flow"
 	"github.com/alivinco/tpflow/model"
+	"github.com/alivinco/tpflow/utils"
 	"github.com/labstack/echo"
 	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 type FlowApi struct {
 	flowManager *flow.Manager
 	echo        *echo.Echo
 	msgTransport *fimpgo.MqttTransport
+	config       *tpflow.Configs
 }
 
-func NewFlowApi(flowManager *flow.Manager, echo *echo.Echo) *FlowApi {
-	ctxApi := FlowApi{flowManager: flowManager, echo: echo}
+func NewFlowApi(flowManager *flow.Manager, echo *echo.Echo,config *tpflow.Configs) *FlowApi {
+	ctxApi := FlowApi{flowManager: flowManager, echo: echo,config:config}
 	//ctxApi.RegisterRestApi()
 	return &ctxApi
 }
@@ -272,7 +276,25 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				}
 				fimp = fimpgo.NewMessage("evt.flow.import_report", "tpflow", "string", resp, nil, nil, newMsg.Payload)
 
+			case "cmd.flow.get_log":
+				val, err := newMsg.Payload.GetStrMapValue()
+				if err != nil {
+					log.Error("Can't get log , wrong params , error = ", err)
+					break
+				}
+				flowId , _ := val["flowId"]
+				limitS  , _ := val["limit"]
+				limit , err := strconv.Atoi(limitS)
+				if err != nil {
+					limit = 10000
+				}
+				filter := utils.LogFilter{FlowId:flowId}
+				log.Debug("Getting log from file :",ctx.config.LogFile)
+				result := utils.GetLogs(ctx.config.LogFile,&filter,limit)
+				fimp = fimpgo.NewMessage("evt.flow.log_report", "tpflow", "object", result, nil, nil, newMsg.Payload)
+
 			}
+
 			if fimp != nil {
 				addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
 				ctx.msgTransport.Publish(&addr, fimp)

@@ -128,5 +128,15 @@ func TestApiRemoteClient_UpdateLocation(t *testing.T) {
 	}
 }
 
+func TestApiRemoteClient_GetLog(t *testing.T) {
+	remoteApiClient := getApiRemoteClient()
+	result , err := remoteApiClient.GetFlowLog(10,"")
+	t.Log("Output len = ",len(result))
+	if err == nil && len(result)==10  {
+		t.Log("ok")
+	}else {
+		t.Error(err)
+	}
+}
 
 

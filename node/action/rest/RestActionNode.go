@@ -362,7 +362,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			}
 		}
 	}else {
-		if resp.StatusCode < 400 {
+		if resp.StatusCode >= 400 {
 			return []model.NodeID{node.Meta().ErrorTransition}, err
 		}
 	}

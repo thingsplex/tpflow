@@ -1,0 +1,8 @@
+Package: tpflow
+Version: 0.1.1
+Replaces: tpflow
+Section: non-free/misc
+Priority: optional
+Architecture: armhf
+Maintainer: Aleksandrs Livincovs <aleksandrs.livincovs@gmail.com>
+Description: Thingplex TpFlow is IoT rule and flow engine.

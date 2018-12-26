@@ -54,6 +54,10 @@ func (fl *Flow) SetStoragePath(path string) {
 	fl.opContext.StoragePath = path
 }
 
+func (fl *Flow) SetExternalLibsDir(path string) {
+	fl.opContext.ExtLibsDir = path
+}
+
 func (fl *Flow) initFromMetaFlow(meta *model.FlowMeta) {
 	fl.Id = meta.Id
 	fl.Name = meta.Name
