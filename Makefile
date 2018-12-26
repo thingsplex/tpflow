@@ -1,4 +1,4 @@
-version="0.1.1"
+version="0.10.6"
 version_file=VERSION
 working_dir=$(shell pwd)
 arch="armhf"
@@ -30,7 +30,8 @@ package-deb-doc:
 	@echo "Packaging application as debian package"
 	chmod a+x package/debian/DEBIAN/*
 	cp tpflow package/debian/opt/thingsplex/tpflow/
-	cp VERSION package/debian/opt/thingsplex/tpflow
+	cp -R extlibs package/debian/opt/thingsplex/tpflow/
+	cp VERSION package/debian/opt/thingsplex/tpflow/
 	docker run --rm -v ${working_dir}:/build -w /build --name debuild debian dpkg-deb --build package/debian
 	@echo "Done"
 

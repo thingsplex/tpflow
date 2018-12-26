@@ -4,7 +4,7 @@ Description=IoT Flow logic engine
 [Service]
 Type=simple
 ExecStart=/opt/thingsplex/tpflow/tpflow -c config.json
-User=thingsplex
+User=tpflow
 WorkingDirectory=/opt/thingsplex/tpflow
 Restart=always
 StandardOutput=null
