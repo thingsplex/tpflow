@@ -64,6 +64,11 @@ func (ctx *ContextApi) RegisterRestApi() {
 	})
 }
 
+type ContextExtRecord struct {
+	FlowId string `json:"flow_id"`
+	Rec model.ContextRecord `json:"rec"`
+}
+
 func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 	ctx.msgTransport = msgTransport
 	ctx.msgTransport.Subscribe("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:1")
@@ -87,23 +92,16 @@ func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				fimp = fimpgo.NewMessage("evt.flow.ctx_records_report", "tpflow", fimpgo.VTypeObject, result, nil, nil, newMsg.Payload)
 
 			case "cmd.flow.ctx_update_record":
-				var reqValue map[string]interface{}
+				var reqValue ContextExtRecord
 				reqRawObject := newMsg.Payload.GetRawObjectValue()
 				err := json.Unmarshal(reqRawObject, &reqValue)
 				if err != nil {
-					log.Error("<ctx> Can't unmarshal request")
-					fimp = fimpgo.NewMessage("evt.flow.ctx_update_report", "tpflow", "string", err, nil, nil, newMsg.Payload)
+					log.Error("<ctx> cmd.flow.ctx_update_record Can't unmarshal request")
+					fimp = fimpgo.NewMessage("evt.flow.ctx_update_report", "tpflow", "string", err.Error(), nil, nil, newMsg.Payload)
 					break
 				}
-				flowId,ok1 := reqValue["flow_id"].(string)
-				rec,ok2 := reqValue["rec"].(model.ContextRecord)
-				rec.UpdatedAt = time.Now()
-				if ok1 && ok2 {
-					ctx.ctx.PutRecord(&rec, flowId, false)
-				}else {
-					fimp = fimpgo.NewMessage("evt.flow.ctx_update_report", "tpflow", "string", "wrong params", nil, nil, newMsg.Payload)
-					break
-				}
+				reqValue.Rec.UpdatedAt = time.Now()
+				ctx.ctx.PutRecord(&reqValue.Rec, reqValue.FlowId, false)
 				fimp = fimpgo.NewMessage("evt.flow.ctx_update_report", "tpflow", "string", "ok", nil, nil, newMsg.Payload)
 
 			case "cmd.flow.ctx_delete":

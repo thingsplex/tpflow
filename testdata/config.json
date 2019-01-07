@@ -9,8 +9,8 @@
   "registry_db_file":"./testdata/var/registry.db",
   "context_storage_dir":"./testdata/var/flow_storage/context.db",
   "ext_libs_dir":"./extlibs",
-  "log_file":"tpflow.log",
+  "log_file":"",
   "log_level":"debug",
-  "log_format":"json",
+  "log_format":"text",
   "instance_address":"1"
 }
