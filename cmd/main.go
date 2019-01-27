@@ -81,6 +81,12 @@ func main() {
 	thingRegistryStore := registry.NewThingRegistryStore(configs.RegistryDbFile)
 	log.Info("<main> Started ")
 	//-------------------------------------
+
+	//---------THINGS REGISTRY INTEGRATION------
+	log.Info("<main>-------------- Starting service registry integration ")
+	regMqttIntegr := registry.NewMqttIntegration(&configs,thingRegistryStore)
+	regMqttIntegr.InitMessagingTransport()
+	log.Info("<main> Started ")
 	//---------FLOW------------------------
 	log.Info("<main> Starting Flow manager")
 	flowManager, err := flow.NewManager(configs)

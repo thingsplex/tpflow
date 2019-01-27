@@ -93,7 +93,7 @@ func (st *ThingRegistryStore) GetServiceById(Id ID) (*Service, error) {
 	//err := st.db.One("ID", Id, &service)
 	//return &service, err
 	for i := range st.services {
-		if st.things[i].ID == Id {
+		if st.services[i].ID == Id {
 			return &st.services[i], nil
 		}
 	}
