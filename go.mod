@@ -1,14 +1,11 @@
 module github.com/alivinco/tpflow
 
-replace github.com/alivinco/fimpgo => github.com/futurehomeno/fimpgo v1.3.1
-
 require (
 	github.com/BurntSushi/toml v0.3.0 // indirect
 	github.com/ChrisTrenkamp/goxpath v0.0.0-20170922090931-c385f95c6022
 	github.com/DataDog/zstd v1.3.4 // indirect
 	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/Sereal/Sereal v0.0.0-20180727013122-68c42fd7bfdf // indirect
-	github.com/alivinco/fimpgo v1.1.0
 	github.com/asdine/storm v2.1.1+incompatible
 	github.com/boltdb/bolt v1.3.1
 	github.com/buger/jsonparser v0.0.0-20180808090653-f4dd9f5a6b44 // indirect
@@ -16,7 +13,7 @@ require (
 	github.com/cpucycle/astrotime v0.0.0-20120927164819-9c7d514efdb5
 	github.com/dchest/uniuri v0.0.0-20160212164326-8902c56451e9
 	github.com/eclipse/paho.mqtt.golang v1.1.1 // indirect
-	github.com/futurehomeno/fimpgo v1.3.1 // indirect
+	github.com/futurehomeno/fimpgo v1.3.1
 	github.com/golang/protobuf v1.2.0 // indirect
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/imdario/mergo v0.3.6

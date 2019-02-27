@@ -2,7 +2,7 @@ package fimp
 
 import (
 	"errors"
-	"github.com/alivinco/fimpgo"
+	"github.com/futurehomeno/fimpgo"
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node/base"
 	"github.com/alivinco/tpflow/registry"

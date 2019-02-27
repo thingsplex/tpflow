@@ -1,8 +1,8 @@
 package flow
 
 import (
-	"github.com/alivinco/fimpgo"
-	"github.com/alivinco/fimpgo/fimptype"
+	"github.com/futurehomeno/fimpgo"
+	"github.com/futurehomeno/fimpgo/fimptype"
 	actfimp "github.com/alivinco/tpflow/node/action/fimp"
 	trigfimp "github.com/alivinco/tpflow/node/trigger/fimp"
 	"github.com/imdario/mergo"

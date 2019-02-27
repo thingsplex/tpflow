@@ -1,7 +1,7 @@
 package fimpmqtt
 
 import (
-	"github.com/alivinco/fimpgo"
+	"github.com/futurehomeno/fimpgo"
 	"github.com/alivinco/tpflow/connector/model"
 	"github.com/labstack/gommon/log"
 	"github.com/mitchellh/mapstructure"

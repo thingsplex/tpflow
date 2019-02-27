@@ -2,7 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/alivinco/fimpgo"
+	"github.com/futurehomeno/fimpgo"
 	"github.com/alivinco/tpflow"
 	"github.com/alivinco/tpflow/connector/plugins"
 	"github.com/alivinco/tpflow/flow"

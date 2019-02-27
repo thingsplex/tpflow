@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	log "github.com/sirupsen/logrus"
-	"github.com/alivinco/fimpgo"
+	"github.com/futurehomeno/fimpgo"
 	conmodel "github.com/alivinco/tpflow/connector/model"
 	"github.com/alivinco/tpflow/flow"
 	"github.com/alivinco/tpflow/model"

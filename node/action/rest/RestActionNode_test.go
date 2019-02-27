@@ -1,7 +1,7 @@
 package rest
 
 import (
-	"github.com/alivinco/fimpgo"
+	"github.com/futurehomeno/fimpgo"
 	"os"
 	"testing"
 	"time"

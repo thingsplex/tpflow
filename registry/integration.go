@@ -2,8 +2,8 @@ package registry
 
 import (
 	log "github.com/sirupsen/logrus"
-	"github.com/alivinco/fimpgo"
-	"github.com/alivinco/fimpgo/fimptype"
+	"github.com/futurehomeno/fimpgo"
+	"github.com/futurehomeno/fimpgo/fimptype"
 	tpflow "github.com/alivinco/tpflow"
 	"github.com/pkg/errors"
 	"strconv"

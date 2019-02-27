@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/alivinco/fimpgo"
+	"github.com/futurehomeno/fimpgo"
 	"time"
 )
 
