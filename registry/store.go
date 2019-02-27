@@ -3,7 +3,7 @@ package registry
 import (
 	"encoding/gob"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/alivinco/tpflow/utils"
 	"github.com/asdine/storm"
 	gobcodec "github.com/asdine/storm/codec/gob"

@@ -2,7 +2,7 @@ package flow
 
 import (
 	"encoding/json"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/alivinco/tpflow"
 	"github.com/alivinco/tpflow/connector"
 	"github.com/alivinco/tpflow/model"
@@ -240,10 +240,15 @@ func (mg *Manager) StartFlow(flowId string) {
 		}
 	}()
 	flow := mg.GetFlowById(flowId)
-	if flow.GetFlowState() != "RUNNING" {
-		//flow.SetMessageStream(mg.GetNewStream(flow.Id))
-		flow.Start()
+	if flow != nil {
+		if flow.GetFlowState() != "RUNNING" {
+			//flow.SetMessageStream(mg.GetNewStream(flow.Id))
+			flow.Start()
+		}
+	}else {
+		log.Error("No flow with Id = ",flowId)
 	}
+
 
 }
 

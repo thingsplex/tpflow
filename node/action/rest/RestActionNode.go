@@ -89,7 +89,7 @@ func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *
 	node.SetMeta(meta)
 	node.SetFlowOpCtx(flowOpCtx)
 	node.config = NodeConfig{}
-	node.httpClient = &http.Client{}
+	node.httpClient = &http.Client{Timeout:60*time.Second}
 	node.SetupBaseNode()
 	return &node
 }

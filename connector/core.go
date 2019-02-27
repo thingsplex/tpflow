@@ -2,7 +2,7 @@ package connector
 
 import (
 	"encoding/json"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/alivinco/tpflow/connector/model"
 	"github.com/alivinco/tpflow/connector/plugins"
 	"github.com/alivinco/tpflow/utils"

@@ -1,4 +1,4 @@
-version="0.10.6"
+version="0.10.8"
 version_file=VERSION
 working_dir=$(shell pwd)
 arch="armhf"
@@ -10,7 +10,7 @@ build-go:
 	go build -o tpflow cmd/main.go
 
 build-go-arm:
-	GOOS=linux GOARCH=arm GOARM=6 go build -o tpflow cmd/main.go
+	GOOS=linux GOARCH=arm GOARM=6 go build -ldflags="-s -w" -o tpflow cmd/main.go
 
 build-go-amd:
 	GOOS=linux GOARCH=amd64 go build -o tpflow cmd/main.go

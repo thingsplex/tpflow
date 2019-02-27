@@ -3,7 +3,7 @@ package model
 import (
 	"bytes"
 	"encoding/gob"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/boltdb/bolt"
 	"github.com/pkg/errors"

@@ -1,7 +1,7 @@
 package registry
 
 import (
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/fimpgo/fimptype"
 	tpflow "github.com/alivinco/tpflow"

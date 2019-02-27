@@ -184,6 +184,7 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 	}()
 	for {
 		if node.config.GenerateAstroTimeEvents {
+			// TODO : investigate this . leads to HIGH CPU and memmory usage
 			node.scheduleNextAstroEvent()
 		}
 

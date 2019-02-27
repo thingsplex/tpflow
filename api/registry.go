@@ -6,7 +6,7 @@ import (
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow/registry"
 	"github.com/labstack/echo"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 )

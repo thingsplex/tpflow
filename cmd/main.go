@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/alivinco/fimpgo"
 	"github.com/alivinco/tpflow"
 	fapi "github.com/alivinco/tpflow/api"
@@ -12,6 +12,9 @@ import (
 	"github.com/alivinco/tpflow/registry"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io/ioutil"
+	"net/http"
+	"runtime"
+    _ "net/http/pprof"
 )
 
 // SetupLog configures default logger
@@ -121,13 +124,15 @@ func main() {
 	}
 
 	log.Info("<main> Started")
-
+	go func() {
+		http.ListenAndServe(":6060", nil)
+	}()
 	//e.Logger.Debug(e.Start(":8083"))
 
 	//c := make(chan os.Signal, 1)
 	//signal.Notify(c)
 	//_ = <-c
-
+    runtime.GC()
 	select {}
 
 	thingRegistryStore.Disconnect()

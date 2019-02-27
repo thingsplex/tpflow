@@ -162,7 +162,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 
 
 	if node.nodeConfig.TransformType == "calc" {
-
+			// works only with local variables
 			if node.expression == nil {
 				node.GetLog().Warn(" Wrong expression")
 				return []model.NodeID{node.Meta().ErrorTransition}, err
@@ -177,6 +177,13 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			for i := range records{
 				parameters[records[i].Name] = records[i].Variable.Value
 			}
+
+			records = node.ctx.GetRecords("global")
+
+			for i := range records{
+				parameters[records[i].Name] = records[i].Variable.Value
+			}
+
 			r , err := node.expression.Evaluate(parameters)
 			if err != nil {
 				return []model.NodeID{node.Meta().ErrorTransition}, err

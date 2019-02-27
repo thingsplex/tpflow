@@ -1,7 +1,7 @@
 package base
 
 import (
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/alivinco/tpflow/connector"
 	"github.com/alivinco/tpflow/model"
 )

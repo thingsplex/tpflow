@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 	"time"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/alivinco/tpflow/model"
 )
 

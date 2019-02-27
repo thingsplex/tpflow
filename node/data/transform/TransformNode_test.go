@@ -131,6 +131,13 @@ func TestNode_OnInput_Jpath(t *testing.T) {
 				TargetVariableType:     "int",
 				IsTargetVariableGlobal: false,
 				UpdateInputVariable:    false,
+			},{
+				Name:                   "",
+				Path:                   "$.devices[?(@.val==9.0)]",
+				TargetVariableName:     "devTemp",
+				TargetVariableType:     "object",
+				IsTargetVariableGlobal: false,
+				UpdateInputVariable:    false,
 			}},
 			Template:               "",
 		},
@@ -164,7 +171,7 @@ func TestNode_OnInput_Jpath(t *testing.T) {
 	}}
 
 	var jvar interface{}
-	if err := json.Unmarshal([]byte("{\"temp\":23.5,\"roomId\":201701142110080000}"), &jvar); err != nil {
+	if err := json.Unmarshal([]byte("{\"temp\":23.5,\"roomId\":201701142110080000,\"devices\":[{\"name\":\"temp\",\"val\":5},{\"name\":\"humid\",\"val\":9}]}"), &jvar); err != nil {
 		t.Error(err)
 	}
 
@@ -183,12 +190,23 @@ func TestNode_OnInput_Jpath(t *testing.T) {
 
 	roomId := roomIdValue.Value.(int)
 
+	devTempVal,err := ctx.GetVariable("devTemp","test")
+
+	//devTempVal.ToNumber()
+	devTemp,_ := devTempVal.Value.(int)
+
+
+
 	if temp != 23.5 {
 		t.Error("Wrong result = ",msg.Payload.Value.(int))
 	}
 
 	if roomId != 201701142110080000 {
 		t.Error("Wrong result = ",msg.Payload.Value.(int))
+	}
+
+	if devTemp != 5 {
+		t.Error("Wrong devTemp result = ",devTempVal)
 	}
 
 

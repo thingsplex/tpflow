@@ -9,9 +9,10 @@ import (
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/utils"
 	"github.com/labstack/echo"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"runtime"
 	"strconv"
 )
 
@@ -293,12 +294,17 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				result := utils.GetLogs(ctx.config.LogFile,&filter,limit)
 				fimp = fimpgo.NewMessage("evt.flow.log_report", "tpflow", "object", result, nil, nil, newMsg.Payload)
 
+			case "cmd.flow.run_gc":
+				log.Info("Running GC")
+				runtime.GC()
+
 			}
 
 			if fimp != nil {
 				addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
 				ctx.msgTransport.Publish(&addr, fimp)
 			}
+
 
 		}
 	}()

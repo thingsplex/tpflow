@@ -3,7 +3,7 @@ package client
 import (
 	"encoding/json"
 	"errors"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/alivinco/fimpgo"
 	conmodel "github.com/alivinco/tpflow/connector/model"
 	"github.com/alivinco/tpflow/flow"
