@@ -28,8 +28,6 @@ vendor/golang.org/x
 var/flow_storage
 *.deb
 *.db
-thingsplex
 extlibs/python/paho/__pycache__
 *.pyc
-tpflow
 *.log

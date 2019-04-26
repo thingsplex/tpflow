@@ -42,6 +42,8 @@ add_user_and_group()
 set_ownership()
 {
 	chown -R tpflow:thingsplex "/opt/thingsplex/tpflow"
+	chmod 764 /var/log/thingsplex/tpflow || true
+	chown tpflow:thingsplex /var/log/thingsplex/tpflow || true
 }
 
 migrate_fimpflows()
@@ -71,13 +73,7 @@ case "$1" in
 		add_user_and_group
 		set_ownership
 		migrate_fimpflows
-        if [ ! -d /var/log/thingsplex ]
-        then
-            echo "Setting up logging dir"
-            mkdir -m 774 /var/log/thingsplex
-            chown tpflow:thingsplex /var/log/thingsplex
-        fi
-		# Start thingsplex
+       # Start thingsplex
 		if [ -f /opt/thingsplex/tpflow/tpflow ]
 		then
 		    systemctl enable tpflow.service
