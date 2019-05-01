@@ -130,6 +130,8 @@ func (node *TriggerNode) LookupAddressToAlias(address string) {
 		node.ctx.SetVariable("flow_location_alias", "string", service.LocationAlias, "", node.FlowOpCtx().FlowId, true)
 	}
 }
+// WaitForEvent is started during flow initialization  or from another flow .
+// Method acts as event listener and creates flow on new event .
 
 func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 	node.SetReactorRunning(true)
@@ -155,6 +157,7 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 					if node.config.LookupServiceNameAndLocation {
 						node.LookupAddressToAlias(newEvent.Msg.AddressStr)
 					}
+					// Flow is executed within flow runner goroutine
 					go node.FlowRunner()(newEvent)
 			}
 

@@ -24,6 +24,7 @@ require (
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mitchellh/mapstructure v1.0.0
+	github.com/nathan-osman/go-sunrise v0.0.0-20171121204956-7c449e7c690b
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
 	github.com/pkg/errors v0.8.0
 	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967

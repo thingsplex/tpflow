@@ -1,13 +1,15 @@
 package time
 
 import (
-	"github.com/futurehomeno/fimpgo"
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node/base"
-	"github.com/kelvins/sunrisesunset"
+	"github.com/futurehomeno/fimpgo"
+	//"github.com/kelvins/sunrisesunset"
 	"github.com/mitchellh/mapstructure"
+    sun "github.com/nathan-osman/go-sunrise"
 	"github.com/robfig/cron"
 	"time"
+
 )
 
 const SUNRISE = "sunrise"
@@ -93,16 +95,22 @@ func (node *Node) getSunriseAndSunset(nextDay bool) (sunrise time.Time, sunset t
 		currentDate = currentDate.Add(oneDayDuration)
 	}
 
-	p := sunrisesunset.Parameters{
-		Latitude:  node.config.Latitude,
-		Longitude: node.config.Longitude,
-		UtcOffset: node.config.TimeZone,
-		Date:      currentDate,
-	}
+	//p := sunrisesunset.Parameters{
+	//	Latitude:  node.config.Latitude,
+	//	Longitude: node.config.Longitude,
+	//	UtcOffset: node.config.TimeZone,
+	//	Date:      currentDate,
+	//}
 	// Calculate the sunrise and sunset times
-	sunrise, sunset, err = p.GetSunriseSunset()
-	sunrise = time.Date(currentDate.Year(), currentDate.Month(), currentDate.Day(), sunrise.Hour(), sunrise.Minute(), 0, 0, time.Local)
-	sunset = time.Date(currentDate.Year(), currentDate.Month(), currentDate.Day(), sunset.Hour(), sunset.Minute(), 0, 0, time.Local)
+	//sunrise, sunset, err = p.GetSunriseSunset()
+
+	sunrise, sunset = sun.SunriseSunset(
+		node.config.Latitude,node.config.Longitude,          // Toronto, CA
+		currentDate.Year(), currentDate.Month(), currentDate.Day(),  // 2000-01-01
+	)
+
+	sunrise = time.Date(currentDate.Year(), currentDate.Month(), currentDate.Day(), sunrise.Hour(), sunrise.Minute(), 0, 0, time.UTC)
+	sunset = time.Date(currentDate.Year(), currentDate.Month(), currentDate.Day(), sunset.Hour(), sunset.Minute(), 0, 0, time.UTC)
 	return
 }
 
@@ -124,11 +132,11 @@ func (node *Node) getTimeUntilNextEvent() (eventTime time.Duration, eventType st
 }
 
 func (node *Node) scheduleNextAstroEvent() {
-	node.GetLog().Debug("Time now ", time.Now().Format(TIME_FORMAT))
+	node.GetLog().Debug("Time now local time", time.Now().Format(TIME_FORMAT))
 	node.GetLog().Infof(" Scheduling next astro event at location Lat = %f,Long = %f ", node.config.Latitude, node.config.Longitude)
 	sunriseTime, sunsetTime, err := node.getSunriseAndSunset(false)
-	node.GetLog().Debug(" Today Sunrise is at ", sunriseTime.Format(TIME_FORMAT))
-	node.GetLog().Debug(" Today Sunset is  at ", sunsetTime.Format(TIME_FORMAT))
+	node.GetLog().Debug(" Today Sunrise is at (UTC) : ", sunriseTime.Format(TIME_FORMAT))
+	node.GetLog().Debug(" Today Sunset is  at (UTC)", sunsetTime.Format(TIME_FORMAT))
 
 	timeUntilEvent, eventType, err := node.getTimeUntilNextEvent()
 	if err != nil {

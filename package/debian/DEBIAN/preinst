@@ -19,7 +19,7 @@ case "$1" in
 		# Stop service if vinculum is running
 		if [ -d /opt/thingsplex/tpflow ]
 		then
-			systemctl stop tpflow.service
+			systemctl stop tpflow.service || true
 		fi
 	;;
 

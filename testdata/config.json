@@ -1,6 +1,6 @@
 {
   "mqtt_server_uri":"tcp://localhost:1883",
-  "mqtt_client_id_prefix":"thingsplex_dev",
+  "mqtt_client_id_prefix":"thingsplex_dev_1",
   "mqtt_server_username":"",
   "mqtt_server_password":"",
   "mqtt_topic_global_prefix":"",

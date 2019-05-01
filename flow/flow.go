@@ -113,6 +113,7 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 		fl.getLog().Info(" Done")
 		if newNode.IsStartNode() {
 			newNode.SetFlowRunner(fl.Run)
+			// Starts trigger node listener.When node is triggered , it executed in its own goroutine by fl.Run method.
 			go newNode.WaitForEvent(nil)
 		}
 		fl.getLog().Info(" Node is loaded and added.")
@@ -276,7 +277,9 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 					if nodeOutboundStream == nil {
 						nodeOutboundStream = make(chan model.ReactorEvent)
 					}
+
 					if !fl.nodes[i].IsReactorRunning() {
+						// Starting multiple listeners
 						go fl.nodes[i].WaitForEvent(nodeOutboundStream)
 					}
 					// Blocking wait
