@@ -221,9 +221,11 @@ func (rc *ApiRemoteClient) ContextDeleteRecord(name string,flowId string) (strin
 	return respMsg.GetStringValue()
 }
 
-func (rc *ApiRemoteClient) RegistryGetListOfThings() ([]registry.ThingWithLocationView,error) {
+func (rc *ApiRemoteClient) RegistryGetListOfThings(locationId string) ([]registry.ThingWithLocationView,error) {
 	var resp []registry.ThingWithLocationView
-	reqMsg := fimpgo.NewNullMessage("cmd.registry.get_things","tpflow",nil,nil,nil)
+	cmdVal := make(map[string]string)
+	cmdVal["location_id"] = locationId
+	reqMsg := fimpgo.NewStrMapMessage("cmd.registry.get_things","tpflow",cmdVal,nil,nil,nil)
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return resp,err
