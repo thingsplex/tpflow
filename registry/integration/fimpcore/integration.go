@@ -1,22 +1,27 @@
-package registry
+package fimpcore
 
 import (
+	"github.com/alivinco/tpflow/registry"
+	"github.com/alivinco/tpflow/registry/integration/fh"
 	log "github.com/sirupsen/logrus"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/futurehomeno/fimpgo/fimptype"
 	tpflow "github.com/alivinco/tpflow"
 	"github.com/pkg/errors"
+	"runtime/debug"
 	"strconv"
 )
 
 type MqttIntegration struct {
 	msgTransport *fimpgo.MqttTransport
 	config       *tpflow.Configs
-	registry     *ThingRegistryStore
+	registry     *registry.ThingRegistryStore
+	vincIntegr   *fh.VinculumIntegration
 }
 
-func NewMqttIntegration(config *tpflow.Configs, registry *ThingRegistryStore) *MqttIntegration {
+func NewMqttIntegration(config *tpflow.Configs, registry *registry.ThingRegistryStore) *MqttIntegration {
 	int := MqttIntegration{config: config, registry: registry}
+	int.vincIntegr = fh.NewVinculumIntegration(registry)
 	return &int
 }
 func (mg *MqttIntegration) InitMessagingTransport() {
@@ -32,6 +37,8 @@ func (mg *MqttIntegration) InitMessagingTransport() {
 	mg.msgTransport.Subscribe("pt:j1/mt:evt/rt:app/+/+")
 	mg.msgTransport.Subscribe("pt:j1/mt:evt/rt:ad/+/+")
 	mg.msgTransport.Subscribe("pt:j1/mt:cmd/rt:app/rn:registry/ad:1")
+	mg.msgTransport.Subscribe("pt:j1/mt:evt/rt:app/rn:vinculum/ad:1")
+	mg.vincIntegr.SetMsgTransport(mg.msgTransport)
 
 }
 
@@ -49,6 +56,7 @@ func (mg *MqttIntegration) onMqttMessage(topic string, addr *fimpgo.Address, iot
 		if r := recover(); r != nil {
 			log.Error("<MqRegInt> MqttIntegration process CRASHED with error : ", r)
 			log.Errorf("<MqRegInt> Crashed while processing message from topic = %s msgType = %s", r, addr.MsgType)
+			debug.PrintStack()
 		}
 	}()
 
@@ -58,6 +66,10 @@ func (mg *MqttIntegration) onMqttMessage(topic string, addr *fimpgo.Address, iot
 	case "evt.thing.exclusion_report":
 		tech := addr.ResourceName
 		mg.processExclusionReport(iotMsg, tech)
+	case "evt.room.list_report":
+		mg.vincIntegr.ProcessVincRoomUpdate(iotMsg)
+	case "evt.device.list_report":
+		mg.vincIntegr.ProcessVincDeviceUpdate(iotMsg)
 	case "cmd.service.get_list":
 		//  pt:j1/mt:cmd/rt:app/rn:registry/ad:1
 		//  {"serv":"registry","type":"cmd.service.get_list","val_t":"str_map","val":{"serviceName":"out_bin_switch","filterWithoutAlias":"true"},"props":null,"tags":null,"uid":"1234455"}
@@ -79,7 +91,7 @@ func (mg *MqttIntegration) onMqttMessage(topic string, addr *fimpgo.Address, iot
 				}
 			}
 			//if ok {
-			response, err := mg.registry.GetExtendedServices(serviceName, filterWithoutAlias, ID(thingId), ID(locationId))
+			response, err := mg.registry.GetExtendedServices(serviceName, filterWithoutAlias, registry.ID(thingId), registry.ID(locationId))
 			if err != nil {
 				log.Error("<MqRegInt> Can get services .Err :", err)
 			}
@@ -101,16 +113,18 @@ func (mg *MqttIntegration) processInclusionReport(msg *fimpgo.FimpMessage) error
 	err := msg.GetObjectValue(&inclReport)
 	log.Debugf("%+v\n", err)
 	log.Debugf("%+v\n", inclReport)
+	var isUpdateOp bool
 	if inclReport.CommTechnology != "" && inclReport.Address != "" {
-		var thing *Thing
+		var thing *registry.Thing
 		thing, err := mg.registry.GetThingByAddress(inclReport.CommTechnology, inclReport.Address)
 		if err != nil {
-			thing = &Thing{}
+			thing = &registry.Thing{}
+			thing.Alias = inclReport.Alias
 		} else {
+			isUpdateOp = true
 			log.Info("<MqRegInt> Thing already in registry . Updating")
 		}
 		thing.Address = inclReport.Address
-		thing.Alias = inclReport.Alias
 		thing.CommTechnology = inclReport.CommTechnology
 		thing.DeviceId = inclReport.DeviceId
 		thing.HwVersion = inclReport.HwVersion
@@ -130,19 +144,21 @@ func (mg *MqttIntegration) processInclusionReport(msg *fimpgo.FimpMessage) error
 			log.Error("<MqRegInt> Can't insert new Thing . Error: ", err)
 		}
 		for i := range inclReport.Services {
-			service := Service{}
+			service := registry.Service{}
 			service.Name = inclReport.Services[i].Name
 			service.Address = inclReport.Services[i].Address
 			service.Enabled = inclReport.Services[i].Enabled
-			service.Alias = inclReport.Services[i].Alias
+			if isUpdateOp {
+				service.Alias = inclReport.Services[i].Alias
+			}
 			service.Tags = inclReport.Services[i].Tags
 			service.Props = inclReport.Services[i].Props
 			service.Groups = inclReport.Services[i].Groups
-			service.Interfaces = make([]Interface, len(inclReport.Services[i].Interfaces))
+			service.Interfaces = make([]registry.Interface, len(inclReport.Services[i].Interfaces))
 			service.ParentContainerId = thingId
-			service.ParentContainerType = ThingContainer
+			service.ParentContainerType = registry.ThingContainer
 			for iIntf := range inclReport.Services[i].Interfaces {
-				service.Interfaces[iIntf] = Interface(inclReport.Services[i].Interfaces[iIntf])
+				service.Interfaces[iIntf] = registry.Interface(inclReport.Services[i].Interfaces[iIntf])
 			}
 			mg.registry.UpsertService(&service)
 		}
@@ -156,7 +172,7 @@ func (mg *MqttIntegration) processInclusionReport(msg *fimpgo.FimpMessage) error
 
 func (mg *MqttIntegration) processExclusionReport(msg *fimpgo.FimpMessage, technology string) error {
 	log.Info("<MqRegInt> New inclusion report from technology = ", technology)
-	exThing := Thing{}
+	exThing := registry.Thing{}
 	err := msg.GetObjectValue(&exThing)
 	if err != nil {
 		log.Info("<MqRegInt> Exclusion report can't be processed . Error : ", err)
@@ -170,3 +186,4 @@ func (mg *MqttIntegration) processExclusionReport(msg *fimpgo.FimpMessage, techn
 	log.Infof("Thing with address = %s , tech = %s was deleted.", exThing.Address, technology)
 	return nil
 }
+

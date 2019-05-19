@@ -88,6 +88,7 @@ type Interface struct {
 	Version   string `json:"ver"`
 }
 
+
 type Location struct {
 	ID             ID         `json:"id" storm:"id,increment,index"`
 	IntegrationId  string     `json:"integr_id"`

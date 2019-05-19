@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/alivinco/tpflow/registry/integration/fimpcore"
 	log "github.com/sirupsen/logrus"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/alivinco/tpflow"
@@ -87,7 +88,7 @@ func main() {
 
 	//---------THINGS REGISTRY INTEGRATION------
 	log.Info("<main>-------------- Starting service registry integration ")
-	regMqttIntegr := registry.NewMqttIntegration(&configs,thingRegistryStore)
+	regMqttIntegr := fimpcore.NewMqttIntegration(&configs,thingRegistryStore)
 	regMqttIntegr.InitMessagingTransport()
 	log.Info("<main> Started ")
 	//---------FLOW------------------------

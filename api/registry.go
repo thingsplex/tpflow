@@ -286,6 +286,25 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 
 				fimp = fimpgo.NewStrMapMessage("evt.registry.update_service_report", "tpflow", result, nil, nil, newMsg.Payload)
 
+			case "cmd.registry.update_thing":
+				thing := registry.Thing{}
+				thingJsonDef := newMsg.Payload.GetRawObjectValue()
+				err := json.Unmarshal(thingJsonDef, &thing)
+				result := make(map[string]string)
+				result["status"] = ""
+				result["id"] = ""
+				if err != nil {
+					log.Error("<RegApi> Can't unmarshal  service.")
+					result["status"] = "error"
+					break
+				}
+				id , err := api.reg.UpsertThing(&thing)
+				if err == nil {
+					result["id"] = string(id)
+					result["status"] = "ok"
+				}
+
+				fimp = fimpgo.NewStrMapMessage("evt.registry.update_thing_report", "tpflow", result, nil, nil, newMsg.Payload)
 
 			case "cmd.registry.update_location":
 				location := registry.Location{}
@@ -343,6 +362,9 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				}
 				fimp = fimpgo.NewMessage("evt.registry.delete_location_report", "tpflow", "string", resp, nil, nil, newMsg.Payload)
 
+			case "cmd.registry.factory_reset":
+				log.Info("<RegApi> Registry FACTORY RESET")
+				api.reg.ClearAll()
 			}
 			if fimp != nil {
 				addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
