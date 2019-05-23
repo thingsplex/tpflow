@@ -57,9 +57,9 @@ migrate_fimpflows()
              echo "Skip FIMPUI migration flow dir is not Empty"
         else
             echo "$DIR is Empty, migrating flows from fimpui"
-            cp /opt/fimpui/flow_storage/* /opt/thingsplex/tpflow/var/flow_storage
-            cp /opt/fimpui/registry.db /opt/thingsplex/tpflow/var
-            chown -R tpflow:thingsplex /opt/thingsplex/tpflow/var
+            cp /opt/fimpui/flow_storage/* /opt/thingsplex/tpflow/var/flow_storage || true
+            cp /opt/fimpui/registry.db /opt/thingsplex/tpflow/var || true
+            chown -R tpflow:thingsplex /opt/thingsplex/tpflow/var || true
             echo "Flow migrated"
         fi
         # rest of the logic

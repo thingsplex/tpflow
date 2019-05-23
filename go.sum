@@ -26,8 +26,12 @@ github.com/dchest/uniuri v0.0.0-20160212164326-8902c56451e9/go.mod h1:GgB8SF9nRG
 github.com/eclipse/paho.mqtt.golang v0.0.0-20170413214049-c37a0a275c2d/go.mod h1:H9keYFcgq3Qr5OUJm/JZI/i6U7joQ8SYLhZwfeOo6Ts=
 github.com/eclipse/paho.mqtt.golang v1.1.1 h1:iPJYXJLaViCshRTW/PSqImSS6HJ2Rf671WR0bXZ2GIU=
 github.com/eclipse/paho.mqtt.golang v1.1.1/go.mod h1:H9keYFcgq3Qr5OUJm/JZI/i6U7joQ8SYLhZwfeOo6Ts=
+github.com/eclipse/paho.mqtt.golang v1.2.0 h1:1F8mhG9+aO5/xpdtFkW4SxOJB67ukuDC3t2y2qayIX0=
+github.com/eclipse/paho.mqtt.golang v1.2.0/go.mod h1:H9keYFcgq3Qr5OUJm/JZI/i6U7joQ8SYLhZwfeOo6Ts=
 github.com/futurehomeno/fimpgo v1.3.1 h1:9DZcaG2Nhy2yiWsihO+Bi/M8NktRg5ACTVeNWR9dHHQ=
 github.com/futurehomeno/fimpgo v1.3.1/go.mod h1:3k5GUA6pVwj+T26pJHzmniBVFkN+9+VskSrsZEHiLcs=
+github.com/futurehomeno/fimpgo v1.3.4 h1:ZmBQOX9b7EPUCyBeloSjW3VXXo9xQapWTg1avYurDjU=
+github.com/futurehomeno/fimpgo v1.3.4/go.mod h1:HlCU8WBRMpYVmB/3MUh08VIDj+H95b9TQO6wVhUvrXY=
 github.com/golang/protobuf v1.2.0 h1:P3YflyNX/ehuJFLhxviNdFxQPkGK5cDcApsge1SqnvM=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db h1:woRePGFeVFfLKN/pOkfl+p/TAqKOfFu+7KPlMVpok/w=
