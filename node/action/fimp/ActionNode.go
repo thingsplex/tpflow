@@ -27,6 +27,7 @@ type NodeConfig struct {
 	RegisterAsVirtualService bool
 	VirtualServiceGroup      string
 	VirtualServiceProps      map[string]interface{} // mostly used to announce supported features of the service , for instance supported modes , states , setpoints , etc...
+	ResponseToTopic          string // in request-response communication requester can set topic to which server will send response
 }
 
 func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
@@ -95,6 +96,8 @@ func (node *Node) WaitForEvent(responseChannel chan model.ReactorEvent) {
 func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	node.GetLog().Info("Executing Node . Name = ", node.Meta().Label)
 	fimpMsg := fimpgo.FimpMessage{Type: node.Meta().ServiceInterface, Service: node.Meta().Service, Properties: node.config.Props}
+	fimpMsg.Source = "flow_"+node.FlowOpCtx().FlowId
+	fimpMsg.ResponseToTopic = node.config.ResponseToTopic
 	if node.config.VariableName != "" {
 		node.GetLog().Debug("Using variable as input :", node.config.VariableName)
 		flowId := node.FlowOpCtx().FlowId

@@ -21,7 +21,6 @@ type MqttIntegration struct {
 
 func NewMqttIntegration(config *tpflow.Configs, registry *registry.ThingRegistryStore) *MqttIntegration {
 	int := MqttIntegration{config: config, registry: registry}
-	int.vincIntegr = fh.NewVinculumIntegration(registry)
 	return &int
 }
 func (mg *MqttIntegration) InitMessagingTransport() {
@@ -38,7 +37,7 @@ func (mg *MqttIntegration) InitMessagingTransport() {
 	mg.msgTransport.Subscribe("pt:j1/mt:evt/rt:ad/+/+")
 	mg.msgTransport.Subscribe("pt:j1/mt:cmd/rt:app/rn:registry/ad:1")
 	mg.msgTransport.Subscribe("pt:j1/mt:evt/rt:app/rn:vinculum/ad:1")
-	mg.vincIntegr.SetMsgTransport(mg.msgTransport)
+	mg.vincIntegr = fh.NewVinculumIntegration(mg.registry,mg.msgTransport)
 
 }
 
@@ -66,10 +65,10 @@ func (mg *MqttIntegration) onMqttMessage(topic string, addr *fimpgo.Address, iot
 	case "evt.thing.exclusion_report":
 		tech := addr.ResourceName
 		mg.processExclusionReport(iotMsg, tech)
-	case "evt.room.list_report":
-		mg.vincIntegr.ProcessVincRoomUpdate(iotMsg)
-	case "evt.device.list_report":
-		mg.vincIntegr.ProcessVincDeviceUpdate(iotMsg)
+	case "cmd.registry.sync_devices":
+		mg.vincIntegr.SyncDevice()
+	case "cmd.registry.sync_rooms":
+		mg.vincIntegr.SyncRooms()
 	case "cmd.service.get_list":
 		//  pt:j1/mt:cmd/rt:app/rn:registry/ad:1
 		//  {"serv":"registry","type":"cmd.service.get_list","val_t":"str_map","val":{"serviceName":"out_bin_switch","filterWithoutAlias":"true"},"props":null,"tags":null,"uid":"1234455"}
@@ -103,7 +102,7 @@ func (mg *MqttIntegration) onMqttMessage(topic string, addr *fimpgo.Address, iot
 			log.Error("<MqRegInt> Can't parse value. Error :", err)
 		}
 	default:
-		log.Info("<MqRegInt> Unsupported message type :", iotMsg.Type)
+		//log.Info("<MqRegInt> Unsupported message type :", iotMsg.Type)
 	}
 }
 

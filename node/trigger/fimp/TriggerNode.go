@@ -2,10 +2,10 @@ package fimp
 
 import (
 	"errors"
-	"github.com/futurehomeno/fimpgo"
 	"github.com/alivinco/tpflow/model"
 	"github.com/alivinco/tpflow/node/base"
 	"github.com/alivinco/tpflow/registry"
+	"github.com/futurehomeno/fimpgo"
 	"github.com/mitchellh/mapstructure"
 	"time"
 )
@@ -24,12 +24,15 @@ type TriggerNode struct {
 type TriggerConfig struct {
 	Timeout                      int64 // in seconds
 	ValueFilter                  model.Variable
+	ValueJPath                   string // JPath path which is used to extract value from trigger message
+	ValueJPathResultType         string // Type of extracted variable
 	InputVariableType            string
 	IsValueFilterEnabled         bool
 	RegisterAsVirtualService     bool // if true - the node will be exposed as service in inclusion report
 	LookupServiceNameAndLocation bool
 	VirtualServiceGroup          string                 // is used as service group in inclusion report
 	VirtualServiceProps          map[string]interface{} // mostly used to announce supported features of the service , for instance supported modes , states , setpoints , etc...
+
 }
 
 func NewTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
@@ -150,8 +153,18 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 		case newMsg := <-node.msgInStream:
 			//node.GetLog().Debug("--New message--")
 			node.GetLog().Debug("--New message--")
-
+			if node.config.ValueJPath != "" {
+				rMsg := model.Message{RawPayload:newMsg.Payload.ValueObj }
+				newVal , err := model.GetValueByPath(&rMsg,"jpath", node.config.ValueJPath, node.config.ValueJPathResultType)
+				if err == nil {
+					node.GetLog().Debug("JPath extracted value =",newVal)
+					newMsg.Payload = fimpgo.NewMessage(newMsg.Payload.Type,newMsg.Payload.Service,node.config.ValueJPathResultType,newVal,nil,nil,nil)
+				}else {
+					node.GetLog().Error("Can't extract value using JPath.Err:",err)
+				}
+			}
 			if !node.config.IsValueFilterEnabled || ((newMsg.Payload.Value == node.config.ValueFilter.Value) && node.config.IsValueFilterEnabled) {
+
 					rMsg := model.Message{AddressStr: newMsg.Topic, Address: *newMsg.Addr, Payload: *newMsg.Payload}
 					newEvent := model.ReactorEvent{Msg: rMsg, TransitionNodeId: node.Meta().SuccessTransition}
 					if node.config.LookupServiceNameAndLocation {
