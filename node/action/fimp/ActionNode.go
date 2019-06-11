@@ -98,6 +98,9 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	fimpMsg := fimpgo.FimpMessage{Type: node.Meta().ServiceInterface, Service: node.Meta().Service, Properties: node.config.Props}
 	fimpMsg.Source = "flow_"+node.FlowOpCtx().FlowId
 	fimpMsg.ResponseToTopic = node.config.ResponseToTopic
+	if fimpMsg.Version == "" {
+		fimpMsg.Version = "1"
+	}
 	if node.config.VariableName != "" {
 		node.GetLog().Debug("Using variable as input :", node.config.VariableName)
 		flowId := node.FlowOpCtx().FlowId
