@@ -160,7 +160,8 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 					node.GetLog().Debug("JPath extracted value =",newVal)
 					newMsg.Payload = fimpgo.NewMessage(newMsg.Payload.Type,newMsg.Payload.Service,node.config.ValueJPathResultType,newVal,nil,nil,nil)
 				}else {
-					node.GetLog().Error("Can't extract value using JPath.Err:",err)
+					node.GetLog().Debug("Can't extract value using JPath.Err:",err)
+					continue
 				}
 			}
 			if !node.config.IsValueFilterEnabled || ((newMsg.Payload.Value == node.config.ValueFilter.Value) && node.config.IsValueFilterEnabled) {
