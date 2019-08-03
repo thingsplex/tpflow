@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/futurehomeno/fimpgo"
-	"github.com/alivinco/tpflow/registry"
+	"github.com/thingsplex/tpflow/registry"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 	"net/http"

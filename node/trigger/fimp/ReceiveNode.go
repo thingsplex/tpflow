@@ -3,9 +3,9 @@ package fimp
 import (
 	"errors"
 	"github.com/futurehomeno/fimpgo"
-	"github.com/alivinco/tpflow/model"
-	"github.com/alivinco/tpflow/node/base"
-	"github.com/alivinco/tpflow/registry"
+	"github.com/thingsplex/tpflow/model"
+	"github.com/thingsplex/tpflow/node/base"
+	"github.com/thingsplex/tpflow/registry"
 	"github.com/mitchellh/mapstructure"
 	"time"
 )

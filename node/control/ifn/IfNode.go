@@ -2,9 +2,9 @@ package ifn
 
 import (
 	"errors"
-	"github.com/alivinco/tpflow/model"
-	"github.com/alivinco/tpflow/node/base"
-	"github.com/alivinco/tpflow/utils"
+	"github.com/thingsplex/tpflow/model"
+	"github.com/thingsplex/tpflow/node/base"
+	"github.com/thingsplex/tpflow/utils"
 	//"github.com/mitchellh/mapstructure"
 	"github.com/mitchellh/mapstructure"
 )

@@ -1,12 +1,12 @@
 package fimpcore
 
 import (
-	"github.com/alivinco/tpflow/registry"
-	"github.com/alivinco/tpflow/registry/integration/fh"
+	"github.com/thingsplex/tpflow/registry"
+	"github.com/thingsplex/tpflow/registry/integration/fh"
 	log "github.com/sirupsen/logrus"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/futurehomeno/fimpgo/fimptype"
-	tpflow "github.com/alivinco/tpflow"
+	tpflow "github.com/thingsplex/tpflow"
 	"github.com/pkg/errors"
 	"runtime/debug"
 	"strconv"

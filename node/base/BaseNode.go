@@ -2,8 +2,8 @@ package base
 
 import (
 	log "github.com/sirupsen/logrus"
-	"github.com/alivinco/tpflow/connector"
-	"github.com/alivinco/tpflow/model"
+	"github.com/thingsplex/tpflow/connector"
+	"github.com/thingsplex/tpflow/model"
 )
 
 type BaseNode struct {

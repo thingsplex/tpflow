@@ -1,8 +1,8 @@
 package time
 
 import (
-	"github.com/alivinco/tpflow/model"
-	"github.com/alivinco/tpflow/node/base"
+	"github.com/thingsplex/tpflow/model"
+	"github.com/thingsplex/tpflow/node/base"
 	"github.com/futurehomeno/fimpgo"
 	//"github.com/kelvins/sunrisesunset"
 	"github.com/mitchellh/mapstructure"

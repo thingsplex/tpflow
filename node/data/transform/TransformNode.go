@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/Knetic/govaluate"
-	"github.com/alivinco/tpflow/model"
-	"github.com/alivinco/tpflow/node/base"
+	"github.com/thingsplex/tpflow/model"
+	"github.com/thingsplex/tpflow/node/base"
 	"github.com/mitchellh/mapstructure"
 	"text/template"
 )

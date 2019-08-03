@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"github.com/futurehomeno/fimpgo"
-	"github.com/alivinco/tpflow/model"
+	"github.com/thingsplex/tpflow/model"
 	"github.com/labstack/echo"
 	"io/ioutil"
 	"net/http"

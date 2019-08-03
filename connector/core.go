@@ -3,9 +3,9 @@ package connector
 import (
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
-	"github.com/alivinco/tpflow/connector/model"
-	"github.com/alivinco/tpflow/connector/plugins"
-	"github.com/alivinco/tpflow/utils"
+	"github.com/thingsplex/tpflow/connector/model"
+	"github.com/thingsplex/tpflow/connector/plugins"
+	"github.com/thingsplex/tpflow/utils"
 	"io/ioutil"
 	"path/filepath"
 	"strings"

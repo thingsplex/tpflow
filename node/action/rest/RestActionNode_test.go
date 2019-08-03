@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 	log "github.com/sirupsen/logrus"
-	"github.com/alivinco/tpflow/model"
+	"github.com/thingsplex/tpflow/model"
 )
 
 func TestNode_OnInput_Jpath(t *testing.T) {

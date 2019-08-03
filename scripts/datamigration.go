@@ -2,13 +2,13 @@ package process
 
 import (
 	log "github.com/sirupsen/logrus"
-	"github.com/alivinco/thingsplex/integr/fhcore"
-	"github.com/alivinco/tpflow/registry"
+	"github.com/thingsplex/tpflow/registry"
+	"github.com/thingsplex/tpflow/registry/integration/fh"
 	"strconv"
 	"time"
 )
 
-func LoadVinculumDeviceInfoToStore(thingRegistryStore *registry.ThingRegistryStore, vincClient *fhcore.VinculumClient,integrProc *registry.MqttIntegration) error {
+func LoadVinculumDeviceInfoToStore(thingRegistryStore *registry.ThingRegistryStore, vincClient *fh.VinculumClient,integrProc *registry.MqttIntegration) error {
 
 	commTechMap := map[string]string{"zwave-ad": "zw", "ikea": "ikea"}
 	//vincToServiceNameMap := map[string]string{

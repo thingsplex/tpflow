@@ -3,8 +3,8 @@ package flow
 import (
 	"github.com/futurehomeno/fimpgo"
 	"github.com/futurehomeno/fimpgo/fimptype"
-	actfimp "github.com/alivinco/tpflow/node/action/fimp"
-	trigfimp "github.com/alivinco/tpflow/node/trigger/fimp"
+	actfimp "github.com/thingsplex/tpflow/node/action/fimp"
+	trigfimp "github.com/thingsplex/tpflow/node/trigger/fimp"
 	"github.com/imdario/mergo"
 	"github.com/mitchellh/mapstructure"
 	"strings"

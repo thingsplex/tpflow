@@ -2,7 +2,7 @@ package influx
 
 import (
 	"errors"
-	"github.com/alivinco/tpflow/model"
+	"github.com/thingsplex/tpflow/model"
 	influx "github.com/influxdata/influxdb/client/v2"
 	"github.com/mitchellh/mapstructure"
 	"text/template"

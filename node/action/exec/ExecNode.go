@@ -2,8 +2,8 @@ package exec
 
 import (
 	"encoding/json"
-	"github.com/alivinco/tpflow/model"
-	"github.com/alivinco/tpflow/node/base"
+	"github.com/thingsplex/tpflow/model"
+	"github.com/thingsplex/tpflow/node/base"
 	"github.com/mitchellh/mapstructure"
 	"io/ioutil"
 	"os"

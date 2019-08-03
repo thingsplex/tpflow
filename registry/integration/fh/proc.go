@@ -1,7 +1,7 @@
 package fh
 
 import (
-	"github.com/alivinco/tpflow/registry"
+	"github.com/thingsplex/tpflow/registry"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/futurehomeno/fimpgo/fimptype/primefimp"
 	log "github.com/sirupsen/logrus"

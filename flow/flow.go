@@ -2,9 +2,9 @@ package flow
 
 import (
 	log "github.com/sirupsen/logrus"
-	"github.com/alivinco/tpflow/connector"
-	"github.com/alivinco/tpflow/model"
-	"github.com/alivinco/tpflow/node"
+	"github.com/thingsplex/tpflow/connector"
+	"github.com/thingsplex/tpflow/model"
+	"github.com/thingsplex/tpflow/node"
 	"github.com/pkg/errors"
 	"runtime/debug"
 	"sync"

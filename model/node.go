@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/alivinco/tpflow/connector"
+	"github.com/thingsplex/tpflow/connector"
 )
 
 type NodeID string

@@ -3,7 +3,7 @@ package client
 import (
 	"encoding/json"
 	"github.com/futurehomeno/fimpgo"
-	"github.com/alivinco/tpflow/registry"
+	"github.com/thingsplex/tpflow/registry"
 	"testing"
 )
 

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 	log "github.com/sirupsen/logrus"
-	"github.com/alivinco/tpflow/model"
+	"github.com/thingsplex/tpflow/model"
 )
 
 func TestExecNode_OnInput_Python(t *testing.T) {

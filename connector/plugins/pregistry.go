@@ -1,9 +1,9 @@
 package plugins
 
 import (
-	"github.com/alivinco/tpflow/connector/model"
-	"github.com/alivinco/tpflow/connector/plugins/fimpmqtt"
-	"github.com/alivinco/tpflow/connector/plugins/influxdb"
+	"github.com/thingsplex/tpflow/connector/model"
+	"github.com/thingsplex/tpflow/connector/plugins/fimpmqtt"
+	"github.com/thingsplex/tpflow/connector/plugins/influxdb"
 )
 
 var pluginRegistry = map[string]model.Plugin{

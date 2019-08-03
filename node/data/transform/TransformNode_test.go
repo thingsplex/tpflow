@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alivinco/tpflow/model"
+	"github.com/thingsplex/tpflow/model"
 )
 
 func TestNode_OnInput_Calc(t *testing.T) {

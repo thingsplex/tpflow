@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"github.com/futurehomeno/fimpgo"
-	"github.com/alivinco/tpflow"
+	"github.com/thingsplex/tpflow"
 	"io/ioutil"
 	"testing"
 	"time"
