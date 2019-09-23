@@ -66,9 +66,9 @@ func (mg *MqttIntegration) onMqttMessage(topic string, addr *fimpgo.Address, iot
 		tech := addr.ResourceName
 		mg.processExclusionReport(iotMsg, tech)
 	case "cmd.registry.sync_devices":
-		mg.vincIntegr.SyncDevice()
+		go mg.vincIntegr.SyncDevice()
 	case "cmd.registry.sync_rooms":
-		mg.vincIntegr.SyncRooms()
+		go mg.vincIntegr.SyncRooms()
 	case "cmd.service.get_list":
 		//  pt:j1/mt:cmd/rt:app/rn:registry/ad:1
 		//  {"serv":"registry","type":"cmd.service.get_list","val_t":"str_map","val":{"serviceName":"out_bin_switch","filterWithoutAlias":"true"},"props":null,"tags":null,"uid":"1234455"}

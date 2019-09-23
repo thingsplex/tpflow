@@ -13,12 +13,12 @@ type SetVariableNode struct {
 }
 
 type SetVariableNodeConfig struct {
-	Name            string
-	Description     string
-	UpdateGlobal    bool // true - update global variable ; false - update local variable
-	UpdateInputMsg  bool // true - update input message  ; false - update context variable
-	PersistOnUpdate bool // true - is saved on disk ; false - in memory only
-	DefaultValue    model.Variable
+	Name               string
+	Description        string
+	UpdateGlobal       bool // true - update global variable ; false - update local variable
+	UpdateInputMsg     bool // true - update input message  ; false - update context variable
+	IsVariableInMemory bool // true - is saved on disk ; false - in memory only
+	DefaultValue       model.Variable
 }
 
 func NewSetVariableNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
@@ -51,16 +51,16 @@ func (node *SetVariableNode) OnInput(msg *model.Message) ([]model.NodeID, error)
 		// Save input value to variable
 		if node.nodeConfig.DefaultValue.ValueType == "" {
 			if node.nodeConfig.UpdateGlobal {
-				node.ctx.SetVariable(node.nodeConfig.Name, msg.Payload.ValueType, msg.Payload.Value, node.nodeConfig.Description, "global", false)
+				node.ctx.SetVariable(node.nodeConfig.Name, msg.Payload.ValueType, msg.Payload.Value, node.nodeConfig.Description, "global", node.nodeConfig.IsVariableInMemory)
 			} else {
-				node.ctx.SetVariable(node.nodeConfig.Name, msg.Payload.ValueType, msg.Payload.Value, node.nodeConfig.Description, node.FlowOpCtx().FlowId, false)
+				node.ctx.SetVariable(node.nodeConfig.Name, msg.Payload.ValueType, msg.Payload.Value, node.nodeConfig.Description, node.FlowOpCtx().FlowId, node.nodeConfig.IsVariableInMemory)
 			}
 		} else {
 			// Save default value from node config to variable
 			if node.nodeConfig.UpdateGlobal {
-				node.ctx.SetVariable(node.nodeConfig.Name, node.nodeConfig.DefaultValue.ValueType, node.nodeConfig.DefaultValue.Value, node.nodeConfig.Description, "global", false)
+				node.ctx.SetVariable(node.nodeConfig.Name, node.nodeConfig.DefaultValue.ValueType, node.nodeConfig.DefaultValue.Value, node.nodeConfig.Description, "global", node.nodeConfig.IsVariableInMemory)
 			} else {
-				node.ctx.SetVariable(node.nodeConfig.Name, node.nodeConfig.DefaultValue.ValueType, node.nodeConfig.DefaultValue.Value, node.nodeConfig.Description, node.FlowOpCtx().FlowId, false)
+				node.ctx.SetVariable(node.nodeConfig.Name, node.nodeConfig.DefaultValue.ValueType, node.nodeConfig.DefaultValue.Value, node.nodeConfig.Description, node.FlowOpCtx().FlowId, node.nodeConfig.IsVariableInMemory)
 			}
 		}
 	}

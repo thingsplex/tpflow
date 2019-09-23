@@ -101,7 +101,7 @@ func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 					break
 				}
 				reqValue.Rec.UpdatedAt = time.Now()
-				ctx.ctx.PutRecord(&reqValue.Rec, reqValue.FlowId, false)
+				ctx.ctx.PutRecord(&reqValue.Rec, reqValue.FlowId, reqValue.Rec.InMemory)
 				fimp = fimpgo.NewMessage("evt.flow.ctx_update_report", "tpflow", "string", "ok", nil, nil, newMsg.Payload)
 
 			case "cmd.flow.ctx_delete":

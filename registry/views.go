@@ -2,7 +2,9 @@ package registry
 
 type ServiceExtendedView struct {
 	Service
-	LocationAlias string `json:"location_alias"`
+	LocationAlias   string `json:"location_alias"`
+	LocationType    string `json:"location_type"`
+	LocationSubType string `json:"location_sub_type"`
 }
 
 type ThingWithLocationView struct {

@@ -93,6 +93,7 @@ type Location struct {
 	ID             ID         `json:"id" storm:"id,increment,index"`
 	IntegrationId  string     `json:"integr_id"`
 	Type           string     `json:"type"`
+	SubType        string     `json:"sub_type"`
 	Alias          string     `json:"alias"`
 	Address        string     `json:"address"`
 	Longitude      float64    `json:"long"`

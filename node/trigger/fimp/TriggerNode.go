@@ -131,6 +131,8 @@ func (node *TriggerNode) LookupAddressToAlias(address string) {
 	if err == nil {
 		node.ctx.SetVariable("flow_service_alias", "string", service.Alias, "", node.FlowOpCtx().FlowId, true)
 		node.ctx.SetVariable("flow_location_alias", "string", service.LocationAlias, "", node.FlowOpCtx().FlowId, true)
+		node.ctx.SetVariable("flow_location_type", "string", service.LocationType, "", node.FlowOpCtx().FlowId, true)
+		node.ctx.SetVariable("flow_location_sub_type", "string", service.LocationSubType, "", node.FlowOpCtx().FlowId, true)
 	}
 }
 // WaitForEvent is started during flow initialization  or from another flow .

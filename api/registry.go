@@ -367,8 +367,13 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				api.reg.ClearAll()
 			}
 			if fimp != nil {
-				addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
-				err  = api.msgTransport.Publish(&addr, fimp)
+				if newMsg.Payload.ResponseToTopic != "" {
+					fimpBin , _ := fimp.SerializeToJson()
+					api.msgTransport.PublishRaw(newMsg.Payload.ResponseToTopic,fimpBin)
+				}else {
+					addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
+					err  = api.msgTransport.Publish(&addr, fimp)
+				}
 				log.Debug(err)
 			}else {
 				//log.Error("<reg-api> Error , nothing to return . Err:",err)

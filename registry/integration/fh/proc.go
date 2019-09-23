@@ -155,7 +155,7 @@ func (mg *VinculumIntegration) ProcessVincRoomUpdate(rooms []primefimp.Room) err
 		loc,_ := mg.registry.GetLocationByIntegrationId( strconv.FormatInt(int64(rooms[i].ID),16))
 		if loc == nil {
 			// Location doesn't exist in registry
-			loc = &registry.Location{Type:"room",Alias:rooms[i].Client.Name,IntegrationId:strconv.FormatInt(int64(rooms[i].ID),16)}
+			loc = &registry.Location{Type:"room",SubType:rooms[i].Type,Alias:rooms[i].Client.Name,IntegrationId:strconv.FormatInt(int64(rooms[i].ID),16)}
 		} else {
 			loc.Alias = rooms[i].Client.Name
 		}

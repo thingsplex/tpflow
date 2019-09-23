@@ -109,6 +109,8 @@ func (st *ThingRegistryStore) GetServiceByFullAddress(address string) (*ServiceE
 			location, _ := st.GetLocationById(st.services[i].LocationId)
 			if location != nil {
 				serv.LocationAlias = location.Alias
+				serv.LocationType = location.Type
+				serv.LocationSubType = location.SubType
 			}
 			return &serv, nil
 		}
