@@ -31,6 +31,8 @@ github.com/futurehomeno/fimpgo v1.4.2-0.20190804195611-0e82941976b1 h1:8ESYm+TY+
 github.com/futurehomeno/fimpgo v1.4.2-0.20190804195611-0e82941976b1/go.mod h1:HlCU8WBRMpYVmB/3MUh08VIDj+H95b9TQO6wVhUvrXY=
 github.com/futurehomeno/fimpgo v1.4.2 h1:FfAGs/f60VK8fuQGkUavag43v+ukt/xODd5UYtl+kzU=
 github.com/futurehomeno/fimpgo v1.4.2/go.mod h1:HlCU8WBRMpYVmB/3MUh08VIDj+H95b9TQO6wVhUvrXY=
+github.com/futurehomeno/fimpgo v1.4.6 h1:IYJygmg0bTkezib8KntGqEoaH83/YgRC0ZG3O7x52GM=
+github.com/futurehomeno/fimpgo v1.4.6/go.mod h1:hVp7bMPj/wz4zejT6O0WCPCttKqSNn+72+n5Elu7wNI=
 github.com/golang/protobuf v1.2.0 h1:P3YflyNX/ehuJFLhxviNdFxQPkGK5cDcApsge1SqnvM=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db h1:woRePGFeVFfLKN/pOkfl+p/TAqKOfFu+7KPlMVpok/w=

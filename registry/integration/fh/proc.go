@@ -84,7 +84,10 @@ func (mg *VinculumIntegration) ProcessVincDeviceUpdate(devices []primefimp.Devic
 				thing = &registry.Thing{}
 				thing.Address = devices[i].Fimp.Address
 				thing.CommTechnology = adapter
-				thing.Alias = devices[i].Client.Name
+				if devices[i].Client.Name != nil {
+					thing.Alias = *devices[i].Client.Name
+				}
+
 
 				if !ok {
 					// Requesting inclusion report from adapter to gether more extanded info
@@ -103,22 +106,29 @@ func (mg *VinculumIntegration) ProcessVincDeviceUpdate(devices []primefimp.Devic
 			}
 		}else {
 			// Thing is already in registry and in sync with vinculum , user has updated Name
-			thing.Alias = devices[i].Client.Name
+			if devices[i].Client.Name != nil {
+				thing.Alias = *devices[i].Client.Name
+			}
+		}
+		if devices[i].Room != nil {
+			loc , _ := mg.registry.GetLocationByIntegrationId(strconv.FormatInt(int64(*devices[i].Room),16))
+			if loc != nil {
+				log.Debug("Updating location")
+				thing.LocationId = loc.ID
+			}
 		}
 
-		loc , _ := mg.registry.GetLocationByIntegrationId(strconv.FormatInt(int64(devices[i].Room),16))
-		if loc != nil {
-			log.Debug("Updating location")
-			thing.LocationId = loc.ID
-		}
 		var thingID registry.ID
 		if !ok {
 			thingID ,_ = mg.registry.UpsertThing(thing)
 		}else {
 			thingID = thing.ID
 		}
+		if devices[i].Client.Name != nil && devices[i].Room != nil {
+			mg.ProcessVincServiceUpdate(*devices[i].Client.Name,*devices[i].Room,thingID,devices[i].Service)
+		}
 
-		mg.ProcessVincServiceUpdate(devices[i].Client.Name,devices[i].Room,thingID,devices[i].Service)
+
 
 		processedDevices[adapter+":"+devices[i].Fimp.Address] = true
 	}
@@ -153,14 +163,19 @@ func (mg *VinculumIntegration) ProcessVincRoomUpdate(rooms []primefimp.Room) err
 	var err error
 	for i:= range rooms {
 		loc,_ := mg.registry.GetLocationByIntegrationId( strconv.FormatInt(int64(rooms[i].ID),16))
-		if loc == nil {
-			// Location doesn't exist in registry
-			loc = &registry.Location{Type:"room",SubType:rooms[i].Type,Alias:rooms[i].Client.Name,IntegrationId:strconv.FormatInt(int64(rooms[i].ID),16)}
-		} else {
-			loc.Alias = rooms[i].Client.Name
+		if rooms[i].Type != nil && rooms[i].Client.Name != nil {
+			if loc == nil {
+				// Location doesn't exist in registry
+				loc = &registry.Location{Type:"room",SubType:*rooms[i].Type,Alias:*rooms[i].Client.Name,IntegrationId:strconv.FormatInt(int64(rooms[i].ID),16)}
+			} else {
+				loc.Alias = *rooms[i].Client.Name
+			}
 		}
-		if loc.Alias == "" {
-			loc.Alias = rooms[i].Type
+
+
+
+		if loc.Alias == "" && rooms[i].Type!=nil{
+			loc.Alias = *rooms[i].Type
 		}
 		_,err = mg.registry.UpsertLocation(loc)
 		if err != nil {

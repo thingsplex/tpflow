@@ -29,7 +29,7 @@ type Node struct {
 }
 
 type NodeConfig struct {
-	DefaultMsg              model.Variable
+	DefaultValue            model.Variable
 	Expressions             []TimeExpression
 	GenerateAstroTimeEvents bool
 	Latitude                float64

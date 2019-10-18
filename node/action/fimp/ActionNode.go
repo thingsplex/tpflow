@@ -20,7 +20,7 @@ type Node struct {
 
 type NodeConfig struct {
 	DefaultValue             model.Variable
-	VariableName             string
+	VariableName              string
 	VariableType             string
 	IsVariableGlobal         bool
 	Props                    fimpgo.Props
@@ -28,6 +28,7 @@ type NodeConfig struct {
 	VirtualServiceGroup      string
 	VirtualServiceProps      map[string]interface{} // mostly used to announce supported features of the service , for instance supported modes , states , setpoints , etc...
 	ResponseToTopic          string // in request-response communication requester can set topic to which server will send response
+	IsResponseToReq          bool // Indicates that the action is response to request and corid field should be set to the same value as request uuid
 }
 
 func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
@@ -95,9 +96,15 @@ func (node *Node) WaitForEvent(responseChannel chan model.ReactorEvent) {
 
 func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	node.GetLog().Info("Executing Node . Name = ", node.Meta().Label)
-	fimpMsg := fimpgo.FimpMessage{Type: node.Meta().ServiceInterface, Service: node.Meta().Service, Properties: node.config.Props}
+	node.GetLog().Infof("Request uuid %s",msg.Payload.UID)
+	//fimpMsg := fimpgo.FimpMessage{Type: node.Meta().ServiceInterface, Service: node.Meta().Service, Properties: node.config.Props}
+	fimpMsg := fimpgo.NewMessage(node.Meta().ServiceInterface,node.Meta().Service,"",nil,node.config.Props,nil,nil)
 	fimpMsg.Source = "flow_"+node.FlowOpCtx().FlowId
 	fimpMsg.ResponseToTopic = node.config.ResponseToTopic
+	if node.config.IsResponseToReq {
+		fimpMsg.CorrelationID = msg.Payload.UID
+	}
+
 	if fimpMsg.Version == "" {
 		fimpMsg.Version = "1"
 	}
@@ -124,15 +131,10 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		}
 	}
 
-	msgBa, err := fimpMsg.SerializeToJson()
-	if err != nil {
-		return nil, err
-	}
 	var addrTemplateBuffer bytes.Buffer
 	node.addressTemplate.Execute(&addrTemplateBuffer, nil)
 	address := addrTemplateBuffer.String()
-	node.GetLog().Debug(" Address: ", address)
-	node.GetLog().Debug(" Action message : ", fimpMsg)
-	node.transport.PublishRaw(address, msgBa)
+	node.GetLog().Debug(" Publishing to: ", address)
+	node.transport.PublishToTopic(address,fimpMsg)
 	return []model.NodeID{node.Meta().SuccessTransition}, nil
 }
