@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/futurehomeno/fimpgo"
-	"github.com/thingsplex/tpflow/registry"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
+	"github.com/thingsplex/tpflow/registry"
+	"github.com/thingsplex/tpflow/registry/model"
 	"net/http"
 	"strconv"
 )
@@ -26,14 +27,14 @@ func NewRegistryApi(ctx *registry.ThingRegistryStore, echo *echo.Echo) *Registry
 func (api *RegistryApi) RegisterRestApi() {
 	api.echo.GET("/fimp/api/registry/things", func(c echo.Context) error {
 
-		var things []registry.Thing
+		var things []model.Thing
 		var locationId int
 		var err error
 		locationIdStr := c.QueryParam("locationId")
 		locationId, _ = strconv.Atoi(locationIdStr)
 
 		if locationId != 0 {
-			things, err = api.reg.GetThingsByLocationId(registry.ID(locationId))
+			things, err = api.reg.GetThingsByLocationId(model.ID(locationId))
 		} else {
 			things, err = api.reg.GetAllThings()
 		}
@@ -57,7 +58,7 @@ func (api *RegistryApi) RegisterRestApi() {
 		if filterWithoutAliasStr == "true" {
 			filterWithoutAlias = true
 		}
-		services, err := api.reg.GetExtendedServices(serviceName, filterWithoutAlias, registry.ID(thingId), registry.ID(locationId))
+		services, err := api.reg.GetExtendedServices(serviceName, filterWithoutAlias, model.ID(thingId), model.ID(locationId))
 
 		if err == nil {
 			return c.JSON(http.StatusOK, services)
@@ -78,7 +79,7 @@ func (api *RegistryApi) RegisterRestApi() {
 	})
 
 	api.echo.PUT("/fimp/api/registry/service", func(c echo.Context) error {
-		service := registry.Service{}
+		service := model.Service{}
 		err := c.Bind(&service)
 		if err == nil {
 			log.Info("<REST> Saving service")
@@ -91,7 +92,7 @@ func (api *RegistryApi) RegisterRestApi() {
 	})
 
 	api.echo.PUT("/fimp/api/registry/location", func(c echo.Context) error {
-		location := registry.Location{}
+		location := model.Location{}
 		err := c.Bind(&location)
 		if err == nil {
 			log.Info("<REST> Saving location")
@@ -116,7 +117,7 @@ func (api *RegistryApi) RegisterRestApi() {
 		//thingIdStr := c.QueryParam("thingId")
 		//thingId, _ = strconv.Atoi(thingIdStr)
 		//services, err := thingRegistryStore.GetFlatInterfaces(thingAddr, thingTech, serviceName, intfMsgType, registry.ID(locationId), registry.ID(thingId))
-		services := []registry.ServiceExtendedView{}
+		services := []model.ServiceExtendedView{}
 		if err == nil {
 			return c.JSON(http.StatusOK, services)
 		} else {
@@ -153,7 +154,7 @@ func (api *RegistryApi) RegisterRestApi() {
 	})
 
 	api.echo.PUT("/fimp/api/registry/thing", func(c echo.Context) error {
-		thing := registry.Thing{}
+		thing := model.Thing{}
 		err := c.Bind(&thing)
 		fmt.Println(err)
 		if err == nil {
@@ -170,7 +171,7 @@ func (api *RegistryApi) RegisterRestApi() {
 	api.echo.DELETE("/fimp/api/registry/thing/:id", func(c echo.Context) error {
 		idStr := c.Param("id")
 		thingId, _ := strconv.Atoi(idStr)
-		err := api.reg.DeleteThing(registry.ID(thingId))
+		err := api.reg.DeleteThing(model.ID(thingId))
 		if err == nil {
 			return c.NoContent(http.StatusOK)
 		}
@@ -181,7 +182,7 @@ func (api *RegistryApi) RegisterRestApi() {
 	api.echo.DELETE("/fimp/api/registry/location/:id", func(c echo.Context) error {
 		idStr := c.Param("id")
 		thingId, _ := strconv.Atoi(idStr)
-		err := api.reg.DeleteLocation(registry.ID(thingId))
+		err := api.reg.DeleteLocation(model.ID(thingId))
 		if err == nil {
 			return c.NoContent(http.StatusOK)
 		}
@@ -206,7 +207,7 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 			fimp = nil
 			switch newMsg.Payload.Type {
 			case "cmd.registry.get_things":
-				var things []registry.Thing
+				var things []model.Thing
 				var locationId int
 
 				val,_ := newMsg.Payload.GetStrMapValue()
@@ -215,7 +216,7 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				locationId, _ = strconv.Atoi(locationIdStr)
 
 				if locationId != 0 {
-					things, err = api.reg.GetThingsByLocationId(registry.ID(locationId))
+					things, err = api.reg.GetThingsByLocationId(model.ID(locationId))
 				} else {
 					things, err = api.reg.GetAllThings()
 				}
@@ -245,7 +246,7 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 					filterWithoutAlias = true
 				}
 				log.Debug("Getting extended services ")
-				services, err := api.reg.GetExtendedServices(serviceName, filterWithoutAlias, registry.ID(thingId), registry.ID(locationId))
+				services, err := api.reg.GetExtendedServices(serviceName, filterWithoutAlias, model.ID(thingId), model.ID(locationId))
 
 				if err == nil {
 					fimp = fimpgo.NewMessage("evt.registry.services_report", "tpflow", "object", services, nil, nil, newMsg.Payload)
@@ -267,7 +268,7 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				}
 
 			case "cmd.registry.update_service":
-				service := registry.Service{}
+				service := model.Service{}
 				serviceJsonDef := newMsg.Payload.GetRawObjectValue()
 				err := json.Unmarshal(serviceJsonDef, &service)
 				result := make(map[string]string)
@@ -287,7 +288,7 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				fimp = fimpgo.NewStrMapMessage("evt.registry.update_service_report", "tpflow", result, nil, nil, newMsg.Payload)
 
 			case "cmd.registry.update_thing":
-				thing := registry.Thing{}
+				thing := model.Thing{}
 				thingJsonDef := newMsg.Payload.GetRawObjectValue()
 				err := json.Unmarshal(thingJsonDef, &thing)
 				result := make(map[string]string)
@@ -307,7 +308,7 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				fimp = fimpgo.NewStrMapMessage("evt.registry.update_thing_report", "tpflow", result, nil, nil, newMsg.Payload)
 
 			case "cmd.registry.update_location":
-				location := registry.Location{}
+				location := model.Location{}
 				locationJsonDef := newMsg.Payload.GetRawObjectValue()
 				err := json.Unmarshal(locationJsonDef, &location)
 				result := make(map[string]string)
@@ -345,7 +346,7 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 			case "cmd.registry.delete_thing":
 				idStr , _ := newMsg.Payload.GetStringValue()
 				thingId, _ := strconv.Atoi(idStr)
-				err := api.reg.DeleteThing(registry.ID(thingId))
+				err := api.reg.DeleteThing(model.ID(thingId))
 				var resp string
 				if err != nil {
 					resp = err.Error()
@@ -355,7 +356,7 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 			case "cmd.registry.delete_location":
 				idStr , _ := newMsg.Payload.GetStringValue()
 				thingId, _ := strconv.Atoi(idStr)
-				err := api.reg.DeleteLocation(registry.ID(thingId))
+				err := api.reg.DeleteLocation(model.ID(thingId))
 				var resp string
 				if err != nil {
 					resp = err.Error()

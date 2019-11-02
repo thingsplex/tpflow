@@ -1,4 +1,4 @@
-package registry
+package model
 
 type ServiceExtendedView struct {
 	Service

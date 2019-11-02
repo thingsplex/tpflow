@@ -35,6 +35,7 @@ type FlowMeta struct {
 	Group       string
 	Description string
 	Nodes       []MetaNode
+	IsDisabled  bool
 }
 
 const (

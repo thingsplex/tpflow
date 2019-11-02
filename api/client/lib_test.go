@@ -3,7 +3,7 @@ package client
 import (
 	"encoding/json"
 	"github.com/futurehomeno/fimpgo"
-	"github.com/thingsplex/tpflow/registry"
+	"github.com/thingsplex/tpflow/registry/model"
 	"testing"
 )
 
@@ -118,7 +118,7 @@ func TestApiRemoteClient_RegistryGetListOfThings(t *testing.T) {
 func TestApiRemoteClient_UpdateLocation(t *testing.T) {
 	remoteApiClient := getApiRemoteClient()
 
-	location := registry.Location{Type:"room",Alias:"test_location_1"}
+	location := model.Location{Type: "room",Alias:"test_location_1"}
 
 	updateResp,err := remoteApiClient.RegistryUpdateLocation(&location)
 	if err == nil && updateResp != ""  {

@@ -1,14 +1,15 @@
 package registry
 
 import (
+	"github.com/thingsplex/tpflow/registry/model"
 	"os"
 	"testing"
 )
 
 func TestThingRegistryStore_UpsertThing(t *testing.T) {
 	dbFileName := "testStore1.db"
-	thing := Thing{Alias: "Super mega thing", Address: "1234"}
-	service := Service{Address: "service/1", Name: "dev_sys"}
+	thing := model.Thing{Alias: "Super mega thing", Address: "1234"}
+	service := model.Service{Address: "service/1", Name: "dev_sys"}
 
 	st := NewThingRegistryStore(dbFileName)
 	newID, err := st.UpsertThing(&thing)
@@ -19,7 +20,7 @@ func TestThingRegistryStore_UpsertThing(t *testing.T) {
 	t.Log("New id = ", newID)
 
 	service.ParentContainerId = newID
-	service.ParentContainerType = ThingContainer
+	service.ParentContainerType = model.ThingContainer
 
 	newServiceID, err := st.UpsertService(&service)
 	if err != nil {

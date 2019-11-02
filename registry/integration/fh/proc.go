@@ -1,10 +1,11 @@
 package fh
 
 import (
-	"github.com/thingsplex/tpflow/registry"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/futurehomeno/fimpgo/fimptype/primefimp"
 	log "github.com/sirupsen/logrus"
+	"github.com/thingsplex/tpflow/registry"
+	"github.com/thingsplex/tpflow/registry/model"
 	"strconv"
 	"strings"
 )
@@ -81,7 +82,7 @@ func (mg *VinculumIntegration) ProcessVincDeviceUpdate(devices []primefimp.Devic
 			thing, _ = mg.registry.GetThingByAddress(adapter, devices[i].Fimp.Address)
 			if thing == nil {
 				log.Debug("No Thing match by address")
-				thing = &registry.Thing{}
+				thing = &model.Thing{}
 				thing.Address = devices[i].Fimp.Address
 				thing.CommTechnology = adapter
 				if devices[i].Client.Name != nil {
@@ -90,7 +91,7 @@ func (mg *VinculumIntegration) ProcessVincDeviceUpdate(devices []primefimp.Devic
 
 
 				if !ok {
-					// Requesting inclusion report from adapter to gether more extanded info
+					// Requesting inclusion report from adapter to gather more extended info
 					responseMsg := fimpgo.NewMessage("cmd.thing.get_inclusion_report", devices[i].Fimp.Adapter, "string", thing.Address, nil, nil, nil)
 					addr := fimpgo.Address{MsgType: fimpgo.MsgTypeCmd, ResourceType: fimpgo.ResourceTypeAdapter, ResourceName: adapter, ResourceAddress: "1"}
 					if mg.msgTransport == nil {
@@ -118,7 +119,7 @@ func (mg *VinculumIntegration) ProcessVincDeviceUpdate(devices []primefimp.Devic
 			}
 		}
 
-		var thingID registry.ID
+		var thingID model.ID
 		if !ok {
 			thingID ,_ = mg.registry.UpsertThing(thing)
 		}else {
@@ -135,16 +136,16 @@ func (mg *VinculumIntegration) ProcessVincDeviceUpdate(devices []primefimp.Devic
 	return nil
 }
 
-func (mg *VinculumIntegration) ProcessVincServiceUpdate(devName string,roomId int ,thingID registry.ID,services map[string]primefimp.Service) error {
+func (mg *VinculumIntegration) ProcessVincServiceUpdate(devName string,roomId int ,thingID model.ID,services map[string]primefimp.Service) error {
 	loc , _ := mg.registry.GetLocationByIntegrationId(strconv.FormatInt(int64(roomId),16))
 	for name,serv := range services {
 		regService,_ := mg.registry.GetServiceByAddress(name,serv.Addr)
 
 		if regService == nil {
-			regService = &registry.Service{}
+			regService = &model.Service{}
 			regService.Address = serv.Addr
 			regService.Name = name
-			regService.ParentContainerType = registry.ThingContainer
+			regService.ParentContainerType = model.ThingContainer
 
 		}
 		regService.ParentContainerId = thingID
@@ -166,7 +167,7 @@ func (mg *VinculumIntegration) ProcessVincRoomUpdate(rooms []primefimp.Room) err
 		if rooms[i].Type != nil && rooms[i].Client.Name != nil {
 			if loc == nil {
 				// Location doesn't exist in registry
-				loc = &registry.Location{Type:"room",SubType:*rooms[i].Type,Alias:*rooms[i].Client.Name,IntegrationId:strconv.FormatInt(int64(rooms[i].ID),16)}
+				loc = &model.Location{Type: "room",SubType:*rooms[i].Type,Alias:*rooms[i].Client.Name,IntegrationId:strconv.FormatInt(int64(rooms[i].ID),16)}
 			} else {
 				loc.Alias = *rooms[i].Client.Name
 			}

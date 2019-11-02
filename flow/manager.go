@@ -86,7 +86,11 @@ func (mg *Manager) LoadAllFlowsFromStorage() error {
 	for _, file := range files {
 		if strings.Contains(file.Name(), ".json") {
 			mg.LoadFlowFromFile(filepath.Join(mg.config.FlowStorageDir, file.Name()))
-			mg.StartFlow(strings.Replace(file.Name(), ".json", "", 1))
+			flowId := strings.Replace(file.Name(), ".json", "", 1)
+			flow := mg.GetFlowById(flowId)
+			if !flow.FlowMeta.IsDisabled {
+				mg.StartFlow(flowId)
+			}
 		}
 	}
 	return nil
@@ -189,10 +193,30 @@ func (mg *Manager) UpdateFlowFromJsonAndSaveToStorage(id string, flowJsonDef []b
 	}
 	err = mg.UpdateFlowFromJson(id, flowJsonDef)
 	if err == nil {
-		mg.StartFlow(id)
+		flow := mg.GetFlowById(id)
+		if !flow.FlowMeta.IsDisabled {
+			mg.StartFlow(id)
+		}
 	}
 	return err
+}
 
+func (mg *Manager) SaveFlowToStorage(id string) error {
+	flow := mg.GetFlowById(id)
+	flowMetaByte,err := json.Marshal(flow.FlowMeta)
+
+	if err != nil {
+		log.Error("<FlMan> Can't marshar imported flow ")
+		return err
+	}
+	fileName := mg.GetFlowFileNameById(id)
+	err = ioutil.WriteFile(fileName, flowMetaByte, 0644)
+	if err != nil {
+		log.Error("Can't save flow to file . Error : ", err)
+		return err
+	}
+	log.Debugf("<FlMan> Flow saved")
+	return nil
 }
 
 func (mg *Manager) GetFlowById(id string) *Flow {
@@ -240,6 +264,11 @@ func (mg *Manager) StartFlow(flowId string) {
 		}
 	}()
 	flow := mg.GetFlowById(flowId)
+	if flow.FlowMeta.IsDisabled {
+		flow.FlowMeta.IsDisabled = false
+		mg.SaveFlowToStorage(flowId)
+	}
+
 	if flow != nil {
 		if flow.GetFlowState() != "RUNNING" {
 			//flow.SetMessageStream(mg.GetNewStream(flow.Id))
@@ -262,8 +291,11 @@ func (mg *Manager) StopFlow(id string) {
 		log.Info("Flow is not running , nothing to stop.")
 		return
 	}
-	mg.GetFlowById(id).Stop()
-	log.Infof("Flow with Id = %s is unloaded", id)
+	flow := mg.GetFlowById(id)
+	flow.Stop()
+	flow.FlowMeta.IsDisabled = true
+	mg.SaveFlowToStorage(id)
+	log.Infof("Flow with Id = %s was stopped and disabled", id)
 }
 
 func (mg *Manager) DeleteFlowFromRegistry(id string, cleanRegistry bool) {

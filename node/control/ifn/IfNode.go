@@ -85,7 +85,8 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		var result bool
 		node.GetLog().Debug("Operand = ", conf.Expression[i].Operand)
 
-		if conf.Expression[i].Operand == "gt" || conf.Expression[i].Operand == "lt" {
+		if conf.Expression[i].Operand == "gt" || conf.Expression[i].Operand == "lt" ||
+			(conf.Expression[i].Operand == "eq" && (conf.Expression[i].LeftVariable.ValueType == "int" || conf.Expression[i].LeftVariable.ValueType == "float")){
 			if conf.Expression[i].LeftVariable.ValueType == "int" || conf.Expression[i].LeftVariable.ValueType == "float" {
 				leftNumericValue, err = utils.ConfigValueToNumber(conf.Expression[i].LeftVariable.ValueType, conf.Expression[i].LeftVariable.Value)
 				if err != nil {
@@ -99,7 +100,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 				}
 
 			} else {
-				return nil, errors.New("Incompatible value type . gt and lt can be used only with numeric types")
+				return nil, errors.New("incompatible value types . gt and lt can be used only with numeric types")
 			}
 		}
 		//node.GetLog().Debug(node.flowOpCtx.FlowId+"<Node> Left numeric value = ", leftNumericValue)

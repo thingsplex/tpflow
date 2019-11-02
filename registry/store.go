@@ -2,22 +2,23 @@ package registry
 
 import (
 	"encoding/gob"
+	"github.com/thingsplex/tpflow/registry/model"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/thingsplex/tpflow/utils"
 	"github.com/asdine/storm"
 	gobcodec "github.com/asdine/storm/codec/gob"
 	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+	"github.com/thingsplex/tpflow/utils"
 )
 
 type ThingRegistryStore struct {
 	thingRegistryStoreFile string
 	db                     *storm.DB
 	// in memory store
-	things    []Thing
-	services  []Service
-	locations []Location
+	things    []model.Thing
+	services  []model.Service
+	locations []model.Location
 }
 
 func NewThingRegistryStore(storeFile string) *ThingRegistryStore {
@@ -35,7 +36,7 @@ func (st *ThingRegistryStore) Connect() error {
 		return err
 	}
 
-	err = st.db.Init(&Thing{})
+	err = st.db.Init(&model.Thing{})
 	if err != nil {
 		log.Error("<Reg> Can't Init Things . Error : ", err)
 		return err
@@ -47,7 +48,7 @@ func (st *ThingRegistryStore) Connect() error {
 		return err
 	}
 
-	err = st.db.Init(&Service{})
+	err = st.db.Init(&model.Service{})
 	if err != nil {
 		log.Error("<Reg> Can't Init Services . Error : ", err)
 		return err
@@ -61,7 +62,7 @@ func (st *ThingRegistryStore) Connect() error {
 
 	// loading all services into memory
 
-	err = st.db.Init(&Location{})
+	err = st.db.Init(&model.Location{})
 	if err != nil {
 		log.Error("<Reg> Can't Init Things . Error : ", err)
 		return err
@@ -77,7 +78,7 @@ func (st *ThingRegistryStore) Disconnect() {
 	st.db.Close()
 }
 
-func (st *ThingRegistryStore) GetThingById(Id ID) (*Thing, error) {
+func (st *ThingRegistryStore) GetThingById(Id model.ID) (*model.Thing, error) {
 	//var thing Thing
 	//err := st.db.One("ID", Id, &thing)
 	for i := range st.things {
@@ -88,7 +89,7 @@ func (st *ThingRegistryStore) GetThingById(Id ID) (*Thing, error) {
 	return nil, nil
 }
 
-func (st *ThingRegistryStore) GetServiceById(Id ID) (*Service, error) {
+func (st *ThingRegistryStore) GetServiceById(Id model.ID) (*model.Service, error) {
 	//var service Service
 	//err := st.db.One("ID", Id, &service)
 	//return &service, err
@@ -100,8 +101,8 @@ func (st *ThingRegistryStore) GetServiceById(Id ID) (*Service, error) {
 	return nil, nil
 }
 
-func (st *ThingRegistryStore) GetServiceByFullAddress(address string) (*ServiceExtendedView, error) {
-	var serv ServiceExtendedView
+func (st *ThingRegistryStore) GetServiceByFullAddress(address string) (*model.ServiceExtendedView, error) {
+	var serv model.ServiceExtendedView
 
 	for i := range st.services {
 		if utils.RouteIncludesTopic("+/+"+st.services[i].Address, address) {
@@ -118,7 +119,7 @@ func (st *ThingRegistryStore) GetServiceByFullAddress(address string) (*ServiceE
 	return &serv, errors.New("Not found")
 }
 
-func (st *ThingRegistryStore) GetLocationById(Id ID) (*Location, error) {
+func (st *ThingRegistryStore) GetLocationById(Id model.ID) (*model.Location, error) {
 	//var location Location
 	//err := st.db.One("ID", Id, &location)
 	//return &location, err
@@ -130,15 +131,15 @@ func (st *ThingRegistryStore) GetLocationById(Id ID) (*Location, error) {
 	return nil, nil
 }
 
-func (st *ThingRegistryStore) GetAllThings() ([]Thing, error) {
+func (st *ThingRegistryStore) GetAllThings() ([]model.Thing, error) {
 	//var things []Thing
 	//err := st.db.All(&things)
 	//return things, err
 	return st.things, nil
 }
 
-func (st *ThingRegistryStore) ExtendThingsWithLocation(things []Thing) []ThingWithLocationView {
-	response := make([]ThingWithLocationView, len(things))
+func (st *ThingRegistryStore) ExtendThingsWithLocation(things []model.Thing) []model.ThingWithLocationView {
+	response := make([]model.ThingWithLocationView, len(things))
 	for i := range things {
 		response[i].Thing = things[i]
 		loc, _ := st.GetLocationById(things[i].LocationId)
@@ -150,7 +151,7 @@ func (st *ThingRegistryStore) ExtendThingsWithLocation(things []Thing) []ThingWi
 	return response
 }
 
-func (st *ThingRegistryStore) GetAllServices() ([]Service, error) {
+func (st *ThingRegistryStore) GetAllServices() ([]model.Service, error) {
 	//var services []Service
 	//err := st.db.All(&services)
 	//return services, err
@@ -158,14 +159,14 @@ func (st *ThingRegistryStore) GetAllServices() ([]Service, error) {
 }
 
 // GetThingExtendedViewById return thing enhanced with linked services and location Alias
-func (st *ThingRegistryStore) GetThingExtendedViewById(Id ID) (*ThingExtendedView, error) {
-	var thingExView ThingExtendedView
+func (st *ThingRegistryStore) GetThingExtendedViewById(Id model.ID) (*model.ThingExtendedView, error) {
+	var thingExView model.ThingExtendedView
 	//err := st.db.One("ID", Id, &thing)
 	thingp, err := st.GetThingById(Id)
 
 	thingExView.Thing = *thingp
-	services, err := st.GetExtendedServices("", false, Id, IDnil)
-	thingExView.Services = make([]ServiceExtendedView, len(services))
+	services, err := st.GetExtendedServices("", false, Id, model.IDnil)
+	thingExView.Services = make([]model.ServiceExtendedView, len(services))
 	for i := range services {
 		thingExView.Services[i] = services[i]
 	}
@@ -176,7 +177,7 @@ func (st *ThingRegistryStore) GetThingExtendedViewById(Id ID) (*ThingExtendedVie
 	return &thingExView, err
 }
 
-func (st *ThingRegistryStore) GetServiceByAddress(serviceName string, serviceAddress string) (*Service, error) {
+func (st *ThingRegistryStore) GetServiceByAddress(serviceName string, serviceAddress string) (*model.Service, error) {
 	//service := Service{}
 	//err := st.db.Select(q.And(q.Eq("Name", serviceName), q.Eq("Address", serviceAddress))).First(&service)
 	for i := range st.services {
@@ -188,8 +189,8 @@ func (st *ThingRegistryStore) GetServiceByAddress(serviceName string, serviceAdd
 }
 
 // GetExtendedServices return services enhanced with location Alias
-func (st *ThingRegistryStore) GetExtendedServices(serviceNameFilter string, filterWithoutAlias bool, thingIdFilter ID, locationIdFilter ID) ([]ServiceExtendedView, error) {
-	var services []Service
+func (st *ThingRegistryStore) GetExtendedServices(serviceNameFilter string, filterWithoutAlias bool, thingIdFilter model.ID, locationIdFilter model.ID) ([]model.ServiceExtendedView, error) {
+	var services []model.Service
 	//var matcher []q.Matcher
 	//if serviceNameFilter != "" {
 	//	match := q.Eq("Name", serviceNameFilter)
@@ -214,7 +215,7 @@ func (st *ThingRegistryStore) GetExtendedServices(serviceNameFilter string, filt
 			}
 		}
 
-		if locationIdFilter != IDnil {
+		if locationIdFilter != model.IDnil {
 			if st.services[i].LocationId != locationIdFilter {
 				continue
 			}
@@ -226,8 +227,8 @@ func (st *ThingRegistryStore) GetExtendedServices(serviceNameFilter string, filt
 			}
 		}
 
-		if thingIdFilter != IDnil {
-			if st.services[i].ParentContainerId != thingIdFilter || st.services[i].ParentContainerType != ThingContainer {
+		if thingIdFilter != model.IDnil {
+			if st.services[i].ParentContainerId != thingIdFilter || st.services[i].ParentContainerType != model.ThingContainer {
 				continue
 			}
 		}
@@ -240,9 +241,9 @@ func (st *ThingRegistryStore) GetExtendedServices(serviceNameFilter string, filt
 	//	log.Error("<Reg> Can't fetch services . Error : ", err)
 	//	return nil, err
 	//}
-	var result []ServiceExtendedView
+	var result []model.ServiceExtendedView
 	for si := range services {
-		serviceResponse := ServiceExtendedView{Service: services[si]}
+		serviceResponse := model.ServiceExtendedView{Service: services[si]}
 		location, _ := st.GetLocationById(serviceResponse.LocationId)
 		if location != nil {
 			serviceResponse.LocationAlias = location.Alias
@@ -252,14 +253,14 @@ func (st *ThingRegistryStore) GetExtendedServices(serviceNameFilter string, filt
 	return result, nil
 }
 
-func (st *ThingRegistryStore) GetAllLocations() ([]Location, error) {
+func (st *ThingRegistryStore) GetAllLocations() ([]model.Location, error) {
 	//var locations []Location
 	//err := st.db.All(&locations)
 	//return locations, err
 	return st.locations, nil
 }
 
-func (st *ThingRegistryStore) GetThingByAddress(technology string, address string) (*Thing, error) {
+func (st *ThingRegistryStore) GetThingByAddress(technology string, address string) (*model.Thing, error) {
 	//var thing Thing
 	//err := st.db.Select(q.And(q.Eq("Address", address), q.Eq("CommTechnology", technology))).First(&thing)
 	//return &thing,err
@@ -271,7 +272,7 @@ func (st *ThingRegistryStore) GetThingByAddress(technology string, address strin
 	return nil, errors.New("Not found")
 }
 
-func (st *ThingRegistryStore) GetThingExtendedViewByAddress(technology string, address string) (*ThingExtendedView, error) {
+func (st *ThingRegistryStore) GetThingExtendedViewByAddress(technology string, address string) (*model.ThingExtendedView, error) {
 	thing, err := st.GetThingByAddress(technology, address)
 	if err != nil {
 		return nil, err
@@ -279,8 +280,8 @@ func (st *ThingRegistryStore) GetThingExtendedViewByAddress(technology string, a
 	return st.GetThingExtendedViewById(thing.ID)
 }
 
-func (st *ThingRegistryStore) GetThingsByLocationId(locationId ID) ([]Thing, error) {
-	var things []Thing
+func (st *ThingRegistryStore) GetThingsByLocationId(locationId model.ID) ([]model.Thing, error) {
+	var things []model.Thing
 	//err := st.db.Select(q.Eq("LocationId", locationId)).Find(&things)
 	//return things, err
 	for i := range st.things {
@@ -291,7 +292,7 @@ func (st *ThingRegistryStore) GetThingsByLocationId(locationId ID) ([]Thing, err
 	return things, nil
 }
 
-func (st *ThingRegistryStore) GetThingByIntegrationId(id string) (*Thing, error) {
+func (st *ThingRegistryStore) GetThingByIntegrationId(id string) (*model.Thing, error) {
 	//var thing Thing
 	//err := st.db.Select(q.Eq("IntegrationId", id)).First(&thing)
 	//return &thing, err
@@ -303,7 +304,7 @@ func (st *ThingRegistryStore) GetThingByIntegrationId(id string) (*Thing, error)
 	return nil, errors.New("Not found")
 }
 
-func (st *ThingRegistryStore) GetLocationByIntegrationId(id string) (*Location, error) {
+func (st *ThingRegistryStore) GetLocationByIntegrationId(id string) (*model.Location, error) {
 	//var location Location
 	//err := st.db.Select(q.Eq("IntegrationId", id)).First(&location)
 	//return &location, err
@@ -389,9 +390,9 @@ func (st *ThingRegistryStore) GetLocationByIntegrationId(id string) (*Location, 
 //	return result, nil
 //}
 
-func (st *ThingRegistryStore) UpsertThing(thing *Thing) (ID, error) {
+func (st *ThingRegistryStore) UpsertThing(thing *model.Thing) (model.ID, error) {
 	var err error
-	if thing.ID == IDnil {
+	if thing.ID == model.IDnil {
 		err = st.db.Save(thing)
 		if err == nil {
 			st.things = append(st.things, *thing)
@@ -415,7 +416,7 @@ func (st *ThingRegistryStore) UpsertThing(thing *Thing) (ID, error) {
 	}
 
 	// Updating linked services
-	services, _ := st.GetExtendedServices("", false, thing.ID, IDnil)
+	services, _ := st.GetExtendedServices("", false, thing.ID, model.IDnil)
 	var isChanged bool
 	for i := range services {
 		isChanged = false
@@ -434,10 +435,10 @@ func (st *ThingRegistryStore) UpsertThing(thing *Thing) (ID, error) {
 	return thing.ID, nil
 }
 
-func (st *ThingRegistryStore) UpsertService(service *Service) (ID, error) {
+func (st *ThingRegistryStore) UpsertService(service *model.Service) (model.ID, error) {
 	var err error
 	// Check if service is already registered in system , if record already exits , updating the record
-	if service.ID == IDnil {
+	if service.ID == model.IDnil {
 		serviceCheck, err := st.GetServiceByAddress(service.Name, service.Address)
 		//serviceCheck := Service{}
 		//err = st.db.Select(q.And(q.Eq("Name", service.Name), q.Eq("Address", service.Address))).First(&serviceCheck)
@@ -445,7 +446,7 @@ func (st *ThingRegistryStore) UpsertService(service *Service) (ID, error) {
 			service.ID = serviceCheck.ID
 		}
 	}
-	if service.ID == IDnil {
+	if service.ID == model.IDnil {
 		// Create new service
 		err = st.db.Save(service)
 		if err == nil {
@@ -470,7 +471,7 @@ func (st *ThingRegistryStore) UpsertService(service *Service) (ID, error) {
 	return service.ID, nil
 }
 
-func (st *ThingRegistryStore) UpsertLocation(location *Location) (ID, error) {
+func (st *ThingRegistryStore) UpsertLocation(location *model.Location) (model.ID, error) {
 	var err error
 	if location.ID == 0 {
 		err = st.db.Save(location)
@@ -496,7 +497,7 @@ func (st *ThingRegistryStore) UpsertLocation(location *Location) (ID, error) {
 	return location.ID, nil
 }
 
-func (st *ThingRegistryStore) DeleteThing(id ID) error {
+func (st *ThingRegistryStore) DeleteThing(id model.ID) error {
 	thing, err := st.GetThingById(id)
 	log.Debug("<Reg> Deleting thing ", thing.ID)
 	if err != nil {
@@ -504,8 +505,8 @@ func (st *ThingRegistryStore) DeleteThing(id ID) error {
 	}
 	st.db.DeleteStruct(thing)
 	// Deleting all linked services
-	services, _ := st.GetExtendedServices("", false, id, IDnil)
-	var servIDs []ID
+	services, _ := st.GetExtendedServices("", false, id, model.IDnil)
+	var servIDs []model.ID
 	for i := range services {
 		servIDs = append(servIDs, services[i].ID)
 	}
@@ -523,7 +524,7 @@ func (st *ThingRegistryStore) DeleteThing(id ID) error {
 	return nil
 }
 
-func (st *ThingRegistryStore) DeleteService(id ID) error {
+func (st *ThingRegistryStore) DeleteService(id model.ID) error {
 	service, err := st.GetServiceById(id)
 	log.Debug("<Reg> Deleting service = ", service.ID)
 	if err != nil {
@@ -542,7 +543,7 @@ func (st *ThingRegistryStore) DeleteService(id ID) error {
 	return err
 }
 
-func (st *ThingRegistryStore) DeleteLocation(id ID) error {
+func (st *ThingRegistryStore) DeleteLocation(id model.ID) error {
 	location, err := st.GetLocationById(id)
 	log.Debug("<Reg> Deleting location = ", location.ID)
 	if err != nil {
@@ -561,17 +562,17 @@ func (st *ThingRegistryStore) DeleteLocation(id ID) error {
 
 func (st *ThingRegistryStore) ReindexAll() error {
 	log.Info("Starting reindex")
-	err := st.db.ReIndex(&Thing{})
-	err = st.db.ReIndex(&Location{})
-	err = st.db.ReIndex(&Service{})
+	err := st.db.ReIndex(&model.Thing{})
+	err = st.db.ReIndex(&model.Location{})
+	err = st.db.ReIndex(&model.Service{})
 	log.Info("Reindex is complete")
 	return err
 }
 
 func (st *ThingRegistryStore) ClearAll() error {
-	thing := Thing{}
-	location := Location{}
-	service := Service{}
+	thing := model.Thing{}
+	location := model.Location{}
+	service := model.Service{}
 	st.db.Drop(thing)
 	st.db.Drop(location)
 	st.db.Drop(service)

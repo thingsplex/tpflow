@@ -1,13 +1,14 @@
 package fimpcore
 
 import (
-	"github.com/thingsplex/tpflow/registry"
-	"github.com/thingsplex/tpflow/registry/integration/fh"
-	log "github.com/sirupsen/logrus"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/futurehomeno/fimpgo/fimptype"
-	tpflow "github.com/thingsplex/tpflow"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+	"github.com/thingsplex/tpflow"
+	"github.com/thingsplex/tpflow/registry"
+	"github.com/thingsplex/tpflow/registry/integration/fh"
+	"github.com/thingsplex/tpflow/registry/model"
 	"runtime/debug"
 	"strconv"
 )
@@ -90,7 +91,7 @@ func (mg *MqttIntegration) onMqttMessage(topic string, addr *fimpgo.Address, iot
 				}
 			}
 			//if ok {
-			response, err := mg.registry.GetExtendedServices(serviceName, filterWithoutAlias, registry.ID(thingId), registry.ID(locationId))
+			response, err := mg.registry.GetExtendedServices(serviceName, filterWithoutAlias, model.ID(thingId), model.ID(locationId))
 			if err != nil {
 				log.Error("<MqRegInt> Can get services .Err :", err)
 			}
@@ -114,10 +115,10 @@ func (mg *MqttIntegration) processInclusionReport(msg *fimpgo.FimpMessage) error
 	log.Debugf("%+v\n", inclReport)
 	var isUpdateOp bool
 	if inclReport.CommTechnology != "" && inclReport.Address != "" {
-		var thing *registry.Thing
+		var thing *model.Thing
 		thing, err := mg.registry.GetThingByAddress(inclReport.CommTechnology, inclReport.Address)
 		if err != nil {
-			thing = &registry.Thing{}
+			thing = &model.Thing{}
 			thing.Alias = inclReport.Alias
 		} else {
 			isUpdateOp = true
@@ -143,7 +144,7 @@ func (mg *MqttIntegration) processInclusionReport(msg *fimpgo.FimpMessage) error
 			log.Error("<MqRegInt> Can't insert new Thing . Error: ", err)
 		}
 		for i := range inclReport.Services {
-			service := registry.Service{}
+			service := model.Service{}
 			service.Name = inclReport.Services[i].Name
 			service.Address = inclReport.Services[i].Address
 			service.Enabled = inclReport.Services[i].Enabled
@@ -153,11 +154,11 @@ func (mg *MqttIntegration) processInclusionReport(msg *fimpgo.FimpMessage) error
 			service.Tags = inclReport.Services[i].Tags
 			service.Props = inclReport.Services[i].Props
 			service.Groups = inclReport.Services[i].Groups
-			service.Interfaces = make([]registry.Interface, len(inclReport.Services[i].Interfaces))
+			service.Interfaces = make([]model.Interface, len(inclReport.Services[i].Interfaces))
 			service.ParentContainerId = thingId
-			service.ParentContainerType = registry.ThingContainer
+			service.ParentContainerType = model.ThingContainer
 			for iIntf := range inclReport.Services[i].Interfaces {
-				service.Interfaces[iIntf] = registry.Interface(inclReport.Services[i].Interfaces[iIntf])
+				service.Interfaces[iIntf] = model.Interface(inclReport.Services[i].Interfaces[iIntf])
 			}
 			mg.registry.UpsertService(&service)
 		}
@@ -171,7 +172,7 @@ func (mg *MqttIntegration) processInclusionReport(msg *fimpgo.FimpMessage) error
 
 func (mg *MqttIntegration) processExclusionReport(msg *fimpgo.FimpMessage, technology string) error {
 	log.Info("<MqRegInt> New inclusion report from technology = ", technology)
-	exThing := registry.Thing{}
+	exThing := model.Thing{}
 	err := msg.GetObjectValue(&exThing)
 	if err != nil {
 		log.Info("<MqRegInt> Exclusion report can't be processed . Error : ", err)

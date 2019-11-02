@@ -1,11 +1,11 @@
 package flow
 
 import (
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow/connector"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node"
-	"github.com/pkg/errors"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -20,21 +20,23 @@ type Flow struct {
 	opContext      model.FlowOperationalContext
 	currentNodeIds []model.NodeID
 	nodes          []model.Node
-	//nodeOutboundStream  chan model.ReactorEvent
-	//activeSubscriptions []string
-	TriggerCounter    int64
-	ErrorCounter      int64
-	StartedAt         time.Time
-	WaitingSince      time.Time
-	LastExecutionTime time.Duration
-	logFields         log.Fields
-	connectorRegistry *connector.Registry
-	subflowsCounter   int
-	mtx               sync.Mutex
+	TriggerCounter        int64
+	ErrorCounter          int64
+	StartedAt             time.Time
+	WaitingSince          time.Time
+	LastExecutionTime     time.Duration
+	logFields             log.Fields
+	connectorRegistry     *connector.Registry
+	subflowsCounter       int
+	mtx                   sync.Mutex
+	rateLimiter           int              // Is used by loop detector . Max alowed number of loop execution in 10 seconds
 }
 
 func NewFlow(metaFlow model.FlowMeta, globalContext *model.Context) *Flow {
 	flow := Flow{globalContext: globalContext}
+	if flow.rateLimiter == 0  {
+		flow.rateLimiter = 500
+	}
 	flow.nodes = make([]model.Node, 0)
 	flow.currentNodeIds = make([]model.NodeID, 1)
 	flow.globalContext = globalContext
@@ -82,7 +84,7 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 	var err error
 	for _, metaNode := range fl.FlowMeta.Nodes {
 		if !fl.IsNodeValid(&metaNode) {
-			fl.getLog().Errorf(" Node %s contains invalid configuration parameters ",metaNode.Label)
+			fl.getLog().Errorf(" Node %s contains invalid configuration parameters ", metaNode.Label)
 			fl.opContext.State = "CONFIG_ERROR"
 			return
 		}
@@ -202,15 +204,15 @@ func (fl *Flow) IsNodeValid(node *model.MetaNode) bool {
 	//var flowHasStartNode bool
 	//for i := range fl.nodes {
 	//	node := fl.nodes[i].GetMetaNode()
-		if node.Type == "trigger" || node.Type == "action" || node.Type == "receive" {
-			if node.Address == "" || node.ServiceInterface == "" || node.Service == "" {
-				fl.getLog().Error(" Flow is not valid , node is not configured . Node ", node.Label)
-				return false
-			}
+	if node.Type == "trigger" || node.Type == "action" || node.Type == "receive" {
+		if node.Address == "" || node.ServiceInterface == "" || node.Service == "" {
+			fl.getLog().Error(" Flow is not valid , node is not configured . Node ", node.Label)
+			return false
 		}
-		//if fl.nodes[i].IsStartNode() {
-		//	flowHasStartNode = true
-		//}
+	}
+	//if fl.nodes[i].IsStartNode() {
+	//	flowHasStartNode = true
+	//}
 	//}
 	//if !flowHasStartNode {
 	//	fl.getLog().Error(" Flow is not valid, start node not found")
@@ -260,10 +262,22 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 		return
 	}
 	var nodeOutboundStream chan model.ReactorEvent
+	var loopDetectorCounter int
 	for {
 		if !fl.opContext.IsFlowRunning {
 			break
 		}
+		if time.Now().Sub(fl.StartedAt)<time.Second*5 {
+			if loopDetectorCounter > fl.rateLimiter {
+				fl.getLog().Error("Loop detected. Flow is stopped ")
+				fl.opContext.State = "CONFIG_ERROR_LOOP"
+				go fl.Stop()
+				break
+			}
+		}else {
+			loopDetectorCounter = 0
+		}
+
 		for i := range fl.nodes {
 			if !fl.opContext.IsFlowRunning {
 				break
@@ -323,6 +337,7 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 				return
 			}
 		}
+		loopDetectorCounter++
 
 	}
 	//fl.opContext.State = "STOPPED"

@@ -4,6 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow/registry"
 	"github.com/thingsplex/tpflow/registry/integration/fh"
+	"github.com/thingsplex/tpflow/registry/model"
 	"strconv"
 	"time"
 )
@@ -33,7 +34,7 @@ func LoadVinculumDeviceInfoToStore(thingRegistryStore *registry.ThingRegistrySto
 	for i := range rooms {
 		location,err := thingRegistryStore.GetLocationByIntegrationId(strconv.Itoa(rooms[i].ID))
 		if err != nil {
-			newLocation := registry.Location{}
+			newLocation := model.Location{}
 			newLocation.IntegrationId = strconv.Itoa(rooms[i].ID)
 			if rooms[i].Client.Name == "" {
 				newLocation.Alias = rooms[i].Type
@@ -76,7 +77,7 @@ func LoadVinculumDeviceInfoToStore(thingRegistryStore *registry.ThingRegistrySto
 			}
 
 			thing.Alias = devices[i].Client.Name
-			services,err := thingRegistryStore.GetExtendedServices("",false,thing.ID,registry.IDnil)
+			services,err := thingRegistryStore.GetExtendedServices("",false,thing.ID, model.IDnil)
 			if err != nil {
 					log.Error("<VincMigration> Can't get services from registry")
 					continue
