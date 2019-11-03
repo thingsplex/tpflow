@@ -35,6 +35,17 @@ func ConfigValueToNumber(valueType string, value interface{}) (float64, error) {
 	return 0, errors.New("Not numeric value type")
 }
 
+func IsNumber(valueType string) bool {
+	switch valueType {
+	case "int":
+		return true
+	case "float":
+		return true
+	default:
+		return false
+	}
+}
+
 func match(route []string, topic []string) bool {
 	if len(route) == 0 {
 		if len(topic) == 0 {

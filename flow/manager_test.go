@@ -83,7 +83,7 @@ func TestManager_GenerateNewFlow(t *testing.T) {
 	}
 	flow := man.GenerateNewFlow()
 	data, _ := json.Marshal(flow)
-	man.UpdateFlowFromJsonAndSaveToStorage(flow.Id, data)
+	man.UpdateFlowFromBinJson(flow.Id, data)
 }
 
 func TestManager_ImportFlow(t *testing.T) {

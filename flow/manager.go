@@ -35,6 +35,7 @@ type FlowListItem struct {
 	TriggerCounter int64
 	ErrorCounter   int64
 	Stats          *model.FlowStatsReport
+	IsDisabled     bool
 }
 
 func NewManager(config tpflow.Configs) (*Manager, error) {
@@ -120,7 +121,10 @@ func (mg *Manager) LoadFlowFromJson(flowJsonDef []byte) error {
 		log.Error("<FlMan> Can't unmarshel DB file.")
 		return err
 	}
+	return mg.AddMetaFlowToRegistry(flowMeta)
+}
 
+func (mg *Manager) AddMetaFlowToRegistry(flowMeta model.FlowMeta) error {
 	flow := NewFlow(flowMeta, mg.globalContext)
 	flow.SetStoragePath(mg.config.FlowStorageDir)
 	flow.SetExternalLibsDir(mg.config.ExternalLibsDir)
@@ -129,11 +133,31 @@ func (mg *Manager) LoadFlowFromJson(flowJsonDef []byte) error {
 	return nil
 }
 
-func (mg *Manager) UpdateFlowFromJson(id string, flowJsonDef []byte) error {
+func (mg *Manager) UpdateFlowFromBinJson(id string, flowJsonDef []byte) error {
+	flowMeta := model.FlowMeta{}
+	err := json.Unmarshal(flowJsonDef, &flowMeta)
+	if err != nil {
+		log.Error("<FlMan> The flow is not updated . Incompatible format")
+		return err
+	}
 	mg.StopFlow(id)
 	mg.DeleteFlowFromRegistry(id, false)
-	err := mg.LoadFlowFromJson(flowJsonDef)
-	return err
+	flowMeta.UpdatedAt = time.Now()
+	err = mg.AddMetaFlowToRegistry(flowMeta)
+	if err != nil {
+		log.Error("<FlMan> The flow is not updated . Incompatible format . Err:",err)
+		return err
+	}
+	err = mg.SaveFlowToStorage(id)
+	if err != nil {
+		log.Error("<FlMan> Can't save the flow to disk . Err:",err)
+		return err
+	}
+	if !flowMeta.IsDisabled {
+		mg.StartFlow(id)
+	}
+	log.Infof("<FlMan> Flow %s is valid , saving to disk",id)
+	return nil
 }
 
 func (mg *Manager) ReloadFlowFromStorage(id string) error {
@@ -181,35 +205,15 @@ func (mg *Manager) ImportFlow(flowJsonDef []byte) error {
 	return mg.LoadFlowFromFile(fileName)
 }
 
-//
-func (mg *Manager) UpdateFlowFromJsonAndSaveToStorage(id string, flowJsonDef []byte) error {
-	fileName := mg.GetFlowFileNameById(id)
-	log.Debugf("<FlMan> Saving flow to file %s , data size %d :", fileName, len(flowJsonDef))
-	// TODO: Update UpdateAt field .
-	err := ioutil.WriteFile(fileName, flowJsonDef, 0644)
-	if err != nil {
-		log.Error("Can't save flow to file . Error : ", err)
-		return err
-	}
-	err = mg.UpdateFlowFromJson(id, flowJsonDef)
-	if err == nil {
-		flow := mg.GetFlowById(id)
-		if !flow.FlowMeta.IsDisabled {
-			mg.StartFlow(id)
-		}
-	}
-	return err
-}
-
 func (mg *Manager) SaveFlowToStorage(id string) error {
 	flow := mg.GetFlowById(id)
 	flowMetaByte,err := json.Marshal(flow.FlowMeta)
-
 	if err != nil {
 		log.Error("<FlMan> Can't marshar imported flow ")
 		return err
 	}
 	fileName := mg.GetFlowFileNameById(id)
+	log.Debugf("<FlMan> Saving flow to file %s , data size %d :", fileName, len(flowMetaByte))
 	err = ioutil.WriteFile(fileName, flowMetaByte, 0644)
 	if err != nil {
 		log.Error("Can't save flow to file . Error : ", err)
@@ -240,7 +244,10 @@ func (mg *Manager) GetFlowList() []FlowListItem {
 			TriggerCounter: mg.flowRegistry[i].TriggerCounter,
 			ErrorCounter:   mg.flowRegistry[i].ErrorCounter,
 			State:          mg.flowRegistry[i].opContext.State,
-			Stats:          mg.flowRegistry[i].GetFlowStats()}
+			Stats:          mg.flowRegistry[i].GetFlowStats(),
+			IsDisabled:     mg.flowRegistry[i].FlowMeta.IsDisabled,
+		}
+
 		c++
 	}
 	return response
@@ -324,4 +331,10 @@ func (mg *Manager) DeleteFlowFromStorage(id string) {
 
 func (mg *Manager) GetConnectorRegistry() *connector.Registry {
 	return &mg.connectorRegistry
+}
+
+func (mg *Manager) BackupAll() error{
+	sourceDir := strings.ReplaceAll(mg.config.FlowStorageDir,"/flow_storage","")
+	targetDir := strings.ReplaceAll(mg.config.FlowStorageDir,"var/flow_storage","backups")
+	return utils.BackupDirectory(sourceDir,targetDir,"flow")
 }

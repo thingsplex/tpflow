@@ -203,7 +203,7 @@ func (ctx *Context) DeleteRecord(name string, flowId string, inMemory bool) erro
 	if inMemory {
 
 	} else {
-		log.Infof("<ctx> 2Deleting variable %s from flow %s", name, flowId)
+		log.Infof("<ctx> Deleting variable %s from flow %s", name, flowId)
 		err := ctx.db.Update(func(tx *bolt.Tx) error {
 			b := tx.Bucket([]byte(flowId))
 			return b.Delete([]byte(name))

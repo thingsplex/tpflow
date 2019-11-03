@@ -112,12 +112,12 @@ func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 					fimp = fimpgo.NewMessage("evt.flow.ctx_delete_report", "tpflow", "string", err, nil, nil, newMsg.Payload)
 	                break
 				}
-				log.Info("<ctx> Request to delete record with name ", req["Name"])
+				log.Info("<ctx> Request to delete record with name ", req["name"])
 				flowId := "global"
 				if req["flow_id"] != "" {
-					flowId = req["name"]
+					flowId = req["flow_id"]
 				}
-				err = ctx.ctx.DeleteRecord(req["Name"],flowId , false)
+				err = ctx.ctx.DeleteRecord(req["name"],flowId , false)
 				if err != nil {
 					fimp = fimpgo.NewMessage("evt.flow.ctx_delete_report", "tpflow", "string", err, nil, nil, newMsg.Payload)
 

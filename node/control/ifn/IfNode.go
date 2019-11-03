@@ -79,14 +79,15 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			}
 		}
 		if conf.Expression[i].LeftVariable.ValueType != conf.Expression[i].RightVariable.ValueType {
-			return nil, errors.New(node.FlowOpCtx().FlowId + "<Node> Right and left of expression have different types ")
+			if !utils.IsNumber(conf.Expression[i].LeftVariable.ValueType)  &&  !utils.IsNumber(conf.Expression[i].LeftVariable.ValueType) {
+				return nil, errors.New(node.FlowOpCtx().FlowId + "<Node> Right and left of expression have different types ")
+			}
 		}
 
 		var result bool
 		node.GetLog().Debug("Operand = ", conf.Expression[i].Operand)
 
-		if conf.Expression[i].Operand == "gt" || conf.Expression[i].Operand == "lt" ||
-			(conf.Expression[i].Operand == "eq" && (conf.Expression[i].LeftVariable.ValueType == "int" || conf.Expression[i].LeftVariable.ValueType == "float")){
+		if conf.Expression[i].Operand == "gt" || conf.Expression[i].Operand == "lt" || (conf.Expression[i].Operand == "eq" && utils.IsNumber(conf.Expression[i].LeftVariable.ValueType) ){
 			if conf.Expression[i].LeftVariable.ValueType == "int" || conf.Expression[i].LeftVariable.ValueType == "float" {
 				leftNumericValue, err = utils.ConfigValueToNumber(conf.Expression[i].LeftVariable.ValueType, conf.Expression[i].LeftVariable.Value)
 				if err != nil {

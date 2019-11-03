@@ -69,7 +69,7 @@ func (ctx *FlowApi) RegisterRestApi() {
 		if err != nil {
 			return err
 		}
-		ctx.flowManager.UpdateFlowFromJsonAndSaveToStorage(id, body)
+		ctx.flowManager.UpdateFlowFromBinJson(id, body)
 		return c.NoContent(http.StatusOK)
 	})
 
@@ -187,7 +187,7 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 					fimp = fimpgo.NewMessage("evt.flow.update_report", "tpflow", "string", err, nil, nil, newMsg.Payload)
 					break
 				}
-				ctx.flowManager.UpdateFlowFromJsonAndSaveToStorage(flowMeta.Id, flowJsonDef)
+				ctx.flowManager.UpdateFlowFromBinJson(flowMeta.Id, flowJsonDef)
 				fimp = fimpgo.NewMessage("evt.flow.update_report", "tpflow", "string", "ok", nil, nil, newMsg.Payload)
 
 			case "cmd.flow.import":
@@ -197,6 +197,16 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 					resp = err.Error()
 				}
 				fimp = fimpgo.NewMessage("evt.flow.import_report", "tpflow", "string", resp, nil, nil, newMsg.Payload)
+			case "cmd.backup.execute":
+				err := ctx.flowManager.BackupAll()
+				op := "ok"
+				errStr := ""
+				if err != nil {
+					op = "error"
+					errStr = err.Error()
+				}
+				resp := map[string]string {"op_status":op,"error":errStr}
+				fimp = fimpgo.NewStrMapMessage("evt.backup.report", "tpflow", resp, nil, nil, newMsg.Payload)
 
 			case "cmd.flow.ctrl":
 				resp := "ok"
@@ -302,10 +312,10 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 
 			if fimp != nil {
 				addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
-				ctx.msgTransport.Publish(&addr, fimp)
+				if err := ctx.msgTransport.RespondToRequest(newMsg.Payload,fimp); err !=nil {
+					ctx.msgTransport.Publish(&addr, fimp)
+				}
 			}
-
-
 		}
 	}()
 
