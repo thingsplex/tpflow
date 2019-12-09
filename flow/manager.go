@@ -86,9 +86,17 @@ func (mg *Manager) LoadAllFlowsFromStorage() error {
 	}
 	for _, file := range files {
 		if strings.Contains(file.Name(), ".json") {
-			mg.LoadFlowFromFile(filepath.Join(mg.config.FlowStorageDir, file.Name()))
+			err :=  mg.LoadFlowFromFile(filepath.Join(mg.config.FlowStorageDir, file.Name()))
+			if err != nil {
+				log.Errorf("Flow %s failed to load from file ",file.Name())
+				continue
+			}
 			flowId := strings.Replace(file.Name(), ".json", "", 1)
 			flow := mg.GetFlowById(flowId)
+			if flow == nil {
+				log.Errorf("Flow %s failed to load",flowId)
+				continue
+			}
 			if !flow.FlowMeta.IsDisabled {
 				mg.StartFlow(flowId)
 			}

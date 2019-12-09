@@ -1,15 +1,14 @@
 package time
 
 import (
+	"github.com/futurehomeno/fimpgo"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
-	"github.com/futurehomeno/fimpgo"
 	//"github.com/kelvins/sunrisesunset"
 	"github.com/mitchellh/mapstructure"
-    sun "github.com/nathan-osman/go-sunrise"
-	"github.com/robfig/cron"
+	sun "github.com/nathan-osman/go-sunrise"
+	"github.com/robfig/cron/v3"
 	"time"
-
 )
 
 const SUNRISE = "sunrise"
@@ -82,7 +81,9 @@ func (node *Node) Init() error {
 
 		}
 		node.cron.Start()
-
+	}
+	for _,e := range node.cron.Entries() {
+		node.GetLog().Debug("Next job will run at:", e.Next.Format(TIME_FORMAT))
 	}
 
 	return nil
