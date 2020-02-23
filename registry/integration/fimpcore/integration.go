@@ -6,9 +6,9 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow"
-	"github.com/thingsplex/tpflow/registry"
 	"github.com/thingsplex/tpflow/registry/integration/fh"
 	"github.com/thingsplex/tpflow/registry/model"
+	"github.com/thingsplex/tpflow/registry/storage"
 	"runtime/debug"
 	"strconv"
 )
@@ -16,11 +16,11 @@ import (
 type MqttIntegration struct {
 	msgTransport *fimpgo.MqttTransport
 	config       *tpflow.Configs
-	registry     *registry.ThingRegistryStore
+	registry     storage.RegistryStorage
 	vincIntegr   *fh.VinculumIntegration
 }
 
-func NewMqttIntegration(config *tpflow.Configs, registry *registry.ThingRegistryStore) *MqttIntegration {
+func NewMqttIntegration(config *tpflow.Configs, registry storage.RegistryStorage) *MqttIntegration {
 	int := MqttIntegration{config: config, registry: registry}
 	return &int
 }

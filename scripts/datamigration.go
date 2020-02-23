@@ -5,11 +5,12 @@ import (
 	"github.com/thingsplex/tpflow/registry"
 	"github.com/thingsplex/tpflow/registry/integration/fh"
 	"github.com/thingsplex/tpflow/registry/model"
+	"github.com/thingsplex/tpflow/registry/storage"
 	"strconv"
 	"time"
 )
 
-func LoadVinculumDeviceInfoToStore(thingRegistryStore *registry.ThingRegistryStore, vincClient *fh.VinculumClient,integrProc *registry.MqttIntegration) error {
+func LoadVinculumDeviceInfoToStore(thingRegistryStore *storage.LocalRegistryStore, vincClient *fh.VinculumClient,integrProc *registry.MqttIntegration) error {
 
 	commTechMap := map[string]string{"zwave-ad": "zw", "ikea": "ikea"}
 	//vincToServiceNameMap := map[string]string{

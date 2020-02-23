@@ -223,6 +223,9 @@ func (fl *Flow) IsNodeValid(node *model.MetaNode) bool {
 
 // Invoked by trigger node in it's own goroutine
 func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
+	if !fl.opContext.IsFlowRunning {
+		return
+	}
 	fl.mtx.Lock()
 	fl.subflowsCounter++
 	fl.mtx.Unlock()
@@ -238,7 +241,6 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 		}
 		fl.LastExecutionTime = time.Since(fl.StartedAt)
 		fl.getLog().Infof(" ------Flow %s completed ----------- ", fl.Name)
-
 	}()
 
 	fl.getLog().Infof(" ------Flow %s started ----------- ", fl.Name)
@@ -257,6 +259,9 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 	fl.getLog().Debug(" Next node id = ", transitionNodeId)
 	//fl.getLog().Debug(" Current nodes = ",fl.currentNodeIds)
 	if !fl.IsNodeIdValid(fl.currentNodeIds[0], transitionNodeId) {
+		if fl.subflowsCounter > 1 {
+			fl.TerminateRunningInstances()
+		}
 		fl.getLog().Errorf(" Unknown transition node %s from first node.Switching back to first node", transitionNodeId)
 		transitionNodeId = ""
 		return
@@ -387,7 +392,7 @@ func (fl *Flow) Stop() error {
 		fl.getLog().Debug(" Sending STOP signals to all reactors")
 		select {
 		case fl.opContext.NodeControlSignalChannel <- model.SIGNAL_STOP:
-		default:
+		case <-time.After(1 * time.Second):
 			breakLoop = true
 		}
 		if breakLoop {
@@ -396,12 +401,15 @@ func (fl *Flow) Stop() error {
 
 	}
 	var isSomeNodeRunning bool
+	var nodeWaitCounter int
 	//Check if all triggers has stopped
 	for {
 		isSomeNodeRunning = false
+		nodeWaitCounter ++
 		for i := range fl.nodes {
 			if fl.nodes[i].IsMsgReactorNode() {
 				if fl.nodes[i].IsReactorRunning() {
+					fl.getLog().Debugf("Node %s is still running .",fl.nodes[i].GetMetaNode().Label)
 					isSomeNodeRunning = true
 					break
 				}
@@ -409,6 +417,10 @@ func (fl *Flow) Stop() error {
 			}
 		}
 		if isSomeNodeRunning {
+			if nodeWaitCounter > 10 {
+				fl.getLog().Error("Node is not responding.Stopping the flow regardless")
+				break
+			}
 			fl.getLog().Debug(" Some reactors are still running . Waiting.....")
 			time.Sleep(time.Second * 2)
 		} else {
@@ -435,6 +447,26 @@ func (fl *Flow) Stop() error {
 	fl.getLog().Info(" Stopped .  ", fl.Name)
 	fl.opContext.State = "STOPPED"
 	return nil
+}
+// Terminating all running instance except 1 caller instance
+func (fl *Flow) TerminateRunningInstances() {
+	for i:=0;i<fl.subflowsCounter;i++ {
+		// sending signal to every instance
+		select {
+		case fl.opContext.NodeControlSignalChannel <- model.SIGNAL_TERMINATE_WAITING:
+		default:
+		}
+	}
+	// aborting all Run loops
+	fl.opContext.IsFlowRunning = false
+	for {
+		if fl.subflowsCounter <= 1 {
+			break
+		}
+		time.Sleep(50*time.Millisecond)
+	}
+	fl.opContext.IsFlowRunning = true
+	fl.getLog().Debugf("All instances were terminated")
 }
 
 func (fl *Flow) CleanupBeforeDelete() {

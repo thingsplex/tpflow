@@ -18,16 +18,20 @@ type ApiRemoteClient struct {
 	timeout int64
 	instanceAddress string
 	clientId string
+	responseTopic string
 }
 
 func NewApiRemoteClient(sClient *fimpgo.SyncClient, instanceAddress,clientId string) *ApiRemoteClient {
+	responseTopic := "pt:j1/mt:rsp/rt:app/rn:"+clientId+"/ad:"+instanceAddress
 	sClient.AddSubscription("pt:j1/mt:evt/rt:app/rn:tpflow/ad:"+instanceAddress)
-	return &ApiRemoteClient{sClient: sClient,instanceAddress:instanceAddress,timeout:15,clientId:clientId}
+	sClient.AddSubscription(responseTopic)
+	return &ApiRemoteClient{sClient: sClient,instanceAddress:instanceAddress,timeout:15,clientId:clientId,responseTopic:responseTopic}
 }
 
 func (rc *ApiRemoteClient) GetListOfFlows()([]flow.FlowListItem,error) {
 	reqMsg := fimpgo.NewNullMessage("cmd.flow.get_list","tpflow",nil,nil,nil)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return nil,err
@@ -46,6 +50,7 @@ func (rc *ApiRemoteClient) GetListOfFlows()([]flow.FlowListItem,error) {
 func (rc *ApiRemoteClient) GetFlowDefinition(flowId string) (*model.FlowMeta,error) {
 	reqMsg := fimpgo.NewStringMessage("cmd.flow.get_definition","tpflow",flowId,nil,nil,nil)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return nil,err
@@ -63,6 +68,8 @@ func (rc *ApiRemoteClient) GetFlowDefinition(flowId string) (*model.FlowMeta,err
 func (rc *ApiRemoteClient) GetConnectorTemplate(templateId string) (conmodel.Instance,error) {
 	var resp conmodel.Instance
 	reqMsg := fimpgo.NewStringMessage("cmd.flow.get_connector_template","tpflow",templateId,nil,nil,nil)
+	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return resp,err
@@ -81,6 +88,7 @@ func (rc *ApiRemoteClient) GetConnectorPlugins() (map[string]conmodel.Plugin,err
 	var resp map[string]conmodel.Plugin
 	reqMsg := fimpgo.NewNullMessage("cmd.flow.get_connector_plugins","tpflow",nil,nil,nil)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return resp,err
@@ -98,6 +106,7 @@ func (rc *ApiRemoteClient) GetConnectorInstances() ([]conmodel.InstanceView,erro
 	var resp []conmodel.InstanceView
 	reqMsg := fimpgo.NewNullMessage("cmd.flow.get_connector_instances","tpflow",nil,nil,nil)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return resp,err
@@ -121,6 +130,7 @@ func (rc *ApiRemoteClient) ImportFlow(flowDef []byte) (string, error) {
 	}
 	reqMsg := fimpgo.NewMessage("cmd.flow.import","tpflow","object",flowDefJson,nil,nil,nil)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return "",err
@@ -141,6 +151,7 @@ func (rc *ApiRemoteClient) UpdateFlowBin(flowDef []byte) (string, error) {
 	}
 	reqMsg := fimpgo.NewMessage("cmd.flow.update_definition","tpflow","object",flowDefJson,nil,nil,nil)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return "",err
@@ -157,6 +168,7 @@ func (rc *ApiRemoteClient) ControlFlow(cmd string,id string) (string, error) {
 
 	reqMsg := fimpgo.NewStrMapMessage("cmd.flow.ctrl","tpflow",cmdVal,nil,nil,nil)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return "",err
@@ -167,6 +179,7 @@ func (rc *ApiRemoteClient) ControlFlow(cmd string,id string) (string, error) {
 func (rc *ApiRemoteClient) DeleteFlow(id string) (string, error) {
 	reqMsg := fimpgo.NewStringMessage("cmd.flow.delete","tpflow",id,nil,nil,nil)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return "",err
@@ -181,6 +194,7 @@ func (rc *ApiRemoteClient) ImportFlowFromUrl(url string, token string) (string, 
 
 	reqMsg := fimpgo.NewStrMapMessage("cmd.flow.import_from_url","tpflow",cmdVal,nil,nil,nil)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return "",err
@@ -194,6 +208,7 @@ func (rc *ApiRemoteClient) ContextGetRecords(flowId string) ([]model.ContextReco
 	reqValue["flow_id"] = flowId
 	reqMsg := fimpgo.NewStrMapMessage("cmd.flow.ctx_get_records","tpflow",reqValue,nil,nil,nil)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return resp,err
@@ -213,6 +228,7 @@ func (rc *ApiRemoteClient) ContextUpdateRecord(flowId string , rec *model.Contex
 
 	reqMsg := fimpgo.NewMessage("cmd.flow.ctx_update_record","tpflow","object",reqValue,nil,nil,nil)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return "",err
@@ -227,6 +243,7 @@ func (rc *ApiRemoteClient) ContextDeleteRecord(name string,flowId string) (strin
 	cmdVal["flow_id"] = flowId
 	reqMsg := fimpgo.NewStrMapMessage("cmd.flow.ctx_delete","tpflow",cmdVal,nil,nil,nil)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return "",err
@@ -239,6 +256,26 @@ func (rc *ApiRemoteClient) RegistryGetListOfThings(locationId string) ([]model2.
 	cmdVal := make(map[string]string)
 	cmdVal["location_id"] = locationId
 	reqMsg := fimpgo.NewStrMapMessage("cmd.registry.get_things","tpflow",cmdVal,nil,nil,nil)
+	reqMsg.ResponseToTopic = rc.responseTopic
+	reqMsg.Source = rc.clientId
+	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
+	if err != nil {
+		return resp,err
+	}
+	err = json.Unmarshal(respMsg.GetRawObjectValue(), &resp)
+	if err != nil {
+		log.Error("Can't unmarshal ", err)
+		return resp,err
+	}
+	return resp,nil
+}
+
+func (rc *ApiRemoteClient) RegistryGetListOfDevices(locationId string) ([]model2.DeviceWithLocationView,error) {
+	var resp []model2.DeviceWithLocationView
+	cmdVal := make(map[string]string)
+	cmdVal["location_id"] = locationId
+	reqMsg := fimpgo.NewStrMapMessage("cmd.registry.get_devices","tpflow",cmdVal,nil,nil,nil)
+	reqMsg.ResponseToTopic = rc.responseTopic
 	reqMsg.Source = rc.clientId
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
@@ -261,6 +298,7 @@ func (rc *ApiRemoteClient) RegistryGetListOfServices(serviceName,locationId,thin
 	cmdVal["filter_without_alias"] = filterWithoutAlias
 
 	reqMsg := fimpgo.NewStrMapMessage("cmd.registry.get_services","tpflow",cmdVal,nil,nil,nil)
+	reqMsg.ResponseToTopic = rc.responseTopic
 	reqMsg.Source = rc.clientId
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
@@ -278,6 +316,7 @@ func (rc *ApiRemoteClient) RegistryGetListOfLocations() ([]model2.Location,error
 	var resp []model2.Location
 	cmdVal := make(map[string]string)
 	reqMsg := fimpgo.NewStrMapMessage("cmd.registry.get_locations","tpflow",cmdVal,nil,nil,nil)
+	reqMsg.ResponseToTopic = rc.responseTopic
 	reqMsg.Source = rc.clientId
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
@@ -298,6 +337,7 @@ func (rc *ApiRemoteClient) RegistryGetThing(tech,address string) (model2.ThingEx
 	cmdVal["address"] = address
 
 	reqMsg := fimpgo.NewStrMapMessage("cmd.registry.get_thing","tpflow",cmdVal,nil,nil,nil)
+	reqMsg.ResponseToTopic = rc.responseTopic
 	reqMsg.Source = rc.clientId
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
@@ -318,6 +358,7 @@ func (rc *ApiRemoteClient) RegistryGetService(fullAddress string) (model2.Servic
 
 	reqMsg := fimpgo.NewStrMapMessage("cmd.registry.get_service","tpflow",cmdVal,nil,nil,nil)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	if err != nil {
 		return resp,err
@@ -344,6 +385,7 @@ func (rc *ApiRemoteClient) RegistryUpdateLocation(location *model2.Location)(str
 	reqMsg := fimpgo.NewMessage("cmd.registry.update_location","tpflow",fimpgo.VTypeObject,location,nil,nil,nil)
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	if err != nil {
 		return "",err
 	}
@@ -374,6 +416,7 @@ func (rc *ApiRemoteClient) RegistryUpdateService(service *model2.Service)(string
 	reqMsg := fimpgo.NewMessage("cmd.registry.update_service","tpflow",fimpgo.VTypeObject,service,nil,nil,nil)
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	if err != nil {
 		return "",err
 	}
@@ -394,6 +437,7 @@ func (rc *ApiRemoteClient) RegistryDeleteThing(id string) (string, error) {
 	reqMsg := fimpgo.NewStringMessage("cmd.registry.delete_thing","tpflow",id,nil,nil,nil)
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	if err != nil {
 		return "",err
 	}
@@ -404,6 +448,7 @@ func (rc *ApiRemoteClient) RegistryDeleteLocation(id string) (string, error) {
 	reqMsg := fimpgo.NewStringMessage("cmd.registry.delete_location","tpflow",id,nil,nil,nil)
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	if err != nil {
 		return "",err
 	}
@@ -418,6 +463,7 @@ func (rc *ApiRemoteClient) GetFlowLog(limitLines int , flowId string)([]utils.Lo
 
 	respMsg , err := rc.sClient.SendFimp("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:"+rc.instanceAddress,reqMsg,rc.timeout)
 	reqMsg.Source = rc.clientId
+	reqMsg.ResponseToTopic = rc.responseTopic
 	if err != nil {
 		return nil,err
 	}

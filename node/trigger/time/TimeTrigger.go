@@ -204,6 +204,7 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 		case signal := <-node.FlowOpCtx().NodeControlSignalChannel:
 			node.GetLog().Debug("Control signal ")
 			if signal == model.SIGNAL_STOP {
+				node.astroTimer.Stop()
 				return
 			}
 		}

@@ -4,14 +4,14 @@ import (
 	"github.com/futurehomeno/fimpgo"
 	"github.com/futurehomeno/fimpgo/fimptype/primefimp"
 	log "github.com/sirupsen/logrus"
-	"github.com/thingsplex/tpflow/registry"
 	"github.com/thingsplex/tpflow/registry/model"
+	"github.com/thingsplex/tpflow/registry/storage"
 	"strconv"
 	"strings"
 )
 
 type VinculumIntegration struct {
-	registry *registry.ThingRegistryStore
+	registry storage.RegistryStorage
 	msgTransport *fimpgo.MqttTransport
 	primeFimpApi * primefimp.ApiClient
 	notifyCh chan primefimp.Notify
@@ -22,7 +22,7 @@ func (mg *VinculumIntegration) SetMsgTransport(msgTransport *fimpgo.MqttTranspor
 	mg.msgTransport = msgTransport
 }
 
-func NewVinculumIntegration(registry *registry.ThingRegistryStore,msgTransport *fimpgo.MqttTransport) *VinculumIntegration {
+func NewVinculumIntegration(registry storage.RegistryStorage,msgTransport *fimpgo.MqttTransport) *VinculumIntegration {
 	integr :=  &VinculumIntegration{registry: registry}
 	integr.msgTransport = msgTransport
 	//integr.msgTransport = getTestTransport()

@@ -6,19 +6,19 @@ import (
 	"github.com/futurehomeno/fimpgo"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
-	"github.com/thingsplex/tpflow/registry"
 	"github.com/thingsplex/tpflow/registry/model"
+	"github.com/thingsplex/tpflow/registry/storage"
 	"net/http"
 	"strconv"
 )
 
 type RegistryApi struct {
-	reg  *registry.ThingRegistryStore
+	reg  storage.RegistryStorage
 	echo *echo.Echo
 	msgTransport *fimpgo.MqttTransport
 }
 
-func NewRegistryApi(ctx *registry.ThingRegistryStore, echo *echo.Echo) *RegistryApi {
+func NewRegistryApi(ctx storage.RegistryStorage, echo *echo.Echo) *RegistryApi {
 	ctxApi := RegistryApi{reg: ctx, echo: echo}
 	//ctxApi.RegisterRestApi()
 	return &ctxApi
@@ -227,26 +227,50 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				thingsWithLocation := api.reg.ExtendThingsWithLocation(things)
 				fimp = fimpgo.NewMessage("evt.registry.things_report", "tpflow", "object", thingsWithLocation, nil, nil, newMsg.Payload)
 
-			case "cmd.registry.get_services":
-				log.Debug("Getting services ")
-				val,err := newMsg.Payload.GetStrMapValue()
+			case "cmd.registry.get_devices":
+				var devices []model.Device
+				var locationId int
+
+				val,_ := newMsg.Payload.GetStrMapValue()
+				locationIdStr,_ := val["location_id"]
+
+				locationId, _ = strconv.Atoi(locationIdStr)
+
+				if locationId != 0 {
+					devices, err = api.reg.GetDevicesByLocationId(model.ID(locationId))
+				} else {
+					devices, err = api.reg.GetAllDevices()
+				}
 				if err != nil {
-					fimp = nil
-					log.Debug("Error while requesting services . Error :",err)
+					log.Error("<RegApi> can't get things from registry err:",err)
 					break
 				}
-				serviceName,_ := val["service_name"]
-				locationIdStr,_ := val["location_id"]
-				thingIdStr,_ := val["thing_id"]
-				thingId, _ := strconv.Atoi(thingIdStr)
-				locationId, _ := strconv.Atoi(locationIdStr)
-				filterWithoutAliasStr,_ := val["filter_without_alias"]
-				var filterWithoutAlias bool
-				if filterWithoutAliasStr == "true" {
-					filterWithoutAlias = true
-				}
+				//thingsWithLocation := api.reg.ExtendDevicesWithLocation(things)
+				fimp = fimpgo.NewMessage("evt.registry.things_report", "tpflow", "object", devices, nil, nil, newMsg.Payload)
+
+
+			case "cmd.registry.get_services":
+				log.Debug("Getting services ")
+				//val,err := newMsg.Payload.GetStrMapValue()
+				//if err != nil {
+				//	fimp = nil
+				//	log.Debug("Error while requesting services . Error :",err)
+				//	break
+				//}
+				//serviceName,_ := val["service_name"]
+				//locationIdStr,_ := val["location_id"]
+				//thingIdStr,_ := val["thing_id"]
+				//thingId, _ := strconv.Atoi(thingIdStr)
+				//locationId, _ := strconv.Atoi(locationIdStr)
+				//filterWithoutAliasStr,_ := val["filter_without_alias"]
+				//var filterWithoutAlias bool
+				//if filterWithoutAliasStr == "true" {
+				//	filterWithoutAlias = true
+				//}
 				log.Debug("Getting extended services ")
-				services, err := api.reg.GetExtendedServices(serviceName, filterWithoutAlias, model.ID(thingId), model.ID(locationId))
+				//services, err := api.reg.GetExtendedServices(serviceName, filterWithoutAlias, model.ID(thingId), model.ID(locationId))
+				services, err := api.reg.GetAllServices()
+
 
 				if err == nil {
 					fimp = fimpgo.NewMessage("evt.registry.services_report", "tpflow", "object", services, nil, nil, newMsg.Payload)
@@ -368,12 +392,9 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				api.reg.ClearAll()
 			}
 			if fimp != nil {
-				if newMsg.Payload.ResponseToTopic != "" {
-					fimpBin , _ := fimp.SerializeToJson()
-					api.msgTransport.PublishRaw(newMsg.Payload.ResponseToTopic,fimpBin)
-				}else {
-					addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
-					err  = api.msgTransport.Publish(&addr, fimp)
+				if err := api.msgTransport.RespondToRequest(newMsg.Payload, fimp); err != nil {
+					adr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
+					api.msgTransport.Publish(&adr, fimp)
 				}
 				log.Debug(err)
 			}else {

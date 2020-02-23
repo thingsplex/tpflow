@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/thingsplex/tpflow/registry/integration/fimpcore"
-	log "github.com/sirupsen/logrus"
 	"github.com/futurehomeno/fimpgo"
+	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow"
 	fapi "github.com/thingsplex/tpflow/api"
 	"github.com/thingsplex/tpflow/flow"
-	"github.com/thingsplex/tpflow/registry"
+	"github.com/thingsplex/tpflow/registry/integration/fimpcore"
+	"github.com/thingsplex/tpflow/registry/storage"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io/ioutil"
 	"net/http"
+	_ "net/http/pprof"
 	"runtime"
-    _ "net/http/pprof"
 )
 
 // SetupLog configures default logger
@@ -76,45 +76,40 @@ func main() {
 		fmt.Print(err)
 		panic("Can't load config file.")
 	}
+	registryBackend := "vinculum"
 
 	SetupLog(configs.LogFile, configs.LogLevel, configs.LogFormat)
 	log.Info("--------------Starting Thingsplex-Flow----------------")
-
+	var registry storage.RegistryStorage
 	//---------THINGS REGISTRY-------------
-	log.Info("<main>-------------- Starting service registry ")
-	thingRegistryStore := registry.NewThingRegistryStore(configs.RegistryDbFile)
-	log.Info("<main> Started ")
-	//-------------------------------------
+	if registryBackend == "vinculum" {
+		registry = storage.NewVinculumRegistryStore(&configs)
+		registry.Connect()
+	}else if registryBackend == "local" {
+		log.Info("<main>-------------- Starting service registry ")
+		registry = storage.NewThingRegistryStore(configs.RegistryDbFile)
+		log.Info("<main> Started ")
 
-	//---------THINGS REGISTRY INTEGRATION------
-	log.Info("<main>-------------- Starting service registry integration ")
-	regMqttIntegr := fimpcore.NewMqttIntegration(&configs,thingRegistryStore)
-	regMqttIntegr.InitMessagingTransport()
-	log.Info("<main> Started ")
+		log.Info("<main>-------------- Starting service registry integration ")
+		regMqttIntegr := fimpcore.NewMqttIntegration(&configs, registry)
+		regMqttIntegr.InitMessagingTransport()
+		log.Info("<main> Started ")
+	}
 	//---------FLOW------------------------
 	log.Info("<main> Starting Flow manager")
 	flowManager, err := flow.NewManager(configs)
 	if err != nil {
 		log.Error("Can't Init Flow manager . Error :", err)
 	}
-	flowManager.GetConnectorRegistry().AddConnection("thing_registry", "thing_registry", "thing_registry", thingRegistryStore)
+	flowManager.GetConnectorRegistry().AddConnection("thing_registry", "thing_registry", "thing_registry", registry)
 	err = flowManager.LoadAllFlowsFromStorage()
 	if err != nil {
 		log.Error("Can't load Flows from storage . Error :", err)
 	}
 
-	//e := echo.New()
-	//e.Use(middleware.Logger())
-	//e.Use(middleware.Recover())
-
 	ctxApi := fapi.NewContextApi(flowManager.GetGlobalContext(), nil)
 	flowApi := fapi.NewFlowApi(flowManager, nil,&configs)
-	regApi := fapi.NewRegistryApi(thingRegistryStore, nil)
-
-	//e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-	//	AllowOrigins: []string{"http://localhost:4200", "http:://localhost:8082", "http:://localhost:8083"},
-	//	AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
-	//}))
+	regApi := fapi.NewRegistryApi(registry, nil)
 
 	apiMqttTransport,err := InitApiMqttTransport(configs)
 
@@ -136,7 +131,7 @@ func main() {
     runtime.GC()
 	select {}
 
-	thingRegistryStore.Disconnect()
+	registry.Disconnect()
 
 	log.Info("<main> Application is terminated")
 

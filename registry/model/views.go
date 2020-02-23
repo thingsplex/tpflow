@@ -12,8 +12,19 @@ type ThingWithLocationView struct {
 	LocationAlias string `json:"location_alias"`
 }
 
+type DeviceWithLocationView struct {
+	Device
+	LocationAlias string `json:"location_alias"`
+}
+
 type ThingExtendedView struct {
 	Thing
+	Services      []ServiceExtendedView `json:"services"`
+	LocationAlias string                `json:"location_alias"`
+}
+
+type DeviceExtendedView struct {
+	Device
 	Services      []ServiceExtendedView `json:"services"`
 	LocationAlias string                `json:"location_alias"`
 }

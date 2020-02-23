@@ -9,6 +9,7 @@ const IDnil = 0
 const (
 	AppContainer          = "app"
 	ThingContainer        = "thing"
+	DeviceContainer       = "dev"
 	AttributeUpdatedByCmd = 1
 	AttributeUpdatedByEvt = 2
 )
@@ -47,6 +48,83 @@ type Thing struct {
 	PropSets          map[string]map[string]interface{} `json:"prop_set"`
 	TechSpecificProps map[string]string                 `json:"tech_specific_props"`
 	UpdatedAt         time.Time                         `json:"updated_at"`
+}
+
+/*
+ "id": "1",
+      "locationRef": null,
+      "metadata": null,
+      "model": "zw_398_3_13",
+      "modelAlias": "",
+      "name": "Experimental smoke sensor",
+      "origin": "00000000e7fd6dd3",
+      "services": [
+        {
+          "address": "/rt:dev/rn:zw/ad:1/sv:basic/ad:9_0",
+          "enabled": true,
+          "interfaces": [
+            "cmd.lvl.get_report",
+            "cmd.lvl.set",
+            "evt.lvl.report"
+          ],
+          "metadata": null,
+          "name": "basic",
+          "props": {
+            "is_secure": false,
+            "is_unsecure": true
+          }
+        },
+        {
+          "address": "/rt:dev/rn:zw/ad:1/sv:battery/ad:9_0",
+          "enabled": true,
+          "interfaces": [
+            "cmd.lvl.get_report",
+            "evt.alarm.report",
+            "evt.lvl.report"
+          ],
+          "metadata": null,
+          "name": "battery",
+          "props": {
+            "is_secure": false,
+            "is_unsecure": true
+          }
+        },
+        {
+          "address": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:9_0",
+          "enabled": true,
+          "interfaces": [
+            "cmd.group.add_members",
+            "cmd.group.delete_members",
+            "cmd.group.get_members",
+            "cmd.ping.send",
+            "evt.group.members_report",
+            "evt.ping.report"
+          ],
+          "metadata": null,
+          "name": "dev_sys",
+          "props": {
+            "is_secure": false,
+            "is_unsecure": true
+          }
+        }
+      ],
+      "thingRef": {
+        "id": "1"
+      },
+      "type": {
+        "subtype": null,
+        "supported": {
+          "battery": []
+        },
+        "type": "battery"
+      }
+*/
+
+type Device struct {
+	ID       ID     `json:"id" storm:"id,increment"`
+	ThingId  ID     `json:"thing_id" `
+	LocationId ID   `json:"location_id"`
+	Alias    string `json:"alias"`
 }
 
 type App struct {
@@ -88,7 +166,6 @@ type Interface struct {
 	Version   string `json:"ver"`
 }
 
-
 type Location struct {
 	ID             ID         `json:"id" storm:"id,increment,index"`
 	IntegrationId  string     `json:"integr_id"`
@@ -100,5 +177,9 @@ type Location struct {
 	Latitude       float64    `json:"lat"`
 	Image          string     `json:"image"`
 	ChildLocations []Location `json:"child_locations"`
+	ParentID       ID         `json:"parent_id"`
 	State          string     `json:"state"`
 }
+
+// for vinculum rooms we'll use positive IDs , for vinculum Areas we'll use negative numbers
+// id > 0 -> Room , id < 0 -> Area

@@ -11,7 +11,7 @@ func getApiRemoteClient()*ApiRemoteClient  {
 	sClient := fimpgo.NewSyncClient(nil)
 	sClient.Connect("tcp://localhost:1883","api_client_test","","",true,1,1)
 
-	remoteApiClient := NewApiRemoteClient(sClient, "1")
+	remoteApiClient := NewApiRemoteClient(sClient, "1","test_client")
 	return remoteApiClient
 }
 
@@ -110,7 +110,18 @@ func TestApiRemoteClient_RegistryGetListOfThings(t *testing.T) {
 	if err != nil || len(resp)==0 {
 		t.Error(err)
 	}else {
-		t.Log(resp)
+		t.Logf("Total %d things",len(resp))
+	}
+}
+
+func TestApiRemoteClient_RegistryGetListOfDevices(t *testing.T) {
+	remoteApiClient := getApiRemoteClient()
+	resp,err := remoteApiClient.RegistryGetListOfDevices("")
+
+	if err != nil || len(resp)==0 {
+		t.Error(err)
+	}else {
+		t.Logf("Total %d devices",len(resp))
 	}
 }
 

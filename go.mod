@@ -12,7 +12,7 @@ require (
 	github.com/coreos/bbolt v1.3.0 // indirect
 	github.com/cpucycle/astrotime v0.0.0-20120927164819-9c7d514efdb5
 	github.com/dchest/uniuri v0.0.0-20160212164326-8902c56451e9
-	github.com/futurehomeno/fimpgo v1.4.8-0.20191103192234-d113ca2a4cd0
+	github.com/futurehomeno/fimpgo v1.4.11
 	github.com/golang/protobuf v1.2.0 // indirect
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/imdario/mergo v0.3.6

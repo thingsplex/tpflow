@@ -40,6 +40,7 @@ type FlowMeta struct {
 
 const (
 	SIGNAL_STOP = 1
+	SIGNAL_TERMINATE_WAITING = 2
 )
 
 type FlowOperationalContext struct {

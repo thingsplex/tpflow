@@ -2,11 +2,11 @@ package fimp
 
 import (
 	"errors"
-	"github.com/thingsplex/tpflow/model"
-	"github.com/thingsplex/tpflow/node/base"
-	"github.com/thingsplex/tpflow/registry"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/mitchellh/mapstructure"
+	"github.com/thingsplex/tpflow/model"
+	"github.com/thingsplex/tpflow/node/base"
+	"github.com/thingsplex/tpflow/registry/storage"
 	"time"
 )
 
@@ -18,7 +18,7 @@ type TriggerNode struct {
 	msgInStream         fimpgo.MessageCh
 	msgInStreamName     string
 	config              TriggerConfig
-	thingRegistry       *registry.ThingRegistryStore
+	thingRegistry       *storage.LocalRegistryStore
 }
 
 type TriggerConfig struct {
@@ -98,10 +98,10 @@ func (node *TriggerNode) LoadNodeConfig() error {
 	connInstance := node.ConnectorRegistry().GetInstance("thing_registry")
 	var ok bool
 	if connInstance != nil {
-		node.thingRegistry, ok = connInstance.Connection.(*registry.ThingRegistryStore)
+		node.thingRegistry, ok = connInstance.Connection.(*storage.LocalRegistryStore)
 		if !ok {
 			node.thingRegistry = nil
-			node.GetLog().Error("Can't get things connection to things registry . Cast to ThingRegistryStore failed")
+			node.GetLog().Error("Can't get things connection to things registry . Cast to LocalRegistryStore failed")
 		}
 	} else {
 		node.GetLog().Error("Connector registry doesn't have thing_registry instance")

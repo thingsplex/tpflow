@@ -308,6 +308,20 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				log.Info("Running GC")
 				runtime.GC()
 
+			case "cmd.log.set_level":
+				level , err := newMsg.Payload.GetStringValue()
+				if err != nil {
+					log.Error("<api> wrong payload type")
+				}
+				logLevel, err := log.ParseLevel(level)
+				if err == nil {
+					log.SetLevel(logLevel)
+					//mex.configs.LogLevel = level
+					//mex.configs.Save()
+					log.Info("<msgex> Log level was updated to = ",level)
+				}else {
+					log.Error("<msgex> Unsupported log level = ",level)
+				}
 			}
 
 			if fimp != nil {

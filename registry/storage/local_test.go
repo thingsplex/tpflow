@@ -1,4 +1,4 @@
-package registry
+package storage
 
 import (
 	"github.com/thingsplex/tpflow/registry/model"

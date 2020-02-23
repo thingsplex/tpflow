@@ -1,4 +1,4 @@
-package registry
+package storage
 
 import (
 	"encoding/gob"
@@ -12,7 +12,7 @@ import (
 	"github.com/thingsplex/tpflow/utils"
 )
 
-type ThingRegistryStore struct {
+type LocalRegistryStore struct {
 	thingRegistryStoreFile string
 	db                     *storm.DB
 	// in memory store
@@ -21,13 +21,37 @@ type ThingRegistryStore struct {
 	locations []model.Location
 }
 
-func NewThingRegistryStore(storeFile string) *ThingRegistryStore {
-	store := ThingRegistryStore{thingRegistryStoreFile: storeFile}
+func NewThingRegistryStore(storeFile string) RegistryStorage {
+	store := LocalRegistryStore{thingRegistryStoreFile: storeFile}
 	store.Connect()
 	return &store
 }
 
-func (st *ThingRegistryStore) Connect() error {
+func (st *LocalRegistryStore) GetAllDevices() ([]model.Device, error) {
+	panic("implement me")
+}
+
+func (st *LocalRegistryStore) GetDevicesByLocationId(locationId model.ID) ([]model.Device, error) {
+	panic("implement me")
+}
+
+func (st *LocalRegistryStore) GetDevicesByThingId(locationId model.ID) ([]model.Device, error) {
+	panic("implement me")
+}
+
+func (st *LocalRegistryStore) GetDeviceById(Id model.ID) (*model.DeviceExtendedView, error) {
+	return nil,nil
+}
+
+func (st *LocalRegistryStore) GetDeviceByLocationId(locationId model.ID) ([]model.Device, error) {
+	return nil,nil
+}
+
+func (st *LocalRegistryStore) GetDeviceByIntegrationId(id string) (*model.Device, error) {
+	return nil,nil
+}
+
+func (st *LocalRegistryStore) Connect() error {
 	var err error
 	gob.Register([]interface{}{})
 	st.db, err = storm.Open(st.thingRegistryStoreFile, storm.Codec(gobcodec.Codec))
@@ -74,11 +98,11 @@ func (st *ThingRegistryStore) Connect() error {
 
 }
 
-func (st *ThingRegistryStore) Disconnect() {
+func (st *LocalRegistryStore) Disconnect() {
 	st.db.Close()
 }
 
-func (st *ThingRegistryStore) GetThingById(Id model.ID) (*model.Thing, error) {
+func (st *LocalRegistryStore) GetThingById(Id model.ID) (*model.Thing, error) {
 	//var thing Thing
 	//err := st.db.One("ID", Id, &thing)
 	for i := range st.things {
@@ -89,7 +113,7 @@ func (st *ThingRegistryStore) GetThingById(Id model.ID) (*model.Thing, error) {
 	return nil, nil
 }
 
-func (st *ThingRegistryStore) GetServiceById(Id model.ID) (*model.Service, error) {
+func (st *LocalRegistryStore) GetServiceById(Id model.ID) (*model.Service, error) {
 	//var service Service
 	//err := st.db.One("ID", Id, &service)
 	//return &service, err
@@ -101,7 +125,7 @@ func (st *ThingRegistryStore) GetServiceById(Id model.ID) (*model.Service, error
 	return nil, nil
 }
 
-func (st *ThingRegistryStore) GetServiceByFullAddress(address string) (*model.ServiceExtendedView, error) {
+func (st *LocalRegistryStore) GetServiceByFullAddress(address string) (*model.ServiceExtendedView, error) {
 	var serv model.ServiceExtendedView
 
 	for i := range st.services {
@@ -119,7 +143,7 @@ func (st *ThingRegistryStore) GetServiceByFullAddress(address string) (*model.Se
 	return &serv, errors.New("Not found")
 }
 
-func (st *ThingRegistryStore) GetLocationById(Id model.ID) (*model.Location, error) {
+func (st *LocalRegistryStore) GetLocationById(Id model.ID) (*model.Location, error) {
 	//var location Location
 	//err := st.db.One("ID", Id, &location)
 	//return &location, err
@@ -131,14 +155,14 @@ func (st *ThingRegistryStore) GetLocationById(Id model.ID) (*model.Location, err
 	return nil, nil
 }
 
-func (st *ThingRegistryStore) GetAllThings() ([]model.Thing, error) {
+func (st *LocalRegistryStore) GetAllThings() ([]model.Thing, error) {
 	//var things []Thing
 	//err := st.db.All(&things)
 	//return things, err
 	return st.things, nil
 }
 
-func (st *ThingRegistryStore) ExtendThingsWithLocation(things []model.Thing) []model.ThingWithLocationView {
+func (st *LocalRegistryStore) ExtendThingsWithLocation(things []model.Thing) []model.ThingWithLocationView {
 	response := make([]model.ThingWithLocationView, len(things))
 	for i := range things {
 		response[i].Thing = things[i]
@@ -151,7 +175,7 @@ func (st *ThingRegistryStore) ExtendThingsWithLocation(things []model.Thing) []m
 	return response
 }
 
-func (st *ThingRegistryStore) GetAllServices() ([]model.Service, error) {
+func (st *LocalRegistryStore) GetAllServices() ([]model.Service, error) {
 	//var services []Service
 	//err := st.db.All(&services)
 	//return services, err
@@ -159,7 +183,7 @@ func (st *ThingRegistryStore) GetAllServices() ([]model.Service, error) {
 }
 
 // GetThingExtendedViewById return thing enhanced with linked services and location Alias
-func (st *ThingRegistryStore) GetThingExtendedViewById(Id model.ID) (*model.ThingExtendedView, error) {
+func (st *LocalRegistryStore) GetThingExtendedViewById(Id model.ID) (*model.ThingExtendedView, error) {
 	var thingExView model.ThingExtendedView
 	//err := st.db.One("ID", Id, &thing)
 	thingp, err := st.GetThingById(Id)
@@ -177,7 +201,7 @@ func (st *ThingRegistryStore) GetThingExtendedViewById(Id model.ID) (*model.Thin
 	return &thingExView, err
 }
 
-func (st *ThingRegistryStore) GetServiceByAddress(serviceName string, serviceAddress string) (*model.Service, error) {
+func (st *LocalRegistryStore) GetServiceByAddress(serviceName string, serviceAddress string) (*model.Service, error) {
 	//service := Service{}
 	//err := st.db.Select(q.And(q.Eq("Name", serviceName), q.Eq("Address", serviceAddress))).First(&service)
 	for i := range st.services {
@@ -189,7 +213,7 @@ func (st *ThingRegistryStore) GetServiceByAddress(serviceName string, serviceAdd
 }
 
 // GetExtendedServices return services enhanced with location Alias
-func (st *ThingRegistryStore) GetExtendedServices(serviceNameFilter string, filterWithoutAlias bool, thingIdFilter model.ID, locationIdFilter model.ID) ([]model.ServiceExtendedView, error) {
+func (st *LocalRegistryStore) GetExtendedServices(serviceNameFilter string, filterWithoutAlias bool, thingIdFilter model.ID, locationIdFilter model.ID) ([]model.ServiceExtendedView, error) {
 	var services []model.Service
 	//var matcher []q.Matcher
 	//if serviceNameFilter != "" {
@@ -253,14 +277,14 @@ func (st *ThingRegistryStore) GetExtendedServices(serviceNameFilter string, filt
 	return result, nil
 }
 
-func (st *ThingRegistryStore) GetAllLocations() ([]model.Location, error) {
+func (st *LocalRegistryStore) GetAllLocations() ([]model.Location, error) {
 	//var locations []Location
 	//err := st.db.All(&locations)
 	//return locations, err
 	return st.locations, nil
 }
 
-func (st *ThingRegistryStore) GetThingByAddress(technology string, address string) (*model.Thing, error) {
+func (st *LocalRegistryStore) GetThingByAddress(technology string, address string) (*model.Thing, error) {
 	//var thing Thing
 	//err := st.db.Select(q.And(q.Eq("Address", address), q.Eq("CommTechnology", technology))).First(&thing)
 	//return &thing,err
@@ -272,7 +296,7 @@ func (st *ThingRegistryStore) GetThingByAddress(technology string, address strin
 	return nil, errors.New("Not found")
 }
 
-func (st *ThingRegistryStore) GetThingExtendedViewByAddress(technology string, address string) (*model.ThingExtendedView, error) {
+func (st *LocalRegistryStore) GetThingExtendedViewByAddress(technology string, address string) (*model.ThingExtendedView, error) {
 	thing, err := st.GetThingByAddress(technology, address)
 	if err != nil {
 		return nil, err
@@ -280,7 +304,7 @@ func (st *ThingRegistryStore) GetThingExtendedViewByAddress(technology string, a
 	return st.GetThingExtendedViewById(thing.ID)
 }
 
-func (st *ThingRegistryStore) GetThingsByLocationId(locationId model.ID) ([]model.Thing, error) {
+func (st *LocalRegistryStore) GetThingsByLocationId(locationId model.ID) ([]model.Thing, error) {
 	var things []model.Thing
 	//err := st.db.Select(q.Eq("LocationId", locationId)).Find(&things)
 	//return things, err
@@ -292,7 +316,7 @@ func (st *ThingRegistryStore) GetThingsByLocationId(locationId model.ID) ([]mode
 	return things, nil
 }
 
-func (st *ThingRegistryStore) GetThingByIntegrationId(id string) (*model.Thing, error) {
+func (st *LocalRegistryStore) GetThingByIntegrationId(id string) (*model.Thing, error) {
 	//var thing Thing
 	//err := st.db.Select(q.Eq("IntegrationId", id)).First(&thing)
 	//return &thing, err
@@ -304,7 +328,7 @@ func (st *ThingRegistryStore) GetThingByIntegrationId(id string) (*model.Thing, 
 	return nil, errors.New("Not found")
 }
 
-func (st *ThingRegistryStore) GetLocationByIntegrationId(id string) (*model.Location, error) {
+func (st *LocalRegistryStore) GetLocationByIntegrationId(id string) (*model.Location, error) {
 	//var location Location
 	//err := st.db.Select(q.Eq("IntegrationId", id)).First(&location)
 	//return &location, err
@@ -317,7 +341,7 @@ func (st *ThingRegistryStore) GetLocationByIntegrationId(id string) (*model.Loca
 	return nil, errors.New("Not found")
 }
 
-//func (st *ThingRegistryStore) GetFlatInterfaces(thingAddr string, thingTech string, serviceName string, intfMsgType string, locationId ID, thingId ID) ([]InterfaceFlatView, error) {
+//func (st *LocalRegistryStore) GetFlatInterfaces(thingAddr string, thingTech string, serviceName string, intfMsgType string, locationId ID, thingId ID) ([]InterfaceFlatView, error) {
 //	var result []InterfaceFlatView
 //	//things, err  := st.GetAllThings()
 //	var things []Thing
@@ -390,7 +414,7 @@ func (st *ThingRegistryStore) GetLocationByIntegrationId(id string) (*model.Loca
 //	return result, nil
 //}
 
-func (st *ThingRegistryStore) UpsertThing(thing *model.Thing) (model.ID, error) {
+func (st *LocalRegistryStore) UpsertThing(thing *model.Thing) (model.ID, error) {
 	var err error
 	if thing.ID == model.IDnil {
 		err = st.db.Save(thing)
@@ -435,7 +459,7 @@ func (st *ThingRegistryStore) UpsertThing(thing *model.Thing) (model.ID, error) 
 	return thing.ID, nil
 }
 
-func (st *ThingRegistryStore) UpsertService(service *model.Service) (model.ID, error) {
+func (st *LocalRegistryStore) UpsertService(service *model.Service) (model.ID, error) {
 	var err error
 	// Check if service is already registered in system , if record already exits , updating the record
 	if service.ID == model.IDnil {
@@ -471,7 +495,7 @@ func (st *ThingRegistryStore) UpsertService(service *model.Service) (model.ID, e
 	return service.ID, nil
 }
 
-func (st *ThingRegistryStore) UpsertLocation(location *model.Location) (model.ID, error) {
+func (st *LocalRegistryStore) UpsertLocation(location *model.Location) (model.ID, error) {
 	var err error
 	if location.ID == 0 {
 		err = st.db.Save(location)
@@ -497,7 +521,7 @@ func (st *ThingRegistryStore) UpsertLocation(location *model.Location) (model.ID
 	return location.ID, nil
 }
 
-func (st *ThingRegistryStore) DeleteThing(id model.ID) error {
+func (st *LocalRegistryStore) DeleteThing(id model.ID) error {
 	thing, err := st.GetThingById(id)
 	log.Debug("<Reg> Deleting thing ", thing.ID)
 	if err != nil {
@@ -524,7 +548,7 @@ func (st *ThingRegistryStore) DeleteThing(id model.ID) error {
 	return nil
 }
 
-func (st *ThingRegistryStore) DeleteService(id model.ID) error {
+func (st *LocalRegistryStore) DeleteService(id model.ID) error {
 	service, err := st.GetServiceById(id)
 	log.Debug("<Reg> Deleting service = ", service.ID)
 	if err != nil {
@@ -543,7 +567,7 @@ func (st *ThingRegistryStore) DeleteService(id model.ID) error {
 	return err
 }
 
-func (st *ThingRegistryStore) DeleteLocation(id model.ID) error {
+func (st *LocalRegistryStore) DeleteLocation(id model.ID) error {
 	location, err := st.GetLocationById(id)
 	log.Debug("<Reg> Deleting location = ", location.ID)
 	if err != nil {
@@ -560,7 +584,7 @@ func (st *ThingRegistryStore) DeleteLocation(id model.ID) error {
 	return nil
 }
 
-func (st *ThingRegistryStore) ReindexAll() error {
+func (st *LocalRegistryStore) ReindexAll() error {
 	log.Info("Starting reindex")
 	err := st.db.ReIndex(&model.Thing{})
 	err = st.db.ReIndex(&model.Location{})
@@ -569,7 +593,7 @@ func (st *ThingRegistryStore) ReindexAll() error {
 	return err
 }
 
-func (st *ThingRegistryStore) ClearAll() error {
+func (st *LocalRegistryStore) ClearAll() error {
 	thing := model.Thing{}
 	location := model.Location{}
 	service := model.Service{}
@@ -602,19 +626,19 @@ func (st *ThingRegistryStore) ClearAll() error {
 
 // Method to comply with Connector interface
 
-func (st *ThingRegistryStore) LoadConfig(config interface{}) error {
+func (st *LocalRegistryStore) LoadConfig(config interface{}) error {
 	return nil
 }
-func (st *ThingRegistryStore) Init() error {
+func (st *LocalRegistryStore) Init() error {
 	return nil
 }
-func (st *ThingRegistryStore) Stop() {
+func (st *LocalRegistryStore) Stop() {
 
 }
-func (st *ThingRegistryStore) GetConnection() interface{} {
+func (st *LocalRegistryStore) GetConnection() interface{} {
 	return &st
 
 }
-func (st *ThingRegistryStore) GetState() string {
+func (st *LocalRegistryStore) GetState() string {
 	return "RUNNING"
 }
