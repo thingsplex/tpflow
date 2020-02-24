@@ -125,6 +125,7 @@ type Device struct {
 	ThingId  ID     `json:"thing_id" `
 	LocationId ID   `json:"location_id"`
 	Alias    string `json:"alias"`
+	Type     string `json:"type"`
 }
 
 type App struct {

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/futurehomeno/fimpgo/fimptype/primefimp"
 	log "github.com/sirupsen/logrus"
@@ -242,6 +243,15 @@ func (r *VinculumRegistryStore) GetAllDevices() ([]model.Device, error) {
 		if vDevices[i].ThingID != nil {
 			device.ThingId =  model.ID(*vDevices[i].ThingID)
 		}
+		var dtype,dsubtype string
+		if vDevices[i].Type["type"] != nil {
+			dtype,_ = vDevices[i].Type["type"].(string)
+		}
+		if vDevices[i].Type["subtype"] != nil {
+			dsubtype,_ = vDevices[i].Type["subtype"].(string)
+			dsubtype = "."+dsubtype
+		}
+		device.Type = fmt.Sprintf("%s%s",dtype,dsubtype)
 
 		devices = append(devices, device)
 	}
