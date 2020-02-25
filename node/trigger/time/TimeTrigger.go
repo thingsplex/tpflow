@@ -78,32 +78,21 @@ func (node *Node) Init() error {
 					Header: map[string]string{"name": node.config.Expressions[i].Name}}
 				node.cronMessageCh <- msg
 			})
-
 		}
 		node.cron.Start()
 	}
 	for _,e := range node.cron.Entries() {
 		node.GetLog().Debug("Next job will run at:", e.Next.Format(TIME_FORMAT))
 	}
-
 	return nil
 }
 
 func (node *Node) getSunriseAndSunset(nextDay bool) (sunrise time.Time, sunset time.Time, err error) {
 	currentDate := time.Now()
 	if nextDay {
-		oneDayDuration := time.Duration(time.Hour * 24)
+		oneDayDuration := time.Hour * 24
 		currentDate = currentDate.Add(oneDayDuration)
 	}
-
-	//p := sunrisesunset.Parameters{
-	//	Latitude:  node.config.Latitude,
-	//	Longitude: node.config.Longitude,
-	//	UtcOffset: node.config.TimeZone,
-	//	Date:      currentDate,
-	//}
-	// Calculate the sunrise and sunset times
-	//sunrise, sunset, err = p.GetSunriseSunset()
 
 	sunrise, sunset = sun.SunriseSunset(
 		node.config.Latitude,node.config.Longitude,          // Toronto, CA
@@ -117,27 +106,43 @@ func (node *Node) getSunriseAndSunset(nextDay bool) (sunrise time.Time, sunset t
 
 func (node *Node) getTimeUntilNextEvent() (eventTime time.Duration, eventType string, err error) {
 	sunrise, sunset, err := node.getSunriseAndSunset(false)
-
+	if err != nil {
+		return 0,"",err
+	}
 	timeTillSunrise := time.Until(sunrise)
 	timeTillSunset := time.Until(sunset)
+	var nextEvent string
 	if timeTillSunrise.Minutes() > 0 && timeTillSunset.Minutes() > 0 {
-		return timeTillSunrise, SUNRISE, err
+		// morning before sunrise (both events are in future )
+		nextEvent = SUNRISE
 	} else if timeTillSunrise.Minutes() <= 0 && timeTillSunset.Minutes() > 0 {
-		return timeTillSunset, SUNSET, err
+		// between sunrise and sunset
+		nextEvent = SUNSET
 	} else {
 		// sunrise and sunset are in next day .
+		nextEvent = SUNRISE
 		sunrise, sunset, err = node.getSunriseAndSunset(true)
-		return time.Until(sunrise), SUNRISE, err
+		timeTillSunrise = time.Until(sunrise)
+		timeTillSunset = time.Until(sunset)
 	}
-
+	if node.nextAstroEvent == nextEvent && nextEvent == SUNRISE {
+		nextEvent = SUNSET
+	}else if node.nextAstroEvent == nextEvent && nextEvent == SUNSET {
+		nextEvent = SUNRISE
+	}
+	if nextEvent == SUNRISE {
+		return timeTillSunrise,nextEvent,nil
+	}else {
+		return timeTillSunset,nextEvent,nil
+	}
 }
 
 func (node *Node) scheduleNextAstroEvent() {
-	node.GetLog().Debug("Time now local time", time.Now().Format(TIME_FORMAT))
+	node.GetLog().Debug(" Time now local time", time.Now().Format(TIME_FORMAT))
 	node.GetLog().Infof(" Scheduling next astro event at location Lat = %f,Long = %f ", node.config.Latitude, node.config.Longitude)
 	sunriseTime, sunsetTime, err := node.getSunriseAndSunset(false)
 	node.GetLog().Debug(" Today Sunrise is at (UTC) : ", sunriseTime.Format(TIME_FORMAT))
-	node.GetLog().Debug(" Today Sunset is  at (UTC)", sunsetTime.Format(TIME_FORMAT))
+	node.GetLog().Debug(" Today Sunset is  at (UTC) : ", sunsetTime.Format(TIME_FORMAT))
 
 	timeUntilEvent, eventType, err := node.getTimeUntilNextEvent()
 	if err != nil {
@@ -193,7 +198,6 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 	}()
 	for {
 		if node.config.GenerateAstroTimeEvents {
-			// TODO : investigate this . leads to HIGH CPU and memmory usage
 			node.scheduleNextAstroEvent()
 		}
 
@@ -204,7 +208,6 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 		case signal := <-node.FlowOpCtx().NodeControlSignalChannel:
 			node.GetLog().Debug("Control signal ")
 			if signal == model.SIGNAL_STOP {
-				node.astroTimer.Stop()
 				return
 			}
 		}

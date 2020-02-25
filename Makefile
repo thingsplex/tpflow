@@ -1,7 +1,8 @@
-version="0.12.14"
+version="0.13.1"
 version_file=VERSION
 working_dir=$(shell pwd)
 arch="armhf"
+remote_host = "fh@cube.local"
 
 clean:
 	-rm tpflow
@@ -44,6 +45,12 @@ deb-arm : clean configure-arm build-go-arm package-deb-doc
 
 deb-amd : configure-amd64 build-go-amd package-deb-doc
 	mv debian.deb tpflow_$(version)_amd64.deb
+
+upload :
+	scp package/build/tpflow_$(version)_armhf.deb $(remote_host):~/
+
+remote-install : deb-arm upload
+	ssh -t $(remote_host) "sudo dpkg -i tpflow_$(version)_armhf.deb"
 
 run :
 	go run cmd/main.go -c testdata/var/config.json

@@ -5,6 +5,7 @@ import "github.com/thingsplex/tpflow/registry/model"
 type RegistryStorage interface {
 	Connect() error
 	Disconnect()
+	GetBackendName()string
 	GetServiceById(Id model.ID) (*model.Service, error)
 	GetServiceByFullAddress(address string) (*model.ServiceExtendedView, error)
 	GetLocationById(Id model.ID) (*model.Location, error)
@@ -34,6 +35,7 @@ type RegistryStorage interface {
 	DeleteLocation(id model.ID) error
 	ReindexAll() error
 	ClearAll() error
+	Sync() error
 
 	LoadConfig(config interface{}) error
 	Init() error

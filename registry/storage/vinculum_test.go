@@ -6,7 +6,6 @@ import (
 )
 
 func TestVinculumRegistryStore_GetAllDevices(t *testing.T) {
-
 			r := &VinculumRegistryStore{}
 			r.vApi = primefimp.NewApiClient("tpflow_reg",nil,false)
 			err := r.vApi.LoadVincResponseFromFile("../../testdata/vinfimp/site-response.json")
@@ -20,5 +19,4 @@ func TestVinculumRegistryStore_GetAllDevices(t *testing.T) {
 			for _,dev := range devices {
 				t.Logf( "Device name = %s , type = %s",dev.Alias,dev.Type)
 			}
-
 }

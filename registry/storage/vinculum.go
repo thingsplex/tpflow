@@ -20,7 +20,7 @@ func NewVinculumRegistryStore(config *tpflow.Configs) RegistryStorage {
 }
 
 func (r *VinculumRegistryStore) Connect() error {
-	clientId := r.config.MqttClientIdPrefix + "things_registry"
+	clientId := r.config.MqttClientIdPrefix + "vinc_reg_store"
 	r.msgTransport = fimpgo.NewMqttTransport(r.config.MqttServerURI, clientId, r.config.MqttUsername, r.config.MqttPassword, true, 1, 1)
 	r.msgTransport.SetGlobalTopicPrefix(r.config.MqttTopicGlobalPrefix)
 	err := r.msgTransport.Start()
@@ -29,13 +29,17 @@ func (r *VinculumRegistryStore) Connect() error {
 		log.Error("<MqRegInt> Error connecting to broker : ", err)
 		return err
 	}
-	r.vApi = primefimp.NewApiClient("tpflow_reg",r.msgTransport,false)
-	err = r.vApi.LoadVincResponseFromFile("testdata/vinfimp/site-response.json")
-	if err != nil {
-		log.Error("Can't load site data from file . Error:",err)
-	}
-	//r.vApi.StartNotifyRouter()
+	r.vApi = primefimp.NewApiClient("tpflow_reg",r.msgTransport,true)
+	//err = r.vApi.LoadVincResponseFromFile("testdata/vinfimp/site-response.json")
+	//if err != nil {
+	//	log.Error("Can't load site data from file . Error:",err)
+	//}
+	r.vApi.StartNotifyRouter()
 	return nil
+}
+
+func (r *VinculumRegistryStore)GetBackendName()string {
+	return "vinculum"
 }
 
 func (r *VinculumRegistryStore) Disconnect() {
@@ -300,6 +304,10 @@ func (VinculumRegistryStore) DeleteLocation(id model.ID) error {
 
 func (VinculumRegistryStore) ReindexAll() error {
 	panic("implement me")
+}
+
+func (r *VinculumRegistryStore) Sync() error {
+	return r.vApi.ReloadSiteToCache(3)
 }
 
 func (VinculumRegistryStore) ClearAll() error {

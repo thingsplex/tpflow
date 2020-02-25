@@ -6,18 +6,15 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow"
-	"github.com/thingsplex/tpflow/registry/integration/fh"
 	"github.com/thingsplex/tpflow/registry/model"
 	"github.com/thingsplex/tpflow/registry/storage"
 	"runtime/debug"
-	"strconv"
 )
 
 type MqttIntegration struct {
 	msgTransport *fimpgo.MqttTransport
 	config       *tpflow.Configs
 	registry     storage.RegistryStorage
-	vincIntegr   *fh.VinculumIntegration
 }
 
 func NewMqttIntegration(config *tpflow.Configs, registry storage.RegistryStorage) *MqttIntegration {
@@ -34,12 +31,12 @@ func (mg *MqttIntegration) InitMessagingTransport() {
 		log.Error("<MqRegInt> Error connecting to broker : ", err)
 	}
 	mg.msgTransport.SetMessageHandler(mg.onMqttMessage)
-	mg.msgTransport.Subscribe("pt:j1/mt:evt/rt:app/+/+")
-	mg.msgTransport.Subscribe("pt:j1/mt:evt/rt:ad/+/+")
 	mg.msgTransport.Subscribe("pt:j1/mt:cmd/rt:app/rn:registry/ad:1")
-	mg.msgTransport.Subscribe("pt:j1/mt:evt/rt:app/rn:vinculum/ad:1")
-	mg.vincIntegr = fh.NewVinculumIntegration(mg.registry,mg.msgTransport)
-
+	if mg.registry.GetBackendName() == "local" {
+		mg.msgTransport.Subscribe("pt:j1/mt:evt/rt:app/+/+")
+		mg.msgTransport.Subscribe("pt:j1/mt:evt/rt:ad/+/+")
+		mg.msgTransport.Subscribe("pt:j1/mt:evt/rt:app/rn:vinculum/ad:1")
+	}
 }
 
 func (mg *MqttIntegration) RequestInclusionReport(adapter string, addr string) {
@@ -67,41 +64,11 @@ func (mg *MqttIntegration) onMqttMessage(topic string, addr *fimpgo.Address, iot
 		tech := addr.ResourceName
 		mg.processExclusionReport(iotMsg, tech)
 	case "cmd.registry.sync_devices":
-		go mg.vincIntegr.SyncDevice()
+		log.Debugf("<MqRegInt> Reg Sync command")
+		go mg.registry.Sync()
 	case "cmd.registry.sync_rooms":
-		go mg.vincIntegr.SyncRooms()
-	case "cmd.service.get_list":
-		//  pt:j1/mt:cmd/rt:app/rn:registry/ad:1
-		//  {"serv":"registry","type":"cmd.service.get_list","val_t":"str_map","val":{"serviceName":"out_bin_switch","filterWithoutAlias":"true"},"props":null,"tags":null,"uid":"1234455"}
-		filters, err := iotMsg.GetStrMapValue()
-		if err == nil {
-			var filterWithoutAlias bool
-			var locationId, thingId int
-
-			locationIdStr, _ := filters["locationId"]
-			thingIdStr, _ := filters["thingId"]
-			locationId, _ = strconv.Atoi(locationIdStr)
-			thingId, _ = strconv.Atoi(thingIdStr)
-
-			serviceName, _ := filters["serviceName"]
-			filterFithoutAliasStr, filterOk := filters["filterWithoutAlias"]
-			if filterOk {
-				if filterFithoutAliasStr == "true" {
-					filterWithoutAlias = true
-				}
-			}
-			//if ok {
-			response, err := mg.registry.GetExtendedServices(serviceName, filterWithoutAlias, model.ID(thingId), model.ID(locationId))
-			if err != nil {
-				log.Error("<MqRegInt> Can get services .Err :", err)
-			}
-			responseMsg := fimpgo.NewMessage("evt.service.list", "registry", "object", response, nil, nil, iotMsg)
-			addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "registry", ResourceAddress: "1"}
-			mg.msgTransport.Publish(&addr, responseMsg)
-			//}
-		} else {
-			log.Error("<MqRegInt> Can't parse value. Error :", err)
-		}
+		log.Debugf("<MqRegInt> Reg Sync command")
+		go mg.registry.Sync()
 	default:
 		//log.Info("<MqRegInt> Unsupported message type :", iotMsg.Type)
 	}
@@ -109,6 +76,9 @@ func (mg *MqttIntegration) onMqttMessage(topic string, addr *fimpgo.Address, iot
 
 func (mg *MqttIntegration) processInclusionReport(msg *fimpgo.FimpMessage) error {
 	log.Info("<MqRegInt> New inclusion report")
+	if mg.registry.GetBackendName() == "vinculum" {
+		return nil
+	}
 	inclReport := fimptype.ThingInclusionReport{}
 	err := msg.GetObjectValue(&inclReport)
 	log.Debugf("%+v\n", err)
@@ -172,6 +142,9 @@ func (mg *MqttIntegration) processInclusionReport(msg *fimpgo.FimpMessage) error
 
 func (mg *MqttIntegration) processExclusionReport(msg *fimpgo.FimpMessage, technology string) error {
 	log.Info("<MqRegInt> New inclusion report from technology = ", technology)
+	if mg.registry.GetBackendName() == "vinculum" {
+		return nil
+	}
 	exThing := model.Thing{}
 	err := msg.GetObjectValue(&exThing)
 	if err != nil {

@@ -27,6 +27,10 @@ func NewThingRegistryStore(storeFile string) RegistryStorage {
 	return &store
 }
 
+func (st *LocalRegistryStore)GetBackendName()string {
+	return "local"
+}
+
 func (st *LocalRegistryStore) GetAllDevices() ([]model.Device, error) {
 	panic("implement me")
 }
@@ -621,6 +625,11 @@ func (st *LocalRegistryStore) ClearAll() error {
 		log.Error("<Reg> Can't Init Service . Error : ", err)
 		return err
 	}
+	return nil
+}
+
+func (st *LocalRegistryStore) Sync() error {
+	log.Info("<Reg> Sync is not implemented")
 	return nil
 }
 

@@ -89,12 +89,12 @@ func main() {
 		log.Info("<main>-------------- Starting service registry ")
 		registry = storage.NewThingRegistryStore(configs.RegistryDbFile)
 		log.Info("<main> Started ")
-
-		log.Info("<main>-------------- Starting service registry integration ")
-		regMqttIntegr := fimpcore.NewMqttIntegration(&configs, registry)
-		regMqttIntegr.InitMessagingTransport()
-		log.Info("<main> Started ")
 	}
+	log.Info("<main>-------------- Starting service registry integration ")
+	regMqttIntegr := fimpcore.NewMqttIntegration(&configs, registry)
+	regMqttIntegr.InitMessagingTransport()
+	log.Info("<main> Started ")
+
 	//---------FLOW------------------------
 	log.Info("<main> Starting Flow manager")
 	flowManager, err := flow.NewManager(configs)
