@@ -111,6 +111,7 @@ func (node *Node) getTimeUntilNextEvent() (eventTime time.Duration, eventType st
 	}
 	timeTillSunrise := time.Until(sunrise)
 	timeTillSunset := time.Until(sunset)
+	node.GetLog().Debugf("-- Time till sunrise = %f , till sunset = %f ",timeTillSunrise.Minutes(),timeTillSunset.Minutes())
 	var nextEvent string
 	if timeTillSunrise.Minutes() > 0 && timeTillSunset.Minutes() > 0 {
 		// morning before sunrise (both events are in future )
@@ -119,6 +120,7 @@ func (node *Node) getTimeUntilNextEvent() (eventTime time.Duration, eventType st
 		// between sunrise and sunset
 		nextEvent = SUNSET
 	} else {
+		node.GetLog().Debugf("ELSE case ")
 		// sunrise and sunset are in next day .
 		nextEvent = SUNRISE
 		sunrise, sunset, err = node.getSunriseAndSunset(true)
@@ -129,7 +131,12 @@ func (node *Node) getTimeUntilNextEvent() (eventTime time.Duration, eventType st
 		nextEvent = SUNSET
 	}else if node.nextAstroEvent == nextEvent && nextEvent == SUNSET {
 		nextEvent = SUNRISE
+		sunrise, sunset, err = node.getSunriseAndSunset(true)
+		timeTillSunrise = time.Until(sunrise)
+		timeTillSunset = time.Until(sunset)
 	}
+	node.GetLog().Debugf("-- Time till sunrise = %f , till sunset = %f , next event %s",timeTillSunrise.Minutes(),timeTillSunset.Minutes(),nextEvent)
+
 	if nextEvent == SUNRISE {
 		return timeTillSunrise,nextEvent,nil
 	}else {
