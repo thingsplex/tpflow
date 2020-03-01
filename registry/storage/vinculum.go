@@ -29,12 +29,17 @@ func (r *VinculumRegistryStore) Connect() error {
 		log.Error("<MqRegInt> Error connecting to broker : ", err)
 		return err
 	}
-	r.vApi = primefimp.NewApiClient("tpflow_reg",r.msgTransport,true)
-	//err = r.vApi.LoadVincResponseFromFile("testdata/vinfimp/site-response.json")
-	//if err != nil {
-	//	log.Error("Can't load site data from file . Error:",err)
-	//}
-	r.vApi.StartNotifyRouter()
+	r.vApi = primefimp.NewApiClient("tpflow_reg",r.msgTransport,false)
+	isDevMode := false
+
+	if isDevMode {
+		err = r.vApi.LoadVincResponseFromFile("testdata/vinfimp/site-response.json")
+		if err != nil {
+			log.Error("Can't load site data from file . Error:",err)
+		}
+	}else {
+		r.vApi.StartNotifyRouter()
+	}
 	return nil
 }
 
@@ -54,8 +59,18 @@ func (VinculumRegistryStore) GetServiceByFullAddress(address string) (*model.Ser
 	panic("implement me")
 }
 
-func (VinculumRegistryStore) GetLocationById(Id model.ID) (*model.Location, error) {
-	panic("implement me")
+func (r *VinculumRegistryStore) GetLocationById(Id model.ID) (*model.Location, error) {
+	locations,err := r.GetAllLocations()
+	if err != nil {
+		return nil,err
+	}
+
+	for i := range locations{
+		if locations[i].ID == Id {
+			return &locations[i],nil
+		}
+	}
+	return nil,nil
 }
 
 func (r *VinculumRegistryStore) GetAllThings() ([]model.Thing, error) {
@@ -65,7 +80,6 @@ func (r *VinculumRegistryStore) GetAllThings() ([]model.Thing, error) {
 	}
 	vThings := site.Things
 	var things []model.Thing
-
 	for i := range vThings {
 		thing := model.Thing{}
 		thing.ID = model.ID(vThings[i].ID)
@@ -75,6 +89,27 @@ func (r *VinculumRegistryStore) GetAllThings() ([]model.Thing, error) {
 		thing.ProductHash,_ = vThings[i].Props["product_hash"]
 		thing.ProductId,_ = vThings[i].Props["product_id"]
 		thing.ProductName,_ = vThings[i].Props["product_name"]
+		for di := range vThings[i].Devices {
+				firstDev := site.GetDeviceById(vThings[i].Devices[di])
+				if firstDev != nil {
+					thing.CommTechnology = firstDev.Fimp.Adapter
+					_ , isBattery := firstDev.Service["battery"]
+					if isBattery {
+						thing.PowerSource = "battery"
+					}else {
+						thing.PowerSource = "ac"
+					}
+					if thing.LocationId == 0 {
+						if firstDev.Room == nil {
+							continue
+						}
+						if *firstDev.Room == 0 {
+							continue
+						}
+						thing.LocationId = model.ID(*firstDev.Room)
+					}
+				}
+		}
 		things = append(things,thing)
 	}
 	return things,nil
@@ -260,6 +295,29 @@ func (r *VinculumRegistryStore) GetAllDevices() ([]model.Device, error) {
 		devices = append(devices, device)
 	}
 	return devices,nil
+}
+
+func (r *VinculumRegistryStore) GetExtendedDevices() ([]model.DeviceExtendedView, error) {
+	devices,err := r.GetAllDevices()
+	if err != nil {
+		return nil,err
+	}
+	var extDevices []model.DeviceExtendedView
+	for i := range devices {
+		location,err := r.GetLocationById(devices[i].LocationId)
+		var locationAlias string
+		if err == nil && location != nil  {
+			locationAlias = fmt.Sprintf("%s(%s %s)",location.Alias,location.Type,location.SubType)
+		}
+		dev := model.DeviceExtendedView{
+			Device:        devices[i],
+			Services:      nil,
+			LocationAlias: locationAlias,
+		}
+		extDevices = append(extDevices, dev)
+	}
+	return extDevices,nil
+
 }
 
 func (VinculumRegistryStore) GetDeviceById(Id model.ID) (*model.DeviceExtendedView, error) {

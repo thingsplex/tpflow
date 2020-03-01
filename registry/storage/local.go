@@ -27,6 +27,10 @@ func NewThingRegistryStore(storeFile string) RegistryStorage {
 	return &store
 }
 
+func (st *LocalRegistryStore) GetExtendedDevices() ([]model.DeviceExtendedView, error) {
+	panic("implement me")
+}
+
 func (st *LocalRegistryStore)GetBackendName()string {
 	return "local"
 }
@@ -193,11 +197,11 @@ func (st *LocalRegistryStore) GetThingExtendedViewById(Id model.ID) (*model.Thin
 	thingp, err := st.GetThingById(Id)
 
 	thingExView.Thing = *thingp
-	services, err := st.GetExtendedServices("", false, Id, model.IDnil)
-	thingExView.Services = make([]model.ServiceExtendedView, len(services))
-	for i := range services {
-		thingExView.Services[i] = services[i]
-	}
+	//services, err := st.GetExtendedServices("", false, Id, model.IDnil)
+	//thingExView.Services = make([]model.ServiceExtendedView, len(services))
+	//for i := range services {
+	//	thingExView.Services[i] = services[i]
+	//}
 	location, _ := st.GetLocationById(thingp.LocationId)
 	if location != nil {
 		thingExView.LocationAlias = location.Alias

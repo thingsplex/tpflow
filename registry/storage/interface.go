@@ -22,6 +22,7 @@ type RegistryStorage interface {
 	GetThingsByLocationId(locationId model.ID) ([]model.Thing, error)
 	GetThingByIntegrationId(id string) (*model.Thing, error)
 	GetAllDevices() ([]model.Device, error)
+	GetExtendedDevices() ([]model.DeviceExtendedView, error)
 	GetDeviceById(Id model.ID) (*model.DeviceExtendedView, error)
 	GetDevicesByLocationId(locationId model.ID) ([]model.Device, error)
 	GetDevicesByThingId(locationId model.ID) ([]model.Device, error)

@@ -270,8 +270,8 @@ func (rc *ApiRemoteClient) RegistryGetListOfThings(locationId string) ([]model2.
 	return resp,nil
 }
 
-func (rc *ApiRemoteClient) RegistryGetListOfDevices(locationId string) ([]model2.DeviceWithLocationView,error) {
-	var resp []model2.DeviceWithLocationView
+func (rc *ApiRemoteClient) RegistryGetListOfDevices(locationId string) ([]model2.DeviceExtendedView,error) {
+	var resp []model2.DeviceExtendedView
 	cmdVal := make(map[string]string)
 	cmdVal["location_id"] = locationId
 	reqMsg := fimpgo.NewStrMapMessage("cmd.registry.get_devices","tpflow",cmdVal,nil,nil,nil)

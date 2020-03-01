@@ -49,6 +49,9 @@ deb-amd : configure-amd64 build-go-amd package-deb-doc
 upload :
 	scp package/build/tpflow_$(version)_armhf.deb $(remote_host):~/
 
+upload-install : upload
+	ssh -t $(remote_host) "sudo dpkg -i tpflow_$(version)_armhf.deb"
+
 remote-install : deb-arm upload
 	ssh -t $(remote_host) "sudo dpkg -i tpflow_$(version)_armhf.deb"
 

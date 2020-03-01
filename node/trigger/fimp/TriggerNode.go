@@ -18,7 +18,7 @@ type TriggerNode struct {
 	msgInStream         fimpgo.MessageCh
 	msgInStreamName     string
 	config              TriggerConfig
-	thingRegistry       *storage.LocalRegistryStore
+	thingRegistry       storage.RegistryStorage
 }
 
 type TriggerConfig struct {
@@ -98,7 +98,7 @@ func (node *TriggerNode) LoadNodeConfig() error {
 	connInstance := node.ConnectorRegistry().GetInstance("thing_registry")
 	var ok bool
 	if connInstance != nil {
-		node.thingRegistry, ok = connInstance.Connection.(*storage.LocalRegistryStore)
+		node.thingRegistry, ok = connInstance.Connection.(storage.RegistryStorage)
 		if !ok {
 			node.thingRegistry = nil
 			node.GetLog().Error("Can't get things connection to things registry . Cast to LocalRegistryStore failed")

@@ -228,24 +228,25 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				fimp = fimpgo.NewMessage("evt.registry.things_report", "tpflow", "object", thingsWithLocation, nil, nil, newMsg.Payload)
 
 			case "cmd.registry.get_devices":
-				var devices []model.Device
-				var locationId int
+				var devices []model.DeviceExtendedView
+				//var locationId int
+				//
+				//val,_ := newMsg.Payload.GetStrMapValue()
+				//locationIdStr,_ := val["location_id"]
+				//
+				//locationId, _ = strconv.Atoi(locationIdStr)
+				//
+				//if locationId != 0 {
+				//	devices, err = api.reg.GetDevicesByLocationId(model.ID(locationId))
+				//} else {
+				//
+				//}
 
-				val,_ := newMsg.Payload.GetStrMapValue()
-				locationIdStr,_ := val["location_id"]
-
-				locationId, _ = strconv.Atoi(locationIdStr)
-
-				if locationId != 0 {
-					devices, err = api.reg.GetDevicesByLocationId(model.ID(locationId))
-				} else {
-					devices, err = api.reg.GetAllDevices()
-				}
+				devices, err = api.reg.GetExtendedDevices()
 				if err != nil {
 					log.Error("<RegApi> can't get things from registry err:",err)
 					break
 				}
-				//thingsWithLocation := api.reg.ExtendDevicesWithLocation(things)
 				fimp = fimpgo.NewMessage("evt.registry.things_report", "tpflow", "object", devices, nil, nil, newMsg.Payload)
 
 
