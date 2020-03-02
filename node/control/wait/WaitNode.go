@@ -30,7 +30,6 @@ func (node *WaitNode) LoadNodeConfig() error {
 	} else {
 		node.GetLog().Error(" Can't cast Wait node delay value")
 	}
-
 	return nil
 }
 
@@ -40,7 +39,16 @@ func (node *WaitNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 
 func (node *WaitNode) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	node.GetLog().Info(" Waiting  for = ", node.delay)
-	time.Sleep(time.Millisecond * time.Duration(node.delay))
-
+	timer := time.NewTimer(time.Millisecond * time.Duration(node.delay))
+	select {
+	case  <- timer.C:
+		return []model.NodeID{node.Meta().SuccessTransition}, nil
+	case signal := <-node.FlowOpCtx().NodeControlSignalChannel:
+		timer.Stop()
+		node.GetLog().Debug("Control signal ")
+		if signal == model.SIGNAL_STOP {
+			return nil,nil
+		}
+	}
 	return []model.NodeID{node.Meta().SuccessTransition}, nil
 }

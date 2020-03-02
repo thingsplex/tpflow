@@ -4,13 +4,21 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/pkg/errors"
 	"io"
+	"math/rand"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 func GenerateId(len int) string {
 	return uniuri.NewLen(len)
+}
+
+func GenerateRandomNumber() int32 {
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+	return r1.Int31()
 }
 
 func ConfigValueToNumber(valueType string, value interface{}) (float64, error) {

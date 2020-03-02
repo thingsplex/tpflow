@@ -6,43 +6,53 @@ import (
 	"github.com/thingsplex/tpflow/connector"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node"
+	"github.com/thingsplex/tpflow/utils"
 	"runtime/debug"
 	"sync"
 	"time"
 )
 
 type Flow struct {
-	Id             string
-	Name           string
-	Description    string
-	FlowMeta       *model.FlowMeta
-	globalContext  *model.Context
-	opContext      model.FlowOperationalContext
-	currentNodeIds []model.NodeID
-	nodes          []model.Node
-	TriggerCounter        int64
-	ErrorCounter          int64
-	StartedAt             time.Time
-	WaitingSince          time.Time
-	LastExecutionTime     time.Duration
-	logFields             log.Fields
-	connectorRegistry     *connector.Registry
-	subflowsCounter       int
-	mtx                   sync.Mutex
-	rateLimiter           int              // Is used by loop detector . Max alowed number of loop execution in 10 seconds
+	Id                string
+	Name              string
+	Description       string
+	FlowMeta          *model.FlowMeta
+	globalContext     *model.Context
+	opContext         model.FlowOperationalContext
+	currentNodeIds    []model.NodeID
+	nodes             []model.Node
+	instances         map[int32]*Instance
+	TriggerCounter    int64
+	ErrorCounter      int64
+	StartedAt         time.Time
+	WaitingSince      time.Time
+	LastExecutionTime time.Duration
+	logFields         log.Fields
+	connectorRegistry *connector.Registry
+	instanceCounter   int
+	mtx               sync.Mutex
+	rateLimiter       int // Is used by loop detector . Max alowed number of loop execution in 10 seconds
+}
+
+type Instance struct {
+	ID                int32
+	CurrentNodeId     model.NodeID
+	StartNodeId       model.NodeID
+	StartedAt         time.Time
 }
 
 func NewFlow(metaFlow model.FlowMeta, globalContext *model.Context) *Flow {
 	flow := Flow{globalContext: globalContext}
-	if flow.rateLimiter == 0  {
+	if flow.rateLimiter == 0 {
 		flow.rateLimiter = 500
 	}
 	flow.nodes = make([]model.Node, 0)
+	flow.instances = map[int32]*Instance{}
 	flow.currentNodeIds = make([]model.NodeID, 1)
 	flow.globalContext = globalContext
 	flow.opContext = model.FlowOperationalContext{NodeIsReady: make(chan bool), NodeControlSignalChannel: make(chan int), State: "LOADED"}
 	flow.initFromMetaFlow(&metaFlow)
-	flow.subflowsCounter = 0
+	flow.instanceCounter = 0
 	flow.mtx = sync.Mutex{}
 
 	return &flow
@@ -169,7 +179,7 @@ func (fl *Flow) GetFlowStats() *model.FlowStatsReport {
 		}
 	}
 	stats.NumberOfNodes = len(fl.nodes)
-	stats.NumberOfActiveSubflows = fl.subflowsCounter
+	stats.NumberOfActiveSubflows = fl.instanceCounter
 	stats.NumberOfTriggers = numberOfTrigger
 	stats.NumberOfActiveTriggers = numberOfActiveTriggers
 	stats.StartedAt = fl.StartedAt
@@ -226,17 +236,21 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 	if !fl.opContext.IsFlowRunning {
 		return
 	}
+	flowId := utils.GenerateRandomNumber()
+	instance := Instance{ID:flowId,CurrentNodeId:reactorEvent.SrcNodeId,StartNodeId:reactorEvent.SrcNodeId,StartedAt:time.Now()}
 	fl.mtx.Lock()
-	fl.subflowsCounter++
+	fl.instanceCounter++
+	fl.instances[flowId] = &instance
 	fl.mtx.Unlock()
 	var transitionNodeId model.NodeID
 	defer func() {
 		fl.mtx.Lock()
-		fl.subflowsCounter--
+		fl.instanceCounter--
+		delete(fl.instances,flowId)
 		fl.mtx.Unlock()
 		if r := recover(); r != nil {
 			fl.getLog().Error(" Flow process CRASHED with error : ", r)
-			fl.getLog().Errorf(" Crashed while processing message from Current Node = %v Next Node = %v ", fl.currentNodeIds[0], transitionNodeId)
+			fl.getLog().Errorf(" Crashed while processing message from Current Node = %v Next Node = %v ", instance.CurrentNodeId, transitionNodeId)
 			transitionNodeId = ""
 		}
 		fl.LastExecutionTime = time.Since(fl.StartedAt)
@@ -245,25 +259,39 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 
 	fl.getLog().Infof(" ------Flow %s started ----------- ", fl.Name)
 	fl.StartedAt = time.Now()
-	//fl.getLog().Debug(" msg.payload : ",fl.currentMsg)
 	if reactorEvent.Err != nil {
 		fl.getLog().Error(" TriggerNode failed with error :", reactorEvent.Err)
-		fl.currentNodeIds[0] = ""
+		//fl.currentNodeIds[0] = ""
 	}
-
 	fl.TriggerCounter++
-	currentMsg := reactorEvent.Msg
+	switch fl.FlowMeta.ParallelExecution {
+	case model.ParallelExecutionKeepFirst:
+		// in this case we keep only first started instance , all subsequent will be skipped
+		if fl.instanceCounter > 1 {
+			fl.getLog().Debug("One instance is already running . Skipping this one  ")
+			return
+		}
 
-	//fl.currentNodeId = fl.nodes[i].GetMetaNode().Id
+	case model.ParallelExecutionKeepLast:
+		// in this case we keep only new instance but cancel all previous ones
+		if fl.instanceCounter > 1 {
+			fl.getLog().Debug("One instance is already running . Terminating all previous instances")
+			fl.TerminateRunningInstances()
+		}
+	case model.ParallelExecutionParallel:
+		// start new instance in parallel with already running one
+		if fl.instanceCounter > 1 {
+			fl.getLog().Debug("One instance is already running . Executing new instance in parallel")
+		}
+	default:
+
+	}
+	currentMsg := reactorEvent.Msg
 	transitionNodeId = reactorEvent.TransitionNodeId
 	fl.getLog().Debug(" Next node id = ", transitionNodeId)
 	//fl.getLog().Debug(" Current nodes = ",fl.currentNodeIds)
-	if !fl.IsNodeIdValid(fl.currentNodeIds[0], transitionNodeId) {
-		if fl.subflowsCounter > 1 {
-			fl.TerminateRunningInstances()
-		}
+	if !fl.IsNodeIdValid(instance.StartNodeId, transitionNodeId) {
 		fl.getLog().Errorf(" Unknown transition node %s from first node.Switching back to first node", transitionNodeId)
-		transitionNodeId = ""
 		return
 	}
 	var nodeOutboundStream chan model.ReactorEvent
@@ -272,14 +300,14 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 		if !fl.opContext.IsFlowRunning {
 			break
 		}
-		if time.Now().Sub(fl.StartedAt)<time.Second*5 {
+		if time.Now().Sub(fl.StartedAt) < time.Second*5 {
 			if loopDetectorCounter > fl.rateLimiter {
 				fl.getLog().Error("Loop detected. Flow is stopped ")
 				fl.opContext.State = "CONFIG_ERROR_LOOP"
 				go fl.Stop()
 				break
 			}
-		}else {
+		} else {
 			loopDetectorCounter = 0
 		}
 
@@ -290,7 +318,7 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 			if fl.nodes[i].GetMetaNode().Id == transitionNodeId {
 				var err error
 				var nextNodes []model.NodeID
-				fl.currentNodeIds[0] = fl.nodes[i].GetMetaNode().Id
+				instance.CurrentNodeId = fl.nodes[i].GetMetaNode().Id
 				if fl.nodes[i].IsMsgReactorNode() {
 					// lazy channel init
 					if nodeOutboundStream == nil {
@@ -330,7 +358,7 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 					fl.getLog().Errorf(" Node executed with error . Doing error transition to %s. Error : %s", transitionNodeId, err)
 				}
 
-				if !fl.IsNodeIdValid(fl.currentNodeIds[0], transitionNodeId) {
+				if !fl.IsNodeIdValid(instance.CurrentNodeId, transitionNodeId) {
 					fl.getLog().Errorf(" Unknown transition node %s.Switching back to first node", transitionNodeId)
 					transitionNodeId = ""
 				}
@@ -338,7 +366,7 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 
 			} else if transitionNodeId == "" {
 				// Flow is finished . Returning to first step.
-				fl.currentNodeIds[0] = ""
+				instance.CurrentNodeId = ""
 				return
 			}
 		}
@@ -405,11 +433,11 @@ func (fl *Flow) Stop() error {
 	//Check if all triggers has stopped
 	for {
 		isSomeNodeRunning = false
-		nodeWaitCounter ++
+		nodeWaitCounter++
 		for i := range fl.nodes {
 			if fl.nodes[i].IsMsgReactorNode() {
 				if fl.nodes[i].IsReactorRunning() {
-					fl.getLog().Debugf("Node %s is still running .",fl.nodes[i].GetMetaNode().Label)
+					fl.getLog().Debugf("Node %s is still running .", fl.nodes[i].GetMetaNode().Label)
 					isSomeNodeRunning = true
 					break
 				}
@@ -431,7 +459,7 @@ func (fl *Flow) Stop() error {
 	// Wait until all subflows are stopped
 
 	for {
-		if fl.subflowsCounter == 0 {
+		if fl.instanceCounter == 0 {
 			break
 		} else {
 			fl.getLog().Debug(" Some subflows are still running . Waiting.....")
@@ -448,9 +476,10 @@ func (fl *Flow) Stop() error {
 	fl.opContext.State = "STOPPED"
 	return nil
 }
+
 // Terminating all running instance except 1 caller instance
 func (fl *Flow) TerminateRunningInstances() {
-	for i:=0;i<fl.subflowsCounter;i++ {
+	for i := 0; i < fl.instanceCounter; i++ {
 		// sending signal to every instance
 		select {
 		case fl.opContext.NodeControlSignalChannel <- model.SIGNAL_TERMINATE_WAITING:
@@ -460,10 +489,10 @@ func (fl *Flow) TerminateRunningInstances() {
 	// aborting all Run loops
 	fl.opContext.IsFlowRunning = false
 	for {
-		if fl.subflowsCounter <= 1 {
+		if fl.instanceCounter <= 1 {
 			break
 		}
-		time.Sleep(50*time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 	}
 	fl.opContext.IsFlowRunning = true
 	fl.getLog().Debugf("All instances were terminated")

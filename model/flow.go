@@ -22,25 +22,30 @@ type ReactorEvent struct {
 	Msg              Message
 	Err              error
 	TransitionNodeId NodeID
+	SrcNodeId        NodeID
 }
 
 type FlowMeta struct {
-	Id          string // Instance id . Is different for every instance
-	ClassId     string // Class id , all instances share the same ClassId
-	Author      string
-	Version     int
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	Name        string
-	Group       string
-	Description string
-	Nodes       []MetaNode
-	IsDisabled  bool
+	Id                string // Instance id . Is different for every instance
+	ClassId           string // Class id , all instances share the same ClassId
+	Author            string
+	Version           int
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	Name              string
+	Group             string
+	Description       string
+	Nodes             []MetaNode
+	IsDisabled        bool
+	ParallelExecution string // keep_first , keep_last , parallel
 }
 
 const (
-	SIGNAL_STOP = 1
-	SIGNAL_TERMINATE_WAITING = 2
+	SIGNAL_STOP                = 1
+	SIGNAL_TERMINATE_WAITING   = 2
+	ParallelExecutionKeepFirst = "keep_first"
+	ParallelExecutionKeepLast  = "keep_last"
+	ParallelExecutionParallel  = "parallel"
 )
 
 type FlowOperationalContext struct {
