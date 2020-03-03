@@ -31,6 +31,7 @@ func (r *VinculumRegistryStore) Connect() error {
 		return err
 	}
 	r.vApi = primefimp.NewApiClient("tpflow_reg", r.msgTransport, false)
+	//TODO :move to config file
 	isDevMode := false
 
 	if isDevMode {
@@ -39,6 +40,7 @@ func (r *VinculumRegistryStore) Connect() error {
 			log.Error("Can't load site data from file . Error:", err)
 		}
 	} else {
+		r.vApi.ReloadSiteToCache(5)
 		r.vApi.StartNotifyRouter()
 	}
 	return nil

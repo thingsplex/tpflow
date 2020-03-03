@@ -1,8 +1,8 @@
-version="0.13.1"
+version="0.14.0"
 version_file=VERSION
 working_dir=$(shell pwd)
 arch="armhf"
-remote_host = "fh@cube.local"
+remote_host = "fh@aleks.local"
 
 clean:
 	-rm tpflow
