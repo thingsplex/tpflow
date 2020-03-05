@@ -177,7 +177,7 @@ func (ctx *Context) SetVariable(name string, valueType string, value interface{}
 }
 
 func (ctx *Context) PutRecord(rec *ContextRecord, flowId string, inMemory bool) error {
-	log.Infof("<ctx> Saving variable ,in flow %s , type = %s , ", flowId, rec.Variable.ValueType, rec.Variable.Value)
+	//log.Infof("<ctx> Saving variable ,in flow %s , type = %s , ", flowId, rec.Variable.ValueType, rec.Variable.Value)
 	if !rec.Variable.isTypeValid() {
 		log.Info("<ctx> Incompatible type , varname = ", rec.Name)
 		return errors.New("Incompatible type")

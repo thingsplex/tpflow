@@ -44,12 +44,10 @@ func (node *LogNode) WaitForEvent(responseChannel chan model.ReactorEvent) {
 }
 
 func (node *LogNode) OnInput(msg *model.Message) ([]model.NodeID, error) {
-	node.GetLog().Info("Executing LogNode . Name = ", node.Meta().Label)
 	level , err := log.ParseLevel(node.config.LogLevel)
 	if err != nil {
 		level,_ = log.ParseLevel("info")
 	}
-	node.GetLog().Debug("Using variable as input :", node.config.VariableName)
 	if node.config.Text != "" {
 		node.GetLog().Logf(level,node.config.Text)
 	}else if node.config.VariableName != "" {

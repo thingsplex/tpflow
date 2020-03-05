@@ -131,8 +131,9 @@ func (node *VincTriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEven
 					}
 				}
 			}
-			node.GetLog().Infof("Home event = %s",eventValue)
+
 			if eventValue != "" {
+				node.GetLog().Infof("Home event = %s",eventValue)
 				if !node.config.IsValueFilterEnabled || ((eventValue == node.config.ValueFilter) && node.config.IsValueFilterEnabled) {
 					node.GetLog().Debug("Starting flow")
 					rMsg := model.Message{Payload: fimpgo.FimpMessage{Value: eventValue, ValueType: fimpgo.VTypeString}}
