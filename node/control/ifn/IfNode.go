@@ -85,8 +85,6 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		}
 
 		var result bool
-		node.GetLog().Debug("Operand = ", conf.Expression[i].Operand)
-
 		if conf.Expression[i].Operand == "gt" || conf.Expression[i].Operand == "lt" || (conf.Expression[i].Operand == "eq" && utils.IsNumber(conf.Expression[i].LeftVariable.ValueType) ){
 			if conf.Expression[i].LeftVariable.ValueType == "int" || conf.Expression[i].LeftVariable.ValueType == "float" {
 				leftNumericValue, err = utils.ConfigValueToNumber(conf.Expression[i].LeftVariable.ValueType, conf.Expression[i].LeftVariable.Value)
@@ -103,12 +101,18 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			} else {
 				return nil, errors.New("incompatible value types . gt and lt can be used only with numeric types")
 			}
+		}else {
+			//node.GetLog().Debug("Not a number ")
 		}
-		//node.GetLog().Debug(node.flowOpCtx.FlowId+"<Node> Left numeric value = ", leftNumericValue)
-		//node.GetLog().Debug(node.flowOpCtx.FlowId+"<Node> Right numeric value = ", rightNumericValue)
+		//node.GetLog().Debug(" Left numeric value = ", leftNumericValue)
+		//node.GetLog().Debug(" Right numeric value = ", rightNumericValue)
 		switch conf.Expression[i].Operand {
 		case "eq":
-			result = conf.Expression[i].LeftVariable.Value == conf.Expression[i].RightVariable.Value
+			if utils.IsNumber(conf.Expression[i].LeftVariable.ValueType) {
+				result = leftNumericValue == rightNumericValue
+			}else {
+				result = conf.Expression[i].LeftVariable.Value == conf.Expression[i].RightVariable.Value
+			}
 		case "gt":
 			result = leftNumericValue > rightNumericValue
 		case "lt":

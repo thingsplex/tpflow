@@ -46,6 +46,9 @@ func NewFlow(metaFlow model.FlowMeta, globalContext *model.Context) *Flow {
 	if flow.rateLimiter == 0 {
 		flow.rateLimiter = 500
 	}
+	if metaFlow.ParallelExecution == "" {
+		metaFlow.ParallelExecution = model.ParallelExecutionParallel
+	}
 	flow.nodes = make([]model.Node, 0)
 	flow.instances = map[int32]*Instance{}
 	flow.currentNodeIds = make([]model.NodeID, 1)

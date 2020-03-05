@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/Knetic/govaluate"
+	"github.com/futurehomeno/fimpgo"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	"github.com/mitchellh/mapstructure"
@@ -214,7 +215,13 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 				var rawPayload []byte
 
 				if node.nodeConfig.LVariableName == ""  {
-					rawPayload,err = json.Marshal(msg.Payload)
+					if msg.Payload.ValueType == fimpgo.VTypeObject {
+						rawPayload = msg.Payload.ValueObj
+					}else {
+						rawPayload,err = json.Marshal(msg.Payload)
+					}
+
+					//node.GetLog().Debugf("input : %v+",msg.Payload)
 				}else {
 					rawPayload,err = json.Marshal(lValue.Value)
 				}

@@ -20,7 +20,7 @@ func MsgValueToNumber(msg *Message) (float64, error) {
 	} else if msg.Payload.ValueType == "float" {
 		return msg.Payload.GetFloatValue()
 	}
-	return 0, errors.New("Not numeric value type")
+	return 0, errors.New("not numeric value type")
 }
 
 func GetValueByPath(msg *Message, pathType string, path string, targetVariableType string) (interface{}, error) {
@@ -85,7 +85,7 @@ func GetValueByPath(msg *Message, pathType string, path string, targetVariableTy
 				case float32:
 					return strconv.FormatFloat(float64(val), 'f', -1, 32), nil
 				default:
-					return "", errors.New("Can't convert interface{} to string")
+					return "", errors.New("can't convert interface{} to string")
 				}
 			case "bool":
 				switch val := varValue.(type) {
@@ -98,7 +98,7 @@ func GetValueByPath(msg *Message, pathType string, path string, targetVariableTy
 						return true, nil
 					}
 				default:
-					return 0, errors.New("Can't convert interface{} to int")
+					return 0, errors.New("can't convert interface{} to bool")
 				}
 
 			case "int":
@@ -112,7 +112,7 @@ func GetValueByPath(msg *Message, pathType string, path string, targetVariableTy
 				case float32:
 					return int(val), nil
 				default:
-					return 0, errors.New("Can't convert interface{} to int")
+					return 0, errors.New("can't convert interface{} to int")
 				}
 
 			case "float":
@@ -126,7 +126,7 @@ func GetValueByPath(msg *Message, pathType string, path string, targetVariableTy
 				case float32:
 					return float64(val), nil
 				default:
-					return 0, errors.New("Can't convert interface{} to int")
+					return 0, errors.New("can't convert interface{} to float")
 				}
 			}
 
@@ -135,5 +135,5 @@ func GetValueByPath(msg *Message, pathType string, path string, targetVariableTy
 			return nil, err
 		}
 	}
-	return nil, errors.New("Unknown path type")
+	return nil, errors.New("unknown path type")
 }

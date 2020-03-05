@@ -26,7 +26,6 @@ require (
 	github.com/nathan-osman/go-sunrise v0.0.0-20171121204956-7c449e7c690b
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
 	github.com/pkg/errors v0.8.0
-	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
 	github.com/robfig/cron/v3 v3.0.0
 	github.com/sirupsen/logrus v1.3.0
 	github.com/valyala/bytebufferpool v0.0.0-20160817181652-e746df99fe4a // indirect

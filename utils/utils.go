@@ -24,12 +24,18 @@ func GenerateRandomNumber() int32 {
 func ConfigValueToNumber(valueType string, value interface{}) (float64, error) {
 	if valueType == "int" {
 		switch val := value.(type) {
+		case int :
+			return float64(val), nil
+		case int16:
+			return float64(val), nil
 		case int64:
+			return float64(val), nil
+		case float32:
 			return float64(val), nil
 		case float64:
 			return val, nil
 		default:
-			return 0, errors.New("Can't convert interface{} to int64")
+			return 0, errors.New("can't convert interface{} to float64")
 
 		}
 	} else if valueType == "float" {
@@ -40,7 +46,7 @@ func ConfigValueToNumber(valueType string, value interface{}) (float64, error) {
 			return 0, errors.New("Can't convert interface{} to float64")
 		}
 	}
-	return 0, errors.New("Not numeric value type")
+	return 0, errors.New("not numeric value type")
 }
 
 func IsNumber(valueType string) bool {

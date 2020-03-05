@@ -77,7 +77,6 @@ func (node *TriggerNode) initSubscriptions() {
 			} else {
 				node.GetLog().Error(" Can't subscribe to service with empty address")
 			}
-
 		}
 	}
 	node.msgInStream = make(fimpgo.MessageCh, 10)

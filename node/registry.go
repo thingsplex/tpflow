@@ -4,6 +4,7 @@ import (
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/action/exec"
 	actfimp "github.com/thingsplex/tpflow/node/action/fimp"
+	log "github.com/thingsplex/tpflow/node/action/log"
 	"github.com/thingsplex/tpflow/node/action/rest"
 	"github.com/thingsplex/tpflow/node/control/ifn"
 	"github.com/thingsplex/tpflow/node/control/loop"
@@ -18,9 +19,11 @@ type Constructor func(context *model.FlowOperationalContext, meta model.MetaNode
 
 var Registry = map[string]Constructor{
 	"trigger":      trigfimp.NewTriggerNode,
+	"vinc_trigger": trigfimp.NewVincTriggerNode,
 	"receive":      trigfimp.NewReceiveNode,
 	"if":           ifn.NewNode,
 	"action":       actfimp.NewNode,
+	"log_action":   log.NewNode,
 	"rest_action":  rest.NewNode,
 	"wait":         wait.NewWaitNode,
 	"set_variable": setvar.NewSetVariableNode,
