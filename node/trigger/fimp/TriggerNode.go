@@ -173,7 +173,7 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 						node.LookupAddressToAlias(newEvent.Msg.AddressStr)
 					}
 					// Flow is executed within flow runner goroutine
-					go node.FlowRunner()(newEvent)
+					node.FlowRunner()(newEvent)
 			}
 
 			//if node.config.Timeout > 0 {
@@ -185,11 +185,12 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 			node.GetLog().Debug("Timeout ")
 			newEvent := model.ReactorEvent{TransitionNodeId: node.Meta().TimeoutTransition}
 			node.GetLog().Debug("Starting new flow (timeout)")
-			go node.FlowRunner()(newEvent)
+			node.FlowRunner()(newEvent)
 			node.GetLog().Debug("Flow started (timeout) ")
-		case signal := <-node.FlowOpCtx().NodeControlSignalChannel:
+		case signal := <-node.FlowOpCtx().TriggerControlSignalChannel:
 			node.GetLog().Debug("Control signal ")
 			if signal == model.SIGNAL_STOP {
+				node.GetLog().Info("Trigger stopped by SIGNAL_STOP ")
 				return
 			}
 		}

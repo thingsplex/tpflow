@@ -41,13 +41,13 @@ func (node *WaitNode) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	node.GetLog().Info(" Waiting  for = ", node.delay)
 	timer := time.NewTimer(time.Millisecond * time.Duration(node.delay))
 	select {
-	case  <- timer.C:
+	case <-timer.C:
 		return []model.NodeID{node.Meta().SuccessTransition}, nil
 	case signal := <-node.FlowOpCtx().NodeControlSignalChannel:
 		timer.Stop()
-		node.GetLog().Debug("Control signal ")
-		if signal == model.SIGNAL_STOP {
-			return nil,nil
+		node.GetLog().Debug("Control signal SIGNAL_TERMINATE_WAITING")
+		if signal == model.SIGNAL_TERMINATE_WAITING {
+			return nil, nil
 		}
 	}
 	return []model.NodeID{node.Meta().SuccessTransition}, nil

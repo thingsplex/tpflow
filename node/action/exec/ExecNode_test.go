@@ -41,13 +41,13 @@ func TestExecNode_OnInput_Python(t *testing.T) {
 
 
 	opCtx := model.FlowOperationalContext{
-		FlowId:                   flowId,
-		IsFlowRunning:            true,
-		State:                    "",
-		NodeControlSignalChannel: nil,
-		NodeIsReady:              nil,
-		StoragePath:              "",
-		ExtLibsDir: "../../../extlibs",
+		FlowId:                      flowId,
+		IsFlowRunning:               true,
+		State:                       "",
+		TriggerControlSignalChannel: nil,
+		NodeIsReady:                 nil,
+		StoragePath:                 "",
+		ExtLibsDir:                  "../../../extlibs",
 	}
 
 	node := NewNode(&opCtx,meta,ctx)

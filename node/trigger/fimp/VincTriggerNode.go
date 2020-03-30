@@ -139,7 +139,7 @@ func (node *VincTriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEven
 					rMsg := model.Message{Payload: fimpgo.FimpMessage{Value: eventValue, ValueType: fimpgo.VTypeString}}
 					newEvent := model.ReactorEvent{Msg: rMsg, TransitionNodeId: node.Meta().SuccessTransition}
 					// Flow is executed within flow runner goroutine
-					go node.FlowRunner()(newEvent)
+					node.FlowRunner()(newEvent)
 				}
 			}
 
@@ -147,12 +147,15 @@ func (node *VincTriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEven
 			node.GetLog().Debug("Timeout ")
 			newEvent := model.ReactorEvent{TransitionNodeId: node.Meta().TimeoutTransition}
 			node.GetLog().Debug("Starting new flow (timeout)")
-			go node.FlowRunner()(newEvent)
+			node.FlowRunner()(newEvent)
 			node.GetLog().Debug("Flow started (timeout) ")
-		case signal := <-node.FlowOpCtx().NodeControlSignalChannel:
+		case signal := <-node.FlowOpCtx().TriggerControlSignalChannel:
 			node.GetLog().Debug("Control signal ")
 			if signal == model.SIGNAL_STOP {
+				node.GetLog().Info("VincTrigger stopped by SIGNAL_STOP ")
 				return
+			}else {
+				time.Sleep(50*time.Millisecond)
 			}
 		}
 	}

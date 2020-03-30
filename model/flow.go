@@ -42,20 +42,21 @@ type FlowMeta struct {
 
 const (
 	SIGNAL_STOP                = 1
-	SIGNAL_TERMINATE_WAITING   = 2
+	SIGNAL_TERMINATE_WAITING   = 2 // Signal to terminate all waiting nodes but not trigger nodes
 	ParallelExecutionKeepFirst = "keep_first"
 	ParallelExecutionKeepLast  = "keep_last"
 	ParallelExecutionParallel  = "parallel"
 )
 
 type FlowOperationalContext struct {
-	FlowId                   string
-	IsFlowRunning            bool
-	State                    string
-	NodeControlSignalChannel chan int  // the channel should be used to stop all waiting nodes .
-	NodeIsReady              chan bool // Flow should notify message router when next node is ready to process new message .
-	StoragePath              string
-	ExtLibsDir               string
+	FlowId                      string
+	IsFlowRunning               bool
+	State                       string
+	TriggerControlSignalChannel chan int // the channel should be used to stop all waiting nodes .
+	NodeControlSignalChannel    chan int
+	NodeIsReady                 chan bool // Flow should notify message router when next node is ready to process new message .
+	StoragePath                 string
+	ExtLibsDir                  string
 }
 
 type FlowStatsReport struct {

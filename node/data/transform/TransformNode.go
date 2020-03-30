@@ -172,7 +172,6 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			parameters["input"] = msg.Payload.Value
 			parameters["variable"] = lValue.Value
 
-
 			records := node.ctx.GetRecords(node.FlowOpCtx().FlowId)
 
 			for i := range records{

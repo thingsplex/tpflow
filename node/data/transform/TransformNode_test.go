@@ -46,12 +46,12 @@ func TestNode_OnInput_Calc(t *testing.T) {
 	}
 
 	opCtx := model.FlowOperationalContext{
-		FlowId:                   "test",
-		IsFlowRunning:            true,
-		State:                    "",
-		NodeControlSignalChannel: nil,
-		NodeIsReady:              nil,
-		StoragePath:              "",
+		FlowId:                      "test",
+		IsFlowRunning:               true,
+		State:                       "",
+		TriggerControlSignalChannel: nil,
+		NodeIsReady:                 nil,
+		StoragePath:                 "",
 	}
 
 	node := NewNode(&opCtx,meta,ctx)
@@ -145,12 +145,12 @@ func TestNode_OnInput_Jpath(t *testing.T) {
 	}
 
 	opCtx := model.FlowOperationalContext{
-		FlowId:                   "test",
-		IsFlowRunning:            true,
-		State:                    "",
-		NodeControlSignalChannel: nil,
-		NodeIsReady:              nil,
-		StoragePath:              "",
+		FlowId:                      "test",
+		IsFlowRunning:               true,
+		State:                       "",
+		TriggerControlSignalChannel: nil,
+		NodeIsReady:                 nil,
+		StoragePath:                 "",
 	}
 
 	node := NewNode(&opCtx,meta,ctx)

@@ -212,9 +212,10 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 		case newMsg := <-node.cronMessageCh:
 			newEvent := model.ReactorEvent{Msg: newMsg, TransitionNodeId: node.Meta().SuccessTransition}
 			node.FlowRunner()(newEvent)
-		case signal := <-node.FlowOpCtx().NodeControlSignalChannel:
+		case signal := <-node.FlowOpCtx().TriggerControlSignalChannel:
 			node.GetLog().Debug("Control signal ")
 			if signal == model.SIGNAL_STOP {
+				node.GetLog().Info("Trigger stopped by SIGNAL_STOP ")
 				return
 			}
 		}

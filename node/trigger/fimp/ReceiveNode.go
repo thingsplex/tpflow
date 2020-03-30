@@ -167,9 +167,10 @@ func (node *ReceiveNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 			default:
 				node.GetLog().Debug("Message is dropped (no listeners) ")
 			}
-		case signal := <-node.FlowOpCtx().NodeControlSignalChannel:
+		case signal := <-node.FlowOpCtx().TriggerControlSignalChannel:
 			node.GetLog().Debug("Control signal ")
 			if signal == model.SIGNAL_STOP {
+				node.GetLog().Info("Received node stopped by SIGNAL_STOP ")
 				return
 			}
 		}

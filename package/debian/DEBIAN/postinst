@@ -42,7 +42,7 @@ add_user_and_group()
 set_ownership()
 {
 	chown -R tpflow:thingsplex "/opt/thingsplex/tpflow"
-	chmod 764 /var/log/thingsplex/tpflow || true
+	chmod 755 /var/log/thingsplex/tpflow || true
 	chown tpflow:thingsplex /var/log/thingsplex/tpflow || true
 }
 

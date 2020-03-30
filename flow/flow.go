@@ -53,7 +53,7 @@ func NewFlow(metaFlow model.FlowMeta, globalContext *model.Context) *Flow {
 	flow.instances = map[int32]*Instance{}
 	flow.currentNodeIds = make([]model.NodeID, 1)
 	flow.globalContext = globalContext
-	flow.opContext = model.FlowOperationalContext{NodeIsReady: make(chan bool), NodeControlSignalChannel: make(chan int), State: "LOADED"}
+	flow.opContext = model.FlowOperationalContext{NodeIsReady: make(chan bool), TriggerControlSignalChannel: make(chan int),NodeControlSignalChannel:make(chan int), State: "LOADED"}
 	flow.initFromMetaFlow(&metaFlow)
 	flow.instanceCounter = 0
 	flow.mtx = sync.Mutex{}
@@ -127,8 +127,8 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 		newNode.Init()
 		fl.getLog().Info(" Done")
 		if newNode.IsStartNode() {
-			newNode.SetFlowRunner(fl.Run)
-			// Starts trigger node listener.When node is triggered , it executed in its own goroutine by fl.Run method.
+			newNode.SetFlowRunner(fl.StartFlowInstance)
+			// Starts trigger node listener.When node is triggered , it executed in its own goroutine by fl.run method.
 			go newNode.WaitForEvent(nil)
 		}
 		fl.getLog().Info(" Node is loaded and added.")
@@ -233,23 +233,66 @@ func (fl *Flow) IsNodeValid(node *model.MetaNode) bool {
 	//}
 	return true
 }
-
-// Invoked by trigger node in it's own goroutine
-func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
-	if !fl.opContext.IsFlowRunning {
-		return
+// T
+func (fl *Flow) StartFlowInstance(reactorEvent model.ReactorEvent) {
+	switch fl.FlowMeta.ParallelExecution {
+	case model.ParallelExecutionKeepFirst:
+		// in this case we keep only first started instance , all subsequent will be skipped
+		if fl.instanceCounter > 0 {
+			fl.getLog().Debug("One instance is already running . Skipping this one  ")
+			return
+		}
+	case model.ParallelExecutionKeepLast:
+		// in this case we keep only new instance but cancel all previous ones
+		if fl.instanceCounter > 0 {
+			fl.getLog().Debug("One instance is already running . Terminating all previous instances")
+			fl.TerminateRunningInstances()
+		}
+	case model.ParallelExecutionParallel:
+		// start new instance in parallel with already running one
+		if fl.instanceCounter > 0 {
+			fl.getLog().Debug("One instance is already running . Executing new instance in parallel")
+		}
+	default:
+		fl.getLog().Warn("Unsupported parallel execution type")
 	}
-	flowId := utils.GenerateRandomNumber()
-	instance := Instance{ID:flowId,CurrentNodeId:reactorEvent.SrcNodeId,StartNodeId:reactorEvent.SrcNodeId,StartedAt:time.Now()}
 	fl.mtx.Lock()
 	fl.instanceCounter++
-	fl.instances[flowId] = &instance
 	fl.mtx.Unlock()
+	go fl.run(reactorEvent)
+}
+
+// Terminating all running instance except 1 caller instance
+func (fl *Flow) TerminateRunningInstances() {
+	// aborting all run loops
+	fl.opContext.IsFlowRunning = false
+	for ic:=0;ic<1000;ic++{
+		for i := 0; i < fl.instanceCounter; i++ {
+			// sending signal to every instance wait node
+			select {
+			case fl.opContext.NodeControlSignalChannel <- model.SIGNAL_TERMINATE_WAITING:
+			case <-time.After(10 * time.Millisecond):
+			}
+		}
+		if fl.instanceCounter < 1 {
+			break
+		}
+		time.Sleep(50 * time.Millisecond)
+		fl.getLog().Debugf("Terminating instances , total = %d , ic = %d",fl.instanceCounter,ic)
+	}
+	fl.opContext.IsFlowRunning = true
+	fl.getLog().Debugf("-- All instances were terminated --")
+}
+
+// Invoked by trigger node in it's own goroutine
+func (fl *Flow) run(reactorEvent model.ReactorEvent) {
 	var transitionNodeId model.NodeID
+	flowId := utils.GenerateRandomNumber()
+	instance := Instance{ID:flowId,CurrentNodeId:reactorEvent.SrcNodeId,StartNodeId:reactorEvent.SrcNodeId,StartedAt:time.Now()}
 	defer func() {
 		fl.mtx.Lock()
 		fl.instanceCounter--
-		delete(fl.instances,flowId)
+		//delete(fl.instances,flowId)
 		fl.mtx.Unlock()
 		if r := recover(); r != nil {
 			fl.getLog().Error(" Flow process CRASHED with error : ", r)
@@ -257,38 +300,23 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 			transitionNodeId = ""
 		}
 		fl.LastExecutionTime = time.Since(fl.StartedAt)
-		fl.getLog().Infof(" ------Flow %s completed ----------- ", fl.Name)
+		fl.getLog().Debugf(" ------Flow %s completed , num of instances = %d ----------- ", fl.Name,fl.instanceCounter)
 	}()
+	if !fl.opContext.IsFlowRunning {
+		fl.getLog().Debug("Flow is not running.Exiting runner.")
+		return
+	}
+	fl.getLog().Debugf(" ------Flow %s started , num of instances = %d ----------- ", fl.Name,fl.instanceCounter)
+	// ------------------------------------
+	//fl.instances[flowId] = &instance
+	// -------------------------------------
 
-	fl.getLog().Infof(" ------Flow %s started ----------- ", fl.Name)
 	fl.StartedAt = time.Now()
 	if reactorEvent.Err != nil {
 		fl.getLog().Error(" TriggerNode failed with error :", reactorEvent.Err)
 		//fl.currentNodeIds[0] = ""
 	}
 	fl.TriggerCounter++
-	switch fl.FlowMeta.ParallelExecution {
-	case model.ParallelExecutionKeepFirst:
-		// in this case we keep only first started instance , all subsequent will be skipped
-		if fl.instanceCounter > 1 {
-			fl.getLog().Debug("One instance is already running . Skipping this one  ")
-			return
-		}
-
-	case model.ParallelExecutionKeepLast:
-		// in this case we keep only new instance but cancel all previous ones
-		if fl.instanceCounter > 1 {
-			fl.getLog().Debug("One instance is already running . Terminating all previous instances")
-			fl.TerminateRunningInstances()
-		}
-	case model.ParallelExecutionParallel:
-		// start new instance in parallel with already running one
-		if fl.instanceCounter > 1 {
-			fl.getLog().Debug("One instance is already running . Executing new instance in parallel")
-		}
-	default:
-
-	}
 	currentMsg := reactorEvent.Msg
 	transitionNodeId = reactorEvent.TransitionNodeId
 	fl.getLog().Debug(" Next node id = ", transitionNodeId)
@@ -339,7 +367,7 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 						currentMsg = reactorEvent.Msg
 						transitionNodeId = reactorEvent.TransitionNodeId
 						err = reactorEvent.Err
-					case signal := <-fl.opContext.NodeControlSignalChannel:
+					case signal := <-fl.opContext.TriggerControlSignalChannel:
 						fl.getLog().Debug("Control signal ")
 						if signal == model.SIGNAL_STOP {
 							return
@@ -347,6 +375,7 @@ func (fl *Flow) Run(reactorEvent model.ReactorEvent) {
 					}
 
 				} else {
+
 					nextNodes, err = fl.nodes[i].OnInput(&currentMsg)
 
 					if len(nextNodes) > 0 {
@@ -422,7 +451,7 @@ func (fl *Flow) Stop() error {
 		// Sending STOP signal to all active triggers
 		fl.getLog().Debug(" Sending STOP signals to all reactors")
 		select {
-		case fl.opContext.NodeControlSignalChannel <- model.SIGNAL_STOP:
+		case fl.opContext.TriggerControlSignalChannel <- model.SIGNAL_STOP:
 		case <-time.After(1 * time.Second):
 			breakLoop = true
 		}
@@ -430,6 +459,18 @@ func (fl *Flow) Stop() error {
 			break
 		}
 
+	}
+	for {
+		// Sending STOP signal to all active triggers
+		fl.getLog().Debug(" Sending STOP signals to all nodes")
+		select {
+		case fl.opContext.NodeControlSignalChannel <- model.SIGNAL_STOP:
+		case <-time.After(500 * time.Millisecond):
+			breakLoop = true
+		}
+		if breakLoop {
+			break
+		}
 	}
 	var isSomeNodeRunning bool
 	var nodeWaitCounter int
@@ -480,26 +521,7 @@ func (fl *Flow) Stop() error {
 	return nil
 }
 
-// Terminating all running instance except 1 caller instance
-func (fl *Flow) TerminateRunningInstances() {
-	for i := 0; i < fl.instanceCounter; i++ {
-		// sending signal to every instance
-		select {
-		case fl.opContext.NodeControlSignalChannel <- model.SIGNAL_TERMINATE_WAITING:
-		default:
-		}
-	}
-	// aborting all Run loops
-	fl.opContext.IsFlowRunning = false
-	for {
-		if fl.instanceCounter <= 1 {
-			break
-		}
-		time.Sleep(50 * time.Millisecond)
-	}
-	fl.opContext.IsFlowRunning = true
-	fl.getLog().Debugf("All instances were terminated")
-}
+
 
 func (fl *Flow) CleanupBeforeDelete() {
 	if fl.GetFlowState() == "LOADED" {

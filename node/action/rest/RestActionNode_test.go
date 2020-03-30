@@ -56,12 +56,12 @@ func TestNode_OnInput_Jpath(t *testing.T) {
 
 
 	opCtx := model.FlowOperationalContext{
-		FlowId:                   flowId,
-		IsFlowRunning:            true,
-		State:                    "",
-		NodeControlSignalChannel: nil,
-		NodeIsReady:              nil,
-		StoragePath:              "",
+		FlowId:                      flowId,
+		IsFlowRunning:               true,
+		State:                       "",
+		TriggerControlSignalChannel: nil,
+		NodeIsReady:                 nil,
+		StoragePath:                 "",
 	}
 
 	node := NewNode(&opCtx,meta,ctx)
@@ -151,12 +151,12 @@ func TestNode_OnInput_Xpath(t *testing.T) {
 
 
 	opCtx := model.FlowOperationalContext{
-		FlowId:                   flowId,
-		IsFlowRunning:            true,
-		State:                    "",
-		NodeControlSignalChannel: nil,
-		NodeIsReady:              nil,
-		StoragePath:              "",
+		FlowId:                      flowId,
+		IsFlowRunning:               true,
+		State:                       "",
+		TriggerControlSignalChannel: nil,
+		NodeIsReady:                 nil,
+		StoragePath:                 "",
 	}
 
 	node := NewNode(&opCtx,meta,ctx)
