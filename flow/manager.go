@@ -79,26 +79,31 @@ func (mg *Manager) GetFlowFileNameById(id string) string {
 }
 
 func (mg *Manager) LoadAllFlowsFromStorage() error {
-	files, err := ioutil.ReadDir(mg.config.FlowStorageDir)
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-	for _, file := range files {
-		if strings.Contains(file.Name(), ".json") {
-			err :=  mg.LoadFlowFromFile(filepath.Join(mg.config.FlowStorageDir, file.Name()))
-			if err != nil {
-				log.Errorf("Flow %s failed to load from file ",file.Name())
-				continue
-			}
-			flowId := strings.Replace(file.Name(), ".json", "", 1)
-			flow := mg.GetFlowById(flowId)
-			if flow == nil {
-				log.Errorf("Flow %s failed to load",flowId)
-				continue
-			}
-			if !flow.FlowMeta.IsDisabled {
-				mg.StartFlow(flowId)
+
+	dirs := []string{ mg.config.FlowStorageDir,filepath.Join(mg.config.FlowStorageDir,"defaults")}
+
+	for _,dir := range dirs {
+		files, err := ioutil.ReadDir(dir)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+		for _, file := range files {
+			if strings.Contains(file.Name(), ".json") {
+				err :=  mg.LoadFlowFromFile(filepath.Join(dir, file.Name()))
+				if err != nil {
+					log.Errorf("Flow %s failed to load from file ",file.Name())
+					continue
+				}
+				flowId := strings.Replace(file.Name(), ".json", "", 1)
+				flow := mg.GetFlowById(flowId)
+				if flow == nil {
+					log.Errorf("Flow %s failed to load",flowId)
+					continue
+				}
+				if !flow.FlowMeta.IsDisabled {
+					mg.StartFlow(flowId)
+				}
 			}
 		}
 	}
@@ -345,4 +350,20 @@ func (mg *Manager) BackupAll() error{
 	sourceDir := strings.ReplaceAll(mg.config.FlowStorageDir,"/flow_storage","")
 	targetDir := strings.ReplaceAll(mg.config.FlowStorageDir,"var/flow_storage","backups")
 	return utils.BackupDirectory(sourceDir,targetDir,"flow")
+}
+
+// FactoryReset deletes all nodes and restarts tpflow
+func (mg *Manager) FactoryReset() error{
+	files, err := ioutil.ReadDir(mg.config.FlowStorageDir)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	for _, file := range files {
+		if !file.IsDir() {
+			os.Remove(filepath.Join(mg.config.FlowStorageDir,file.Name()))
+		}
+	}
+	mg.globalContext.FactoryReset()
+	return nil
 }

@@ -37,6 +37,7 @@ type FlowMeta struct {
 	Description       string
 	Nodes             []MetaNode
 	IsDisabled        bool
+	IsDefault         bool // default flows are read only and can't be deleted
 	ParallelExecution string // keep_first , keep_last , parallel
 }
 
