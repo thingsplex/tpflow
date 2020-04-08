@@ -5,7 +5,7 @@
   "Version": 0,
   "CreatedAt": "2020-03-19T11:44:24.86589223+01:00",
   "UpdatedAt": "2020-03-19T11:49:07.669718637+01:00",
-  "Name": "save home mode change",
+  "Name": "Home mode tracker",
   "Group": "fh.home.defaults",
   "Description": "",
   "Nodes": [

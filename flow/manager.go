@@ -303,16 +303,20 @@ func (mg *Manager) StartFlow(flowId string) {
 
 func (mg *Manager) StopFlow(id string) {
 	log.Info("Unloading flow , id = ", id)
-	if mg.GetFlowById(id) == nil {
+	flow := mg.GetFlowById(id)
+	if flow == nil {
 		log.Info("Can find flow by id = ", id)
 		return
 	}
-	if mg.GetFlowById(id).GetFlowState() != "RUNNING" {
+	if flow.GetFlowState() != "RUNNING" {
 		log.Info("Flow is not running , nothing to stop.")
 		return
 	}
-	flow := mg.GetFlowById(id)
 	flow.Stop()
+	if flow.FlowMeta.IsDefault {
+		log.Infof("Flow with Id = %s was stopped but NOT disabled", id)
+		return
+	}
 	flow.FlowMeta.IsDisabled = true
 	mg.SaveFlowToStorage(id)
 	log.Infof("Flow with Id = %s was stopped and disabled", id)
@@ -335,6 +339,10 @@ func (mg *Manager) DeleteFlowFromRegistry(id string, cleanRegistry bool) {
 func (mg *Manager) DeleteFlowFromStorage(id string) {
 	flow := mg.GetFlowById(id)
 	if flow == nil {
+		return
+	}
+	if flow.FlowMeta.IsDefault {
+		log.Errorf("Flow delete operation is skipped. Default flow can't be deleted ")
 		return
 	}
 	mg.StopFlow(id)

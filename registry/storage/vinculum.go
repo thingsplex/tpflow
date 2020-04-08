@@ -40,8 +40,10 @@ func (r *VinculumRegistryStore) Connect() error {
 			log.Error("Can't load site data from file . Error:", err)
 		}
 	} else {
-		r.vApi.ReloadSiteToCache(5)
-		r.vApi.StartNotifyRouter()
+		go func() {
+			r.vApi.ReloadSiteToCache(5)
+			r.vApi.StartNotifyRouter()
+		}()
 	}
 	return nil
 }

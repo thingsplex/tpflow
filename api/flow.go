@@ -327,7 +327,7 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 					log.Error("<msgex> Unsupported log level = ",level)
 				}
 			case "evt.gateway.factory_reset","cmd.flow.factory_reset":
-				if newMsg.Payload.Service == "gateway" && newMsg.Payload.Service == "tpflow" {
+				if newMsg.Payload.Service == "gateway" || newMsg.Payload.Service == "tpflow" {
 					log.Info("----- FACTORY RESET COMMAND -------------------")
 					ctx.flowManager.FactoryReset()
 					time.Sleep(1 * time.Second)
