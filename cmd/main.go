@@ -13,8 +13,7 @@ import (
 	"github.com/thingsplex/tpflow/registry/storage"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io/ioutil"
-	"net/http"
-	_ "net/http/pprof"
+	//_ "net/http/pprof"
 	"runtime"
 )
 
@@ -120,9 +119,9 @@ func main() {
 	}
 
 	log.Info("<main> Started")
-	go func() {
-		http.ListenAndServe(":6060", nil)
-	}()
+	//go func() {
+	//	http.ListenAndServe(":6060", nil)
+	//}()
 	//e.Logger.Debug(e.Start(":8083"))
 
 	//c := make(chan os.Signal, 1)

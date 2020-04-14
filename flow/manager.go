@@ -153,6 +153,10 @@ func (mg *Manager) UpdateFlowFromBinJson(id string, flowJsonDef []byte) error {
 		log.Error("<FlMan> The flow is not updated . Incompatible format")
 		return err
 	}
+	if flowMeta.IsDefault {
+		log.Error("<FlMan> Default flows are constant.Operation skipped.")
+		return err
+	}
 	mg.StopFlow(id)
 	mg.DeleteFlowFromRegistry(id, false)
 	flowMeta.UpdatedAt = time.Now()
