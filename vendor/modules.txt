@@ -36,7 +36,7 @@ github.com/dchest/uniuri
 # github.com/eclipse/paho.mqtt.golang v1.2.0
 github.com/eclipse/paho.mqtt.golang
 github.com/eclipse/paho.mqtt.golang/packets
-# github.com/futurehomeno/fimpgo v1.4.12-0.20200225115408-3bef8e50764d
+# github.com/futurehomeno/fimpgo v1.5.3
 github.com/futurehomeno/fimpgo
 github.com/futurehomeno/fimpgo/fimptype
 github.com/futurehomeno/fimpgo/fimptype/primefimp
@@ -108,5 +108,5 @@ golang.org/x/text/internal/utf8internal
 golang.org/x/text/language
 golang.org/x/text/runes
 golang.org/x/text/transform
-# gopkg.in/natefinch/lumberjack.v2 v2.0.0-20170531160350-a96e63847dc3
+# gopkg.in/natefinch/lumberjack.v2 v2.0.0
 gopkg.in/natefinch/lumberjack.v2

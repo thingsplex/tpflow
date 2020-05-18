@@ -43,36 +43,62 @@ func (mh *ApiClient) EnableVincAppsSync(flag bool) {
 	mh.isVincAppsSyncEnabled = flag
 }
 
+func (mh *ApiClient) IsCacheEmpty() bool {
+	if len(mh.siteCache.Devices)==0 && len(mh.siteCache.Things)==0 && len(mh.siteCache.Rooms)==0 && len(mh.siteCache.Areas)==0 {
+		return true
+	}
+	return false
+}
+
+// ValidateSiteCache validates cache , if empty it makes one reload attempt. The method can be used for cache lazy loading.
+func (mh *ApiClient) ValidateAndReloadSiteCache()bool {
+	if mh.IsCacheEmpty() {
+		log.Debug("<PF-API> Empty site cache.Reloading...")
+		mh.ReloadSiteToCache(1)
+		if mh.IsCacheEmpty() {
+			return false
+		}
+	}
+	return true
+}
+
 // NewApiClient Creates a new api client. If isCacheEnabled it set to true , it will try to sync entire site on startup.
-func NewApiClient(clientID string, mqttTransport *fimpgo.MqttTransport, isCacheEnabled bool) *ApiClient {
-	api := &ApiClient{clientID: clientID, mqttTransport: mqttTransport, isCacheEnabled: isCacheEnabled}
+func NewApiClient(clientID string, mqttTransport *fimpgo.MqttTransport, loadSiteIntoCache bool) *ApiClient {
+	api := &ApiClient{clientID: clientID, mqttTransport: mqttTransport}
 	api.notifySubChannels = make(map[string]chan Notify)
 	api.subFilters = make(map[string]NotifyFilter)
 	api.sClient = fimpgo.NewSyncClient(mqttTransport)
 	api.notifChMux = sync.RWMutex{}
-	if isCacheEnabled {
-		api.ReloadSiteToCache(1)
+	if loadSiteIntoCache {
+		api.ReloadSiteToCache(3)
 	}
 	return api
 }
 
+//ReloadSiteToCache loads cache from vinculum and sets isCacheEnabled flag to true if operation was successful.
 func (mh *ApiClient) ReloadSiteToCache(retry int) error {
+	retry++
 	var site *Site
 	var err error
-	for i:=0;i<retry;i++ {
+	for i:=1;i<retry;i++ {
+		log.Debug("<PF-API> Reloading site into the cache.Attempt ",i)
 		site, err = mh.GetSite(false)
 		if err == nil {
+			log.Debug("<PF-API> Site loaded successfully")
 			break
 		}else {
-			time.Sleep(time.Second*time.Duration(2*i))
+			log.Error("<PF-API> site sync error :",err.Error())
+			time.Sleep(time.Second*time.Duration(5*i))
 		}
 	}
 	if err != nil {
 		mh.isCacheEnabled = false
-		log.Errorf("Error: %s", err)
+		log.Errorf("<PF-API>: %s", err)
+		return err
 	} else {
 		mh.isCacheEnabled = true
 		mh.siteCache = *site
+		log.Debug("<PF-API> Site info successfully loaded to cache")
 	}
 	return nil
 }
@@ -141,7 +167,6 @@ func (mh *ApiClient) Stop() {
 		mh.stopFlag = true
 		mh.inMsgChan <- &fimpgo.Message{}
 	}
-
 }
 
 func remove(s []int, i int) []int {
@@ -150,9 +175,9 @@ func remove(s []int, i int) []int {
 	return s[:len(s)-1]
 }
 
-// UpdateSite : Updates the site according to notification message.
+// UpdateSite : Updates the internal cache according to notification message.
 func (mh *ApiClient) UpdateSite(notif *Notify) {
-	log.Debugf("Command: %s & Component:%s", notif.Cmd, notif.Component)
+	log.Tracef("Command: %s & Component:%s", notif.Cmd, notif.Component)
 	if !mh.isVincAppsSyncEnabled {
 		if  notif.Component != ComponentArea && notif.Component != ComponentDevice && notif.Component != ComponentThing && notif.Component != ComponentRoom {
 			log.Debugf("Component skipped")
@@ -304,7 +329,9 @@ func (mh *ApiClient) GetDevices(fromCache bool) ([]Device, error) {
 		}
 		return response.GetDevices(), err
 	}else if mh.isCacheEnabled {
-		return mh.siteCache.Devices,nil
+		if mh.ValidateAndReloadSiteCache() {
+			return mh.siteCache.Devices,nil
+		}
 	}
 
 	return nil, errors.New("cache is empty")
@@ -323,7 +350,10 @@ func (mh *ApiClient) GetRooms(fromCache bool) ([]Room, error) {
 		}
 		return response.GetRooms(), err
 	}else if mh.isCacheEnabled {
-		return mh.siteCache.Rooms,nil
+		if mh.ValidateAndReloadSiteCache() {
+			return mh.siteCache.Rooms,nil
+		}
+
 	}
 	return nil, errors.New("cache is empty")
 }
@@ -341,7 +371,9 @@ func (mh *ApiClient) GetAreas(fromCache bool) ([]Area, error) {
 		}
 		return response.GetAreas(), err
 	}else if mh.isCacheEnabled {
-		return mh.siteCache.Areas,nil
+		if mh.ValidateAndReloadSiteCache() {
+			return mh.siteCache.Areas,nil
+		}
 	}
 	return nil, errors.New("cache is empty")
 }
@@ -359,7 +391,9 @@ func (mh *ApiClient) GetThings(fromCache bool) ([]Thing, error) {
 		}
 		return response.GetThings(), err
 	}else if mh.isCacheEnabled {
-		return mh.siteCache.Things,nil
+		if mh.ValidateAndReloadSiteCache() {
+			return mh.siteCache.Things,nil
+		}
 	}
 	return nil, errors.New("cache is empty")
 }
@@ -377,7 +411,9 @@ func (mh *ApiClient) GetShortcuts(fromCache bool) ([]Shortcut, error) {
 		}
 		return response.GetShortcuts(), err
 	}else if mh.isCacheEnabled {
-		return mh.siteCache.Shortcuts,nil
+		if mh.ValidateAndReloadSiteCache() {
+			return mh.siteCache.Shortcuts,nil
+		}
 	}
 	return nil, errors.New("cache is empty")
 }
@@ -395,7 +431,9 @@ func (mh *ApiClient) GetModes(fromCache bool) ([]Mode, error) {
 		}
 		return response.GetModes(), err
 	}else if mh.isCacheEnabled {
-		return mh.siteCache.Modes,nil
+		if mh.ValidateAndReloadSiteCache() {
+			return mh.siteCache.Modes,nil
+		}
 	}
 	return nil, errors.New("cache is empty")
 }
@@ -413,7 +451,9 @@ func (mh *ApiClient) GetTimers(fromCache bool) ([]Timer, error) {
 		}
 		return response.GetTimers(), err
 	}else if mh.isCacheEnabled {
-		return mh.siteCache.Timers,nil
+		if mh.ValidateAndReloadSiteCache() {
+			return mh.siteCache.Timers,nil
+		}
 	}
 	return nil, errors.New("cache is empty")
 }
@@ -431,7 +471,9 @@ func (mh *ApiClient) GetVincServices(fromCache bool) (VincServices, error) {
 		}
 		return response.GetVincServices(), err
 	}else if mh.isCacheEnabled {
-		return mh.siteCache.Services,nil
+		if mh.ValidateAndReloadSiteCache() {
+			return mh.siteCache.Services,nil
+		}
 	}
 	return VincServices{}, errors.New("cache is empty")
 }
@@ -455,13 +497,17 @@ func (mh *ApiClient) GetSite(fromCache bool) (*Site, error) {
 			return nil, err
 		}
 		if mh.isCacheEnabled {
+			// Sync cache if cache is enabled
 			mh.siteCache = *SiteFromResponse(response)
 			return &mh.siteCache, err
 		} else {
 			return SiteFromResponse(response), err
 		}
 	}else {
-		return &mh.siteCache, nil
+		if mh.ValidateAndReloadSiteCache() {
+			return &mh.siteCache, nil
+		}
+
 	}
 	return nil, errors.New("cache is empty")
 }

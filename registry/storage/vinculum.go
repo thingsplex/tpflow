@@ -41,7 +41,7 @@ func (r *VinculumRegistryStore) Connect() error {
 		}
 	} else {
 		go func() {
-			r.vApi.ReloadSiteToCache(5)
+			r.vApi.ReloadSiteToCache(40)
 			r.vApi.StartNotifyRouter()
 		}()
 	}
