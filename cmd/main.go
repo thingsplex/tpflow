@@ -106,9 +106,9 @@ func main() {
 		log.Error("Can't load Flows from storage . Error :", err)
 	}
 
-	ctxApi := fapi.NewContextApi(flowManager.GetGlobalContext(), nil)
-	flowApi := fapi.NewFlowApi(flowManager, nil,&configs)
-	regApi := fapi.NewRegistryApi(registry, nil)
+	ctxApi := fapi.NewContextApi(flowManager.GetGlobalContext())
+	flowApi := fapi.NewFlowApi(flowManager, &configs)
+	regApi := fapi.NewRegistryApi(registry)
 
 	apiMqttTransport,err := InitApiMqttTransport(configs)
 

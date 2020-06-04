@@ -18,7 +18,6 @@ require (
 	github.com/imdario/mergo v0.3.6
 	github.com/influxdata/influxdb v1.6.2
 	github.com/kelvins/sunrisesunset v0.0.0-20170601204625-14f1915ad4b4
-	github.com/labstack/echo v3.2.1+incompatible
 	github.com/labstack/gommon v0.2.1
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect

@@ -24,6 +24,8 @@ type TriggerNode struct {
 type TriggerConfig struct {
 	Timeout                      int64 // in seconds
 	ValueFilter                  model.Variable
+	PropFilterName               string // fimp props filter . Property name
+	PropFilterValue              string // Property value
 	ValueJPath                   string // JPath path which is used to extract value from trigger message
 	ValueJPathResultType         string // Type of extracted variable
 	InputVariableType            string
@@ -167,6 +169,13 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 			}
 			if !node.config.IsValueFilterEnabled || ((newMsg.Payload.Value == node.config.ValueFilter.Value) && node.config.IsValueFilterEnabled) {
 
+					if node.config.PropFilterName != "" {
+						// Properties filter is enabled
+						if newMsg.Payload.Properties[node.config.PropFilterName] != node.config.PropFilterValue {
+							// Props value didn't match
+							continue
+						}
+					}
 					rMsg := model.Message{AddressStr: newMsg.Topic, Address: *newMsg.Addr, Payload: *newMsg.Payload}
 					newEvent := model.ReactorEvent{Msg: rMsg, TransitionNodeId: node.Meta().SuccessTransition}
 					if node.config.LookupServiceNameAndLocation {

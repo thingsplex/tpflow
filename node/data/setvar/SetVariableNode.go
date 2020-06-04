@@ -41,7 +41,7 @@ func (node *SetVariableNode) LoadNodeConfig() error {
 }
 
 func (node *SetVariableNode) OnInput(msg *model.Message) ([]model.NodeID, error) {
-	node.GetLog().Info(" Executing SetVariableNode . Name = ", node.Meta().Label)
+	node.GetLog().Debug(" Executing SetVariableNode . Name = ", node.Meta().Label)
 
 	if node.nodeConfig.UpdateInputMsg {
 		// Update input value with value from node config .
