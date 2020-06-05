@@ -117,18 +117,24 @@ func (node *ReceiveNode) LoadNodeConfig() error {
 
 func (node *ReceiveNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 	node.SetReactorRunning(true)
+	timeout := time.Second * time.Duration(node.config.Timeout)
+	var timer  *time.Timer
+	if timeout == 0 {
+		timer = time.NewTimer(time.Hour * 24)
+		timer.Stop()
+	}else {
+		timer = time.NewTimer(timeout)
+	}
 	defer func() {
 		node.SetReactorRunning(false)
 		node.GetLog().Debug("Reactor-WaitForEvent is stopped ")
+		timer.Stop()
 	}()
 	node.GetLog().Debug("Reactor-Waiting for event .chan size = ", len(node.msgInStream))
-	//start := time.Now()
-	timeout := node.config.Timeout
-	if timeout == 0 {
-		timeout = 86400 // 24 hours
-	}
-
 	for {
+		if timeout > 0 {
+			timer.Reset(timeout)
+		}
 		select {
 		case newMsg := <-node.msgInStream:
 			node.GetLog().Info("New message :")
@@ -157,7 +163,7 @@ func (node *ReceiveNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 			//	timeout = timeout - int64(elapsed.Seconds())
 			//}
 
-		case <-time.After(time.Second * time.Duration(timeout)):
+		case <-timer.C:
 			node.GetLog().Debug(" Timeout ")
 			newEvent := model.ReactorEvent{}
 			newEvent.TransitionNodeId = node.Meta().TimeoutTransition
@@ -174,6 +180,7 @@ func (node *ReceiveNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 				return
 			}
 		}
+
 	}
 }
 

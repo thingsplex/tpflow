@@ -90,15 +90,23 @@ func (node *VincTriggerNode) LoadNodeConfig() error {
 
 func (node *VincTriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 	node.SetReactorRunning(true)
+	timeout := time.Second * time.Duration(node.config.Timeout)
+	var timer  *time.Timer
+	if timeout == 0 {
+		timer = time.NewTimer(time.Hour * 24)
+		timer.Stop()
+	}else {
+		timer = time.NewTimer(timeout)
+	}
 	defer func() {
 		node.SetReactorRunning(false)
 		node.GetLog().Debug("Msg processed by the node ")
+		timer.Stop()
 	}()
-	timeout := node.config.Timeout
-	if timeout == 0 {
-		timeout = 86400 // 24 hours
-	}
 	for {
+		if timeout > 0 {
+			timer.Reset(timeout)
+		}
 		select {
 		case newMsg := <-node.msgInStream:
 			var eventValue string
@@ -143,7 +151,7 @@ func (node *VincTriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEven
 				}
 			}
 
-		case <-time.After(time.Second * time.Duration(timeout)):
+		case <-timer.C:
 			node.GetLog().Debug("Timeout ")
 			newEvent := model.ReactorEvent{TransitionNodeId: node.Meta().TimeoutTransition}
 			node.GetLog().Debug("Starting new flow (timeout)")
@@ -158,6 +166,7 @@ func (node *VincTriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEven
 				time.Sleep(50*time.Millisecond)
 			}
 		}
+
 	}
 }
 

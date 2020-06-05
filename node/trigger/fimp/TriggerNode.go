@@ -141,17 +141,27 @@ func (node *TriggerNode) LookupAddressToAlias(address string) {
 
 func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 	node.SetReactorRunning(true)
+	timeout := time.Second * time.Duration(node.config.Timeout)
+	var timer  *time.Timer
+	if timeout == 0 {
+		timer = time.NewTimer(time.Hour * 24)
+		timer.Stop()
+	}else {
+		timer = time.NewTimer(timeout)
+	}
+
 	defer func() {
 		node.SetReactorRunning(false)
 		node.GetLog().Debug("Msg processed by the node ")
+		timer.Stop()
 	}()
-	timeout := node.config.Timeout
-	if timeout == 0 {
-		timeout = 86400 // 24 hours
-	}
+
 	for {
 		//start := time.Now()
 		//node.GetLog().Debug("Waiting for msg")
+		if timeout > 0 {
+			timer.Reset(timeout)
+		}
 		select {
 		case newMsg := <-node.msgInStream:
 			//node.GetLog().Debug("--New message--")
@@ -190,7 +200,7 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 			//	timeout = timeout - int64(elapsed.Seconds())
 			//}
 
-		case <-time.After(time.Second * time.Duration(timeout)):
+		case <-timer.C:
 			node.GetLog().Debug("Timeout ")
 			newEvent := model.ReactorEvent{TransitionNodeId: node.Meta().TimeoutTransition}
 			node.GetLog().Debug("Starting new flow (timeout)")
@@ -203,6 +213,7 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 				return
 			}
 		}
+
 	}
 }
 
