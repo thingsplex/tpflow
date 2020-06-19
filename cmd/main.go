@@ -119,9 +119,14 @@ func main() {
 	}
 
 	log.Info("<main> Started")
+    //<< PPPROF >>
 	//go func() {
+	//	// http://cube.local:6060/debug/pprof/
 	//	http.ListenAndServe(":6060", nil)
 	//}()
+
+
+
 	//e.Logger.Debug(e.Start(":8083"))
 
 	//c := make(chan os.Signal, 1)

@@ -36,6 +36,7 @@ type FlowMeta struct {
 	Group             string
 	Description       string
 	Nodes             []MetaNode
+	Settings          map[string]string
 	IsDisabled        bool
 	IsDefault         bool // default flows are read only and can't be deleted
 	ParallelExecution string // keep_first , keep_last , parallel
@@ -50,6 +51,7 @@ const (
 )
 
 type FlowOperationalContext struct {
+	FlowMeta                    *FlowMeta
 	FlowId                      string
 	IsFlowRunning               bool
 	State                       string

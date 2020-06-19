@@ -1,12 +1,14 @@
 package fimp
 
 import (
+	"bytes"
 	"errors"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/mitchellh/mapstructure"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	"github.com/thingsplex/tpflow/registry/storage"
+	"text/template"
 	"time"
 )
 
@@ -19,6 +21,8 @@ type TriggerNode struct {
 	msgInStreamName     string
 	config              TriggerConfig
 	thingRegistry       storage.RegistryStorage
+	addressTemplate 	*template.Template
+	subAddress          string
 }
 
 type TriggerConfig struct {
@@ -66,16 +70,16 @@ func (node *TriggerNode) initSubscriptions() {
 		node.GetLog().Info("TriggerNode is listening for events . Name = ", node.Meta().Label)
 		needToSubscribe := true
 		for i := range node.activeSubscriptions {
-			if (node.activeSubscriptions)[i] == node.Meta().Address {
+			if (node.activeSubscriptions)[i] == node.subAddress {
 				needToSubscribe = false
 				break
 			}
 		}
 		if needToSubscribe {
-			if node.Meta().Address != "" {
-				node.GetLog().Info("Subscribing for service by address :", node.Meta().Address)
-				node.transport.Subscribe(node.Meta().Address)
-				node.activeSubscriptions = append(node.activeSubscriptions, node.Meta().Address)
+			if node.subAddress != "" {
+				node.GetLog().Info("Subscribing for service by address :", node.subAddress)
+				node.transport.Subscribe(node.subAddress)
+				node.activeSubscriptions = append(node.activeSubscriptions, node.subAddress)
 			} else {
 				node.GetLog().Error(" Can't subscribe to service with empty address")
 			}
@@ -83,7 +87,7 @@ func (node *TriggerNode) initSubscriptions() {
 	}
 	node.msgInStream = make(fimpgo.MessageCh, 10)
 	node.transport.RegisterChannelWithFilter(node.msgInStreamName, node.msgInStream,fimpgo.FimpFilter{
-		Topic:     node.Meta().Address,
+		Topic:     node.subAddress,
 		Service:   node.Meta().Service,
 		Interface: node.Meta().ServiceInterface,
 	})
@@ -95,6 +99,44 @@ func (node *TriggerNode) LoadNodeConfig() error {
 	if err != nil {
 		node.GetLog().Error("Error while decoding node configs.Err:", err)
 	}
+
+	funcMap := template.FuncMap{
+		"variable": func(varName string, isGlobal bool) (interface{}, error) {
+			//node.GetLog().Debug("Getting variable by name ",varName)
+			var vari model.Variable
+			var err error
+			if isGlobal {
+				vari, err = node.ctx.GetVariable(varName, "global")
+			} else {
+				vari, err = node.ctx.GetVariable(varName, node.FlowOpCtx().FlowId)
+			}
+
+			if vari.IsNumber() {
+				return vari.ToNumber()
+			}
+			vstr, ok := vari.Value.(string)
+			if ok {
+				return vstr, err
+			} else {
+				node.GetLog().Debug("Only simple types are supported ")
+				return "", errors.New("Only simple types are supported ")
+			}
+		},
+		"setting": func(name string) (interface{}, error) {
+			if node.FlowOpCtx().FlowMeta.Settings != nil {
+				return node.FlowOpCtx().FlowMeta.Settings[name],nil
+			}else {
+				return "",nil
+			}
+
+
+		},
+	}
+	node.addressTemplate, err = template.New("address").Funcs(funcMap).Parse(node.Meta().Address)
+	var addrTemplateBuffer bytes.Buffer
+	node.addressTemplate.Execute(&addrTemplateBuffer, nil)
+	node.subAddress = addrTemplateBuffer.String()
+
 
 	connInstance := node.ConnectorRegistry().GetInstance("thing_registry")
 	var ok bool

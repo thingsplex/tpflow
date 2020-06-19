@@ -53,7 +53,7 @@ func NewFlow(metaFlow model.FlowMeta, globalContext *model.Context) *Flow {
 	flow.instances = map[int32]*Instance{}
 	flow.currentNodeIds = make([]model.NodeID, 1)
 	flow.globalContext = globalContext
-	flow.opContext = model.FlowOperationalContext{NodeIsReady: make(chan bool), TriggerControlSignalChannel: make(chan int),NodeControlSignalChannel:make(chan int), State: "LOADED"}
+	flow.opContext = model.FlowOperationalContext{FlowMeta:&metaFlow, NodeIsReady: make(chan bool), TriggerControlSignalChannel: make(chan int),NodeControlSignalChannel:make(chan int), State: "LOADED"}
 	flow.initFromMetaFlow(&metaFlow)
 	flow.instanceCounter = 0
 	flow.mtx = sync.Mutex{}

@@ -2,7 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/futurehomeno/fimpgo"
+	"github.com/futurehomeno/fimpgo/fimptype"
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow"
 	"github.com/thingsplex/tpflow/connector/plugins"
@@ -141,6 +143,7 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 	// TODO : Implement dynamic addressing and discovery
 	ctx.msgTransport.Subscribe("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:1")
 	ctx.msgTransport.Subscribe("pt:j1/mt:evt/rt:ad/rn:gateway/ad:1")
+	ctx.msgTransport.Subscribe("pt:j1/mt:evt/rt:ad/+/+") // Adapter events for flow auto configuration based on added products
 
 	apiCh := make(fimpgo.MessageCh, 10)
 	ctx.msgTransport.RegisterChannel("flow-api",apiCh)
@@ -333,6 +336,37 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				}else {
 					log.Error("<api> Cmd evt.gateway.factory_reset must have service gateway. ")
 				}
+			case "evt.thing.inclusion_report":
+				// do product specific flow configuration here
+				// Get product address , tech and hash
+				// Load flow which starts with prod_auto_flow_zw_398_4_2.json
+				// Bind flow with device - load flow -> set prod hash , device id and tech into settings -> save flow to flow folder
+				log.Info("<api> Loading flow from template")
+				inclReport := &fimptype.ThingInclusionReport{}
+				err := newMsg.Payload.GetObjectValue(inclReport)
+				if err != nil {
+					break
+				}
+				settings := map[string]string{}
+				settings["dev_address"] = inclReport.Address
+				settings["dev_tech"] = inclReport.CommTechnology
+				prodHash := inclReport.ProductHash
+				settings["dev_prod_hash"] = prodHash
+				flowName := fmt.Sprintf("prod_auto_config_%s",prodHash)
+				ac := flow.NewAutoConfig(ctx.config.FlowStorageDir)
+				err = ac.LoadFlowFromTemplate(flowName)
+				if err != nil {
+					log.Error("<api> Can't load flow from template ",err)
+					break
+				}
+				ac.SetSettings(settings)
+				ac.SaveNewFlow(flowName)
+				log.Info("<api> Flow loaded successfully")
+
+			case "evt.thing.exclusion_report":
+				//TODO : implement flow removal process
+				// Get device address and tech
+				// Delete flow
 
 			}
 
