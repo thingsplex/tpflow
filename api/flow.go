@@ -291,6 +291,35 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 					resp = err.Error()
 				}
 				fimp = fimpgo.NewMessage("evt.flow.import_report", "tpflow", "string", resp, nil, nil, newMsg.Payload)
+			case "cmd.flow.create_from_template":
+				val, err := newMsg.Payload.GetStrMapValue()
+				if err != nil {
+					log.Error("Can't get log , wrong params , error = ", err)
+					break
+				}
+				flowName , ok := val["flow_name"]
+				if !ok {
+					break
+				}
+				ac := flow.NewAutoConfig(ctx.config.FlowStorageDir)
+				err = ac.LoadFlowFromTemplate(flowName)
+				if err != nil {
+					log.Error("<api> Can't load flow from template ",err)
+					break
+				}
+				settings := map[string]model.Setting{}
+
+				for k,v := range val {
+					settings[k] = model.Setting{Value: v,ValueType: "string"}
+				}
+				ac.SetSettings(settings)
+				ac.SaveNewFlow()
+				err = ctx.flowManager.LoadFlowFromFile(ctx.flowManager.GetFlowFileNameById(flowName))
+				if err != nil {
+					log.Error("<api>Flow can't load . Error:",err)
+				}else {
+					log.Info("<api> Flow loaded successfully")
+				}
 
 			case "cmd.flow.get_log":
 				val, err := newMsg.Payload.GetStrMapValue()
@@ -347,21 +376,27 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				if err != nil {
 					break
 				}
-				settings := map[string]string{}
-				settings["dev_address"] = inclReport.Address
-				settings["dev_tech"] = inclReport.CommTechnology
+				settings := map[string]model.Setting{}
+				settings["dev.address"] = model.Setting{Value:inclReport.Address,ValueType: "string",Description: "device address"}
+				settings["dev.tech"] = model.Setting{Value:inclReport.CommTechnology,ValueType: "string",Description: "communication technology"}
 				prodHash := inclReport.ProductHash
-				settings["dev_prod_hash"] = prodHash
-				flowName := fmt.Sprintf("prod_auto_config_%s",prodHash)
+				settings["dev.prod.hash"] = model.Setting{Value:prodHash,ValueType: "string",Description: "hash code of the product"}
+				flowName := fmt.Sprintf("auto_config_prod_hash_%s",prodHash)
 				ac := flow.NewAutoConfig(ctx.config.FlowStorageDir)
 				err = ac.LoadFlowFromTemplate(flowName)
 				if err != nil {
-					log.Error("<api> Can't load flow from template ",err)
+					log.Debugf("<api> Can't load flow from template ",err)
 					break
 				}
 				ac.SetSettings(settings)
-				ac.SaveNewFlow(flowName)
-				log.Info("<api> Flow loaded successfully")
+				ac.SaveNewFlow()
+				err = ctx.flowManager.LoadFlowFromFile(ctx.flowManager.GetFlowFileNameById(ac.Flow().Id))
+				if err != nil {
+					log.Error("<api>Flow can't be loaded . Error:",err)
+				}else {
+					log.Info("<api> Flow loaded successfully")
+					ctx.flowManager.StartFlow(ac.Flow().Id)
+				}
 
 			case "evt.thing.exclusion_report":
 				//TODO : implement flow removal process

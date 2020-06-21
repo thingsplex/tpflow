@@ -94,6 +94,14 @@ func (node *Node) LoadNodeConfig() error {
 				}
 
 			},
+			"setting": func(name string) (interface{}, error) {
+				if node.FlowOpCtx().FlowMeta.Settings != nil {
+					s := node.FlowOpCtx().FlowMeta.Settings[name]
+					return s.String(),nil
+				}else {
+					return "",nil
+				}
+			},
 		}
 		node.template, err = template.New("transform").Funcs(funcMap).Parse(node.nodeConfig.Template)
 		if err != nil {

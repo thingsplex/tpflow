@@ -31,10 +31,9 @@ func (r *VinculumRegistryStore) Connect() error {
 		return err
 	}
 	r.vApi = primefimp.NewApiClient("tpflow_reg", r.msgTransport, false)
-	//TODO :move to config file
-	isDevMode := false
 
-	if isDevMode {
+	if r.config.IsDevMode {
+		log.Info("<MqRegInt> DEV-MODE vinculum DB from file")
 		err = r.vApi.LoadVincResponseFromFile("testdata/vinfimp/site-response.json")
 		if err != nil {
 			log.Error("Can't load site data from file . Error:", err)

@@ -1,0 +1,5939 @@
+{
+  "corid": "09936904-8ec8-4280-9285-945d77bd0a74",
+  "ctime": "2020-02-23T22:49:33+0100",
+  "props": {},
+  "serv": "vinculum",
+  "tags": [],
+  "type": "evt.pd7.response",
+  "uid": "7e0237a2-2892-419a-840e-6dc8d60fb0dc",
+  "val": {
+    "errors": null,
+    "param": {
+      "area": [
+        {
+          "id": 1,
+          "name": "Main",
+          "props": {},
+          "type": "sdu"
+        },
+        {
+          "id": 2,
+          "name": "Common area",
+          "props": {},
+          "type": "sdu"
+        }
+      ],
+      "device": [
+        {
+          "client": {
+            "name": "Experimental smoke sensor"
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "9",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 1,
+          "lrn": true,
+          "model": "zw_398_3_13",
+          "param": {
+            "batteryLevel": "low",
+            "batteryPercentage": 0,
+            "timestamp": "2020-02-20 21:37:07 +0100"
+          },
+          "problem": false,
+          "room": null,
+          "services": {
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:9_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "battery": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:battery/ad:9_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:9_0",
+              "enabled": true,
+              "intf": [
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "cmd.ping.send",
+                "evt.group.members_report",
+                "evt.ping.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 1,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        },
+        {
+          "client": {
+            "name": "Keyfob"
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "10",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 6,
+          "lrn": true,
+          "model": "zw_398_4_24",
+          "param": {
+            "batteryLevel": "low",
+            "batteryPercentage": null,
+            "timestamp": "2020-02-23 12:14:00 +0100"
+          },
+          "problem": false,
+          "room": 13,
+          "services": {
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:10_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "battery": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:battery/ad:10_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:10_0",
+              "enabled": true,
+              "intf": [
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "cmd.ping.send",
+                "evt.group.members_report",
+                "evt.ping.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:scene_ctrl/ad:10_0",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_scenes": null
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 6,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        },
+        {
+          "client": {
+            "name": "Round button"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s33",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 7,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_switch",
+          "modelAlias": "lumi.sensor_switch",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "timestamp": "2020-02-23 18:35:21 +0100"
+          },
+          "problem": false,
+          "room": 13,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s33_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:scene_ctrl/ad:s33_0",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 7,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        },
+        {
+          "client": {
+            "name": "zw_134_2_130 ch_0"
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "11",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 8,
+          "lrn": true,
+          "model": "zw_134_2_130",
+          "param": {
+            "alarms": {},
+            "batteryLevel": "ok",
+            "batteryPercentage": 32,
+            "supportedAlarms": {
+              "power": [
+                "charging",
+                "charged",
+                "charge_soon",
+                "charge_now"
+              ]
+            },
+            "timestamp": "2019-12-14 15:39:31 +0100",
+            "zwaveConfigParameters": []
+          },
+          "problem": false,
+          "room": null,
+          "services": {
+            "alarm_power": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:alarm_power/ad:11_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.get_report",
+                "evt.alarm.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_events": [
+                  "charging",
+                  "charged",
+                  "charge_soon",
+                  "charge_now"
+                ]
+              }
+            },
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:11_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "battery": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:battery/ad:11_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:11_0",
+              "enabled": true,
+              "intf": [
+                "cmd.config.get_report",
+                "cmd.config.set",
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "cmd.ping.send",
+                "evt.config.report",
+                "evt.group.members_report",
+                "evt.ping.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:scene_ctrl/ad:11_0",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_scenes": null
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 8,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        },
+        {
+          "client": {
+            "name": "zw_134_2_130 ch_1"
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "11",
+            "group": "ch_1"
+          },
+          "functionality": null,
+          "id": 9,
+          "lrn": true,
+          "model": "zw_134_2_130",
+          "param": {
+            "timestamp": null
+          },
+          "problem": false,
+          "room": null,
+          "services": {
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:11_1",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:11_1",
+              "enabled": true,
+              "intf": [
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "evt.group.members_report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:scene_ctrl/ad:11_1",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_scenes": null
+              }
+            }
+          },
+          "supports": [
+            "clear"
+          ],
+          "thing": 8,
+          "type": {
+            "subtype": null,
+            "supported": {},
+            "type": null
+          }
+        },
+        {
+          "client": {
+            "name": "zw_134_2_130 ch_2"
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "11",
+            "group": "ch_2"
+          },
+          "functionality": null,
+          "id": 10,
+          "lrn": true,
+          "model": "zw_134_2_130",
+          "param": {
+            "timestamp": null
+          },
+          "problem": false,
+          "room": null,
+          "services": {
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:11_2",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:11_2",
+              "enabled": true,
+              "intf": [
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "evt.group.members_report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:scene_ctrl/ad:11_2",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_scenes": null
+              }
+            }
+          },
+          "supports": [
+            "clear"
+          ],
+          "thing": 8,
+          "type": {
+            "subtype": null,
+            "supported": {},
+            "type": null
+          }
+        },
+        {
+          "client": {
+            "name": "zw_134_2_130 ch_3"
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "11",
+            "group": "ch_3"
+          },
+          "functionality": null,
+          "id": 11,
+          "lrn": true,
+          "model": "zw_134_2_130",
+          "param": {
+            "timestamp": null
+          },
+          "problem": false,
+          "room": null,
+          "services": {
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:11_3",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:11_3",
+              "enabled": true,
+              "intf": [
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "evt.group.members_report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:scene_ctrl/ad:11_3",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_scenes": null
+              }
+            }
+          },
+          "supports": [
+            "clear"
+          ],
+          "thing": 8,
+          "type": {
+            "subtype": null,
+            "supported": {},
+            "type": null
+          }
+        },
+        {
+          "client": {
+            "name": "zw_134_2_130 ch_4"
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "11",
+            "group": "ch_4"
+          },
+          "functionality": null,
+          "id": 12,
+          "lrn": true,
+          "model": "zw_134_2_130",
+          "param": {
+            "timestamp": null
+          },
+          "problem": false,
+          "room": null,
+          "services": {
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:11_4",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:11_4",
+              "enabled": true,
+              "intf": [
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "evt.group.members_report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:scene_ctrl/ad:11_4",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_scenes": null
+              }
+            }
+          },
+          "supports": [
+            "clear"
+          ],
+          "thing": 8,
+          "type": {
+            "subtype": null,
+            "supported": {},
+            "type": null
+          }
+        },
+        {
+          "client": {
+            "name": "Entrance door motion sensor"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s34",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 14,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_motion",
+          "modelAlias": "lumi.sensor_motion",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "presence": false,
+            "timestamp": "2020-02-23 18:06:42 +0100"
+          },
+          "problem": false,
+          "room": 14,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s34_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_presence": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:sensor_presence/ad:s34_0",
+              "enabled": true,
+              "intf": [
+                "cmd.presence.get_report",
+                "evt.presence.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 10,
+          "type": {
+            "subtype": "presence",
+            "supported": {
+              "sensor": [
+                "presence"
+              ]
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Temperature sensor"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s25",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 15,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_ht",
+          "modelAlias": "lumi.sensor_ht",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "temperature": 22.67,
+            "timestamp": "2020-02-23 04:51:31 +0100"
+          },
+          "problem": false,
+          "room": 12,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_temp": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:sensor_temp/ad:s25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "sup_units": [
+                  "C"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 11,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "sensor": []
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Humidity sensor"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s26",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 16,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_ht",
+          "modelAlias": "lumi.sensor_ht",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "humidity": 38,
+            "timestamp": "2020-02-23 04:51:31 +0100"
+          },
+          "problem": false,
+          "room": 12,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s26_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_humid": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:sensor_humid/ad:s26_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "sup_units": [
+                  "%"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 12,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "sensor": []
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Door motion sensor"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s24",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 17,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_motion",
+          "modelAlias": "lumi.sensor_motion",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "presence": true,
+            "timestamp": "2020-02-23 22:48:26 +0100"
+          },
+          "problem": false,
+          "room": 13,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s24_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_presence": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:sensor_presence/ad:s24_0",
+              "enabled": true,
+              "intf": [
+                "cmd.presence.get_report",
+                "evt.presence.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 13,
+          "type": {
+            "subtype": "presence",
+            "supported": {
+              "sensor": [
+                "presence"
+              ]
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Switchbox motion sensor"
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "13",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 18,
+          "lrn": true,
+          "model": "zw_271_2048_4097",
+          "param": {
+            "alarms": {
+              "gp": [
+                "gp"
+              ]
+            },
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "illuminance": null,
+            "presence": false,
+            "supportedAlarms": {
+              "gp": []
+            },
+            "temperature": null,
+            "timestamp": "2020-02-22 19:11:40 +0100",
+            "zwaveConfigParameters": []
+          },
+          "problem": false,
+          "room": 13,
+          "services": {
+            "alarm_gp": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:alarm_gp/ad:13_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.get_report",
+                "evt.alarm.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_events": "gp"
+              }
+            },
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:13_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "battery": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:battery/ad:13_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:13_0",
+              "enabled": true,
+              "intf": [
+                "cmd.config.get_report",
+                "cmd.config.set",
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "evt.config.report",
+                "evt.group.members_report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "sensor_lumin": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_lumin/ad:13_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "Lux"
+                ]
+              }
+            },
+            "sensor_presence": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_presence/ad:13_0",
+              "enabled": true,
+              "intf": [
+                "cmd.presence.get_report",
+                "evt.presence.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "sensor_temp": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_temp/ad:13_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "C"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 14,
+          "type": {
+            "subtype": "presence",
+            "supported": {
+              "sensor": [
+                "presence"
+              ]
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Motion sensor"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s30",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 19,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_motion",
+          "modelAlias": "lumi.sensor_motion",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "presence": false,
+            "timestamp": "2020-02-23 22:49:29 +0100"
+          },
+          "problem": false,
+          "room": 8,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s30_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_presence": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:sensor_presence/ad:s30_0",
+              "enabled": true,
+              "intf": [
+                "cmd.presence.get_report",
+                "evt.presence.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 15,
+          "type": {
+            "subtype": "presence",
+            "supported": {
+              "sensor": [
+                "presence"
+              ]
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Table sensor"
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "14",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 20,
+          "lrn": true,
+          "model": "zw_134_2_100",
+          "param": {
+            "UV": 0,
+            "alarms": {},
+            "batteryLevel": "ok",
+            "batteryPercentage": 100,
+            "humidity": 37,
+            "illuminance": 61,
+            "presence": true,
+            "supportedAlarms": {
+              "burglar": [
+                "tamper_removed_cover"
+              ]
+            },
+            "temperature": 23.6000003814697,
+            "timestamp": "2020-02-23 22:45:49 +0100",
+            "zwaveConfigParameters": [
+              {
+                "parameter": 4,
+                "size": 1,
+                "value": 5
+              },
+              {
+                "parameter": 5,
+                "size": 1,
+                "value": 1
+              },
+              {
+                "parameter": 9,
+                "size": 2,
+                "value": 0
+              }
+            ]
+          },
+          "problem": false,
+          "room": 10,
+          "services": {
+            "alarm_burglar": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:alarm_burglar/ad:14_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.get_report",
+                "evt.alarm.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_events": [
+                  "tamper_removed_cover"
+                ]
+              }
+            },
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:14_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": true
+              }
+            },
+            "battery": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:battery/ad:14_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:14_0",
+              "enabled": true,
+              "intf": [
+                "cmd.config.get_report",
+                "cmd.config.set",
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "cmd.ping.send",
+                "evt.config.report",
+                "evt.group.members_report",
+                "evt.ping.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false
+              }
+            },
+            "sensor_humid": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_humid/ad:14_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_units": [
+                  "%"
+                ]
+              }
+            },
+            "sensor_lumin": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_lumin/ad:14_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_units": [
+                  "Lux"
+                ]
+              }
+            },
+            "sensor_presence": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_presence/ad:14_0",
+              "enabled": true,
+              "intf": [
+                "cmd.presence.get_report",
+                "evt.presence.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false
+              }
+            },
+            "sensor_temp": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_temp/ad:14_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_units": [
+                  "C",
+                  "F"
+                ]
+              }
+            },
+            "sensor_uv": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_uv/ad:14_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_units": [
+                  "index"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 16,
+          "type": {
+            "subtype": "presence",
+            "supported": {
+              "sensor": [
+                "presence"
+              ]
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Temperature sensor"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s28",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 21,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_ht",
+          "modelAlias": "lumi.sensor_ht",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "temperature": 21.81,
+            "timestamp": "2020-02-23 22:35:43 +0100"
+          },
+          "problem": false,
+          "room": 7,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s28_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_temp": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:sensor_temp/ad:s28_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "sup_units": [
+                  "C"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 17,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "sensor": []
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Humidity sensor"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s29",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 22,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_ht",
+          "modelAlias": "lumi.sensor_ht",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "humidity": 44,
+            "timestamp": "2020-02-23 22:35:44 +0100"
+          },
+          "problem": false,
+          "room": 7,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s29_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_humid": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:sensor_humid/ad:s29_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "sup_units": [
+                  "%"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 18,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "sensor": []
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Yamaha AVR"
+          },
+          "fimp": {
+            "adapter": "flow",
+            "address": "nmaPcGi1Nh14b6O",
+            "group": "ch_1"
+          },
+          "functionality": null,
+          "id": 23,
+          "lrn": true,
+          "model": "flow_nmaPcGi1Nh14b6O",
+          "modelAlias": "Yamaha AVR control",
+          "param": {
+            "dimValue": 60,
+            "power": "on",
+            "timestamp": "2020-02-23 12:14:02 +0100"
+          },
+          "problem": false,
+          "room": 7,
+          "services": {
+            "out_lvl_switch": {
+              "addr": "/rt:dev/rn:flow/ad:1/sv:out_lvl_switch/ad:nmaPcGi1Nh14b6O_1",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.set",
+                "cmd.lvl.set",
+                "evt.binary.report"
+              ],
+              "props": {
+                "max_lvl": 100,
+                "min_lvl": 0
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 19,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "appliance": [],
+              "blinds": [],
+              "fan": [],
+              "heater": [],
+              "light": []
+            },
+            "type": "appliance"
+          }
+        },
+        {
+          "client": {
+            "name": "Kids humidity sensor"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s3",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 24,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_ht",
+          "modelAlias": "lumi.sensor_ht",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "humidity": 43,
+            "timestamp": "2020-02-23 22:15:33 +0100"
+          },
+          "problem": false,
+          "room": 9,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s3_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_humid": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:sensor_humid/ad:s3_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "sup_units": [
+                  "%"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 20,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "sensor": []
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "PHDL00"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s1",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 25,
+          "lrn": true,
+          "model": "Philips_PHDL00",
+          "modelAlias": "PHDL00",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "timestamp": null
+          },
+          "problem": false,
+          "room": null,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s1_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 21,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        },
+        {
+          "client": {
+            "name": "TRADFRI remote control"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s18",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 26,
+          "lrn": true,
+          "model": "IKEA of Sweden_TRADFRI remote control",
+          "modelAlias": "TRADFRI remote control",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "timestamp": "2020-02-23 21:54:00 +0100"
+          },
+          "problem": false,
+          "room": 7,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s18_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:scene_ctrl/ad:s18_0",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 22,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        },
+        {
+          "client": {
+            "name": "Bed round button"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s5",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 27,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_switch",
+          "modelAlias": "lumi.sensor_switch",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "timestamp": "2020-02-02 20:03:02 +0100"
+          },
+          "problem": false,
+          "room": 11,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s5_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:scene_ctrl/ad:s5_0",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 23,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        },
+        {
+          "client": {
+            "name": "Disco lamp "
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "15",
+            "group": "ch_0"
+          },
+          "functionality": "lighting",
+          "id": 29,
+          "lrn": true,
+          "model": "zw_271_1536_4096",
+          "modelAlias": "Fibaro - Wall Plug - FGWPE-102",
+          "param": {
+            "energy": 190.169998168945,
+            "power": "on",
+            "timestamp": "2020-02-23 13:31:15 +0100",
+            "wattage": 0,
+            "zwaveConfigParameters": []
+          },
+          "problem": false,
+          "room": 7,
+          "services": {
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:15_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:15_0",
+              "enabled": true,
+              "intf": [
+                "cmd.config.get_report",
+                "cmd.config.set",
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "cmd.ping.send",
+                "evt.config.report",
+                "evt.group.members_report",
+                "evt.ping.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "meter_elec": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:meter_elec/ad:15_0",
+              "enabled": true,
+              "intf": [
+                "cmd.meter.get_report",
+                "cmd.meter.reset",
+                "evt.meter.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "kWh",
+                  "W"
+                ]
+              }
+            },
+            "out_bin_switch": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:out_bin_switch/ad:15_0",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.get_report",
+                "cmd.binary.set",
+                "evt.binary.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "sensor_power": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_power/ad:15_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "W"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 25,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "appliance": [],
+              "blinds": [],
+              "fan": [],
+              "heater": [],
+              "light": [],
+              "siren": []
+            },
+            "type": "light"
+          }
+        },
+        {
+          "client": {
+            "name": "Tea"
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "17",
+            "group": "ch_0"
+          },
+          "functionality": "appliance",
+          "id": 30,
+          "lrn": true,
+          "model": "zw_398_4_2",
+          "param": {
+            "energy": 63.0009994506836,
+            "power": "on",
+            "timestamp": "2020-02-23 22:45:22 +0100",
+            "wattage": 0.122000001370907
+          },
+          "problem": false,
+          "room": 8,
+          "services": {
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:17_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:17_0",
+              "enabled": true,
+              "intf": [
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "cmd.ping.send",
+                "evt.group.members_report",
+                "evt.ping.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "meter_elec": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:meter_elec/ad:17_0",
+              "enabled": true,
+              "intf": [
+                "cmd.meter.get_report",
+                "cmd.meter.reset",
+                "evt.meter.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "kWh",
+                  "W"
+                ]
+              }
+            },
+            "out_bin_switch": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:out_bin_switch/ad:17_0",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.get_report",
+                "cmd.binary.set",
+                "evt.binary.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 26,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "appliance": [],
+              "blinds": [],
+              "fan": [],
+              "heater": [],
+              "light": [],
+              "siren": []
+            },
+            "type": "appliance"
+          }
+        },
+        {
+          "client": {
+            "name": "Kids ambient light"
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "18",
+            "group": "ch_0"
+          },
+          "functionality": "lighting",
+          "id": 32,
+          "lrn": true,
+          "model": "zw_271_1536_4096",
+          "modelAlias": "Fibaro - Wall Plug - FGWPE-102",
+          "param": {
+            "energy": 65.3099975585938,
+            "power": "on",
+            "timestamp": "2020-02-23 17:27:00 +0100",
+            "wattage": 0,
+            "zwaveConfigParameters": []
+          },
+          "problem": false,
+          "room": 9,
+          "services": {
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:18_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:18_0",
+              "enabled": true,
+              "intf": [
+                "cmd.config.get_report",
+                "cmd.config.set",
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "cmd.ping.send",
+                "evt.config.report",
+                "evt.group.members_report",
+                "evt.ping.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "meter_elec": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:meter_elec/ad:18_0",
+              "enabled": true,
+              "intf": [
+                "cmd.meter.get_report",
+                "cmd.meter.reset",
+                "evt.meter.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "kWh",
+                  "W"
+                ]
+              }
+            },
+            "out_bin_switch": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:out_bin_switch/ad:18_0",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.get_report",
+                "cmd.binary.set",
+                "evt.binary.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "sensor_power": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_power/ad:18_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "W"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 28,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "appliance": [],
+              "blinds": [],
+              "fan": [],
+              "heater": [],
+              "light": [],
+              "siren": []
+            },
+            "type": "light"
+          }
+        },
+        {
+          "client": {
+            "name": "Kids temperature sensor"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s2",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 34,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_ht",
+          "modelAlias": "lumi.sensor_ht",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "temperature": 22.73,
+            "timestamp": "2020-02-23 22:15:33 +0100"
+          },
+          "problem": false,
+          "room": 9,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s2_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_temp": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:sensor_temp/ad:s2_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "sup_units": [
+                  "C"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 30,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "sensor": []
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Fridge sensor",
+            "openStateType": "other"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s27",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 35,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_magnet",
+          "modelAlias": "lumi.sensor_magnet",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "openState": "closed",
+            "timestamp": "2020-02-23 22:43:27 +0100"
+          },
+          "problem": false,
+          "room": 8,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s27_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_contact": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:sensor_contact/ad:s27_0",
+              "enabled": true,
+              "intf": [
+                "cmd.open.get_report",
+                "evt.open.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 31,
+          "type": {
+            "subtype": "door",
+            "supported": {
+              "sensor": [
+                "door",
+                "window",
+                "lock",
+                "garage",
+                "door_lock",
+                "window_lock",
+                "other"
+              ]
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Door contact sensor",
+            "openStateType": "door"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s6",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 36,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_magnet",
+          "modelAlias": "lumi.sensor_magnet",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "openState": "closed",
+            "timestamp": "2020-02-22 18:40:43 +0100"
+          },
+          "problem": false,
+          "room": 10,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s6_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_contact": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:sensor_contact/ad:s6_0",
+              "enabled": true,
+              "intf": [
+                "cmd.open.get_report",
+                "evt.open.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 32,
+          "type": {
+            "subtype": "door",
+            "supported": {
+              "sensor": [
+                "door",
+                "window",
+                "lock",
+                "garage",
+                "door_lock",
+                "window_lock",
+                "other"
+              ]
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Floor lamp 1"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "l5",
+            "group": "ch_0"
+          },
+          "functionality": "lighting",
+          "id": 38,
+          "lrn": true,
+          "model": "IKEA of Sweden_TRADFRI bulb E27 WS opal 980lm",
+          "modelAlias": "TRADFRI bulb E27 WS opal 980lm",
+          "param": {
+            "dimValue": null,
+            "power": "on",
+            "timestamp": "2020-02-23 19:25:35 +0100"
+          },
+          "problem": false,
+          "room": 7,
+          "services": {
+            "out_lvl_switch": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:out_lvl_switch/ad:l5_0",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.set",
+                "cmd.lvl.set",
+                "cmd.lvl.start",
+                "cmd.lvl.stop",
+                "evt.binary.report",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "max_lvl": 255,
+                "min_lvl": 0
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 34,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "appliance": [],
+              "blinds": [],
+              "fan": [],
+              "heater": [],
+              "light": []
+            },
+            "type": "light"
+          }
+        },
+        {
+          "client": {
+            "name": "Floor lamp 2"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "l6",
+            "group": "ch_0"
+          },
+          "functionality": "lighting",
+          "id": 40,
+          "lrn": true,
+          "model": "IKEA of Sweden_TRADFRI bulb E27 WS opal 980lm",
+          "modelAlias": "TRADFRI bulb E27 WS opal 980lm",
+          "param": {
+            "dimValue": null,
+            "power": "on",
+            "timestamp": "2020-02-23 19:25:35 +0100"
+          },
+          "problem": false,
+          "room": 7,
+          "services": {
+            "out_lvl_switch": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:out_lvl_switch/ad:l6_0",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.set",
+                "cmd.lvl.set",
+                "cmd.lvl.start",
+                "cmd.lvl.stop",
+                "evt.binary.report",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "max_lvl": 255,
+                "min_lvl": 0
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 36,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "appliance": [],
+              "blinds": [],
+              "fan": [],
+              "heater": [],
+              "light": []
+            },
+            "type": "light"
+          }
+        },
+        {
+          "client": {
+            "name": "TRADFRI remote control"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s19",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 41,
+          "lrn": true,
+          "model": "IKEA of Sweden_TRADFRI remote control",
+          "modelAlias": "TRADFRI remote control",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "timestamp": "2020-02-22 18:52:16 +0100"
+          },
+          "problem": false,
+          "room": 15,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s19_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:scene_ctrl/ad:s19_0",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 37,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        },
+        {
+          "client": {
+            "name": "lumi.sensor_motion"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s7",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 42,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_motion",
+          "modelAlias": "lumi.sensor_motion",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "presence": true,
+            "timestamp": "2020-02-23 22:48:24 +0100"
+          },
+          "problem": false,
+          "room": 10,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s7_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_presence": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:sensor_presence/ad:s7_0",
+              "enabled": true,
+              "intf": [
+                "cmd.presence.get_report",
+                "evt.presence.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 38,
+          "type": {
+            "subtype": "presence",
+            "supported": {
+              "sensor": [
+                "presence"
+              ]
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Fibaro - Motion Sensor 2"
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "19",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 43,
+          "lrn": true,
+          "model": "zw_271_2049_4097",
+          "modelAlias": "Fibaro - Motion Sensor - FGMS-001 - S",
+          "param": {
+            "alarms": {},
+            "batteryLevel": "ok",
+            "batteryPercentage": 100,
+            "illuminance": 13,
+            "presence": false,
+            "supportedAlarms": {
+              "burglar": [
+                "inactive",
+                "tamper_removed_cover"
+              ]
+            },
+            "temperature": 20.7000007629395,
+            "timestamp": "2020-02-23 22:48:29 +0100",
+            "zwaveConfigParameters": []
+          },
+          "problem": false,
+          "room": 7,
+          "services": {
+            "alarm_burglar": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:alarm_burglar/ad:19_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.get_report",
+                "evt.alarm.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_events": [
+                  "inactive",
+                  "tamper_removed_cover"
+                ]
+              }
+            },
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:19_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": true
+              }
+            },
+            "battery": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:battery/ad:19_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:19_0",
+              "enabled": true,
+              "intf": [
+                "cmd.config.get_report",
+                "cmd.config.set",
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "cmd.ping.send",
+                "evt.config.report",
+                "evt.group.members_report",
+                "evt.ping.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "sensor_accelx": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_accelx/ad:19_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "m/s2"
+                ]
+              }
+            },
+            "sensor_accely": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_accely/ad:19_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "m/s2"
+                ]
+              }
+            },
+            "sensor_accelz": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_accelz/ad:19_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "m/s2"
+                ]
+              }
+            },
+            "sensor_lumin": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_lumin/ad:19_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "Lux"
+                ]
+              }
+            },
+            "sensor_presence": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_presence/ad:19_0",
+              "enabled": true,
+              "intf": [
+                "cmd.presence.get_report",
+                "evt.presence.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false
+              }
+            },
+            "sensor_seismicint": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_seismicint/ad:19_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "MERC"
+                ]
+              }
+            },
+            "sensor_temp": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_temp/ad:19_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "C"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 39,
+          "type": {
+            "subtype": "presence",
+            "supported": {
+              "sensor": [
+                "presence"
+              ]
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Bed round switch 2"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s13",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 44,
+          "lrn": true,
+          "model": "LUMI_lumi.sensor_switch",
+          "modelAlias": "lumi.sensor_switch",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "timestamp": "2020-02-23 17:40:56 +0100"
+          },
+          "problem": false,
+          "room": 11,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s13_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:scene_ctrl/ad:s13_0",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 40,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        },
+        {
+          "client": {
+            "name": "SYMFONISK Sound Controller"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s20",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 46,
+          "lrn": true,
+          "model": "IKEA of Sweden_SYMFONISK Sound Controller",
+          "modelAlias": "SYMFONISK Sound Controller",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "timestamp": "2020-02-23 18:35:05 +0100"
+          },
+          "problem": false,
+          "room": null,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s20_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:scene_ctrl/ad:s20_0",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 42,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        },
+        {
+          "client": {
+            "name": "twinkly"
+          },
+          "fimp": {
+            "adapter": "flow",
+            "address": "zcPkemLaH9BAy2p",
+            "group": "ch_0"
+          },
+          "functionality": "lighting",
+          "id": 47,
+          "lrn": true,
+          "model": "flow_zcPkemLaH9BAy2p",
+          "modelAlias": "twinkly",
+          "param": {
+            "dimValue": 20,
+            "power": "on",
+            "timestamp": "2020-01-29 19:32:23 +0100"
+          },
+          "problem": false,
+          "room": 7,
+          "services": {
+            "out_lvl_switch": {
+              "addr": "/rt:dev/rn:flow/ad:1/sv:out_lvl_switch/ad:zcPkemLaH9BAy2p_0",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.set",
+                "cmd.lvl.set"
+              ],
+              "props": {
+                "max_lvl": 100,
+                "min_lvl": 0
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 43,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "appliance": [],
+              "blinds": [],
+              "fan": [],
+              "heater": [],
+              "light": []
+            },
+            "type": "light"
+          }
+        },
+        {
+          "client": {
+            "name": "TRADFRI signal repeater"
+          },
+          "fimp": {
+            "adapter": "zigbee",
+            "address": "3",
+            "group": "ch_1"
+          },
+          "functionality": null,
+          "id": 52,
+          "lrn": true,
+          "model": null,
+          "modelAlias": "TRADFRI signal repeater",
+          "param": {
+            "timestamp": null
+          },
+          "problem": false,
+          "room": 8,
+          "services": {},
+          "supports": [
+            "clear"
+          ],
+          "thing": 48,
+          "type": {
+            "subtype": null,
+            "supported": {},
+            "type": null
+          }
+        },
+        {
+          "client": {
+            "name": "Bad table lamp"
+          },
+          "fimp": {
+            "adapter": "zigbee",
+            "address": "4",
+            "group": "ch_1"
+          },
+          "functionality": "lighting",
+          "id": 53,
+          "lrn": true,
+          "model": null,
+          "modelAlias": "TRADFRI bulb E14 WS opal 400lm",
+          "param": {
+            "color": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "dimValue": 47,
+            "power": "on",
+            "timestamp": "2020-02-23 17:40:57 +0100"
+          },
+          "problem": false,
+          "room": 11,
+          "services": {
+            "color_ctrl": {
+              "addr": "/rt:dev/rn:zigbee/ad:1/sv:color_ctrl/ad:4_1",
+              "enabled": true,
+              "intf": [
+                "cmd.color.get_report",
+                "cmd.color.set",
+                "evt.color.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_components": [
+                  "temp"
+                ]
+              }
+            },
+            "out_bin_switch": {
+              "addr": "/rt:dev/rn:zigbee/ad:1/sv:out_bin_switch/ad:4_1",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.get_report",
+                "cmd.binary.set",
+                "evt.binary.report"
+              ],
+              "props": {}
+            },
+            "out_lvl_switch": {
+              "addr": "/rt:dev/rn:zigbee/ad:1/sv:out_lvl_switch/ad:4_1",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.set",
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "cmd.lvl.start",
+                "cmd.lvl.stop",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "max_lvl": 254,
+                "min_lvl": 0
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 49,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "light": []
+            },
+            "type": "light"
+          }
+        },
+        {
+          "client": {
+            "name": "Bad backlight"
+          },
+          "fimp": {
+            "adapter": "zigbee",
+            "address": "5",
+            "group": "ch_1"
+          },
+          "functionality": "lighting",
+          "id": 54,
+          "lrn": true,
+          "model": null,
+          "modelAlias": "TRADFRI transformer 10W",
+          "param": {
+            "dimValue": 59,
+            "power": "on",
+            "timestamp": "2020-02-23 17:27:00 +0100"
+          },
+          "problem": false,
+          "room": 11,
+          "services": {
+            "out_bin_switch": {
+              "addr": "/rt:dev/rn:zigbee/ad:1/sv:out_bin_switch/ad:5_1",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.get_report",
+                "cmd.binary.set",
+                "evt.binary.report"
+              ],
+              "props": {}
+            },
+            "out_lvl_switch": {
+              "addr": "/rt:dev/rn:zigbee/ad:1/sv:out_lvl_switch/ad:5_1",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.set",
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "cmd.lvl.start",
+                "cmd.lvl.stop",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "max_lvl": 254,
+                "min_lvl": 0
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 50,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "appliance": [],
+              "blinds": [],
+              "fan": [],
+              "heater": [],
+              "light": []
+            },
+            "type": "light"
+          }
+        },
+        {
+          "client": {
+            "name": "Hue color lamp 1"
+          },
+          "fimp": {
+            "adapter": "hue",
+            "address": "l4",
+            "group": "ch_0"
+          },
+          "functionality": "lighting",
+          "id": 55,
+          "lrn": true,
+          "model": "Philips_Philips-LCT015-1-A19ECLv5",
+          "modelAlias": "Hue color lamp 1",
+          "param": {
+            "color": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "dimValue": 1,
+            "power": "on",
+            "timestamp": "2020-02-23 22:41:19 +0100"
+          },
+          "problem": false,
+          "room": 13,
+          "services": {
+            "color_ctrl": {
+              "addr": "/rt:dev/rn:hue/ad:1/sv:color_ctrl/ad:l4_0",
+              "enabled": true,
+              "intf": [
+                "cmd.color.get_report",
+                "cmd.color.set",
+                "evt.color.report"
+              ],
+              "props": {
+                "sup_components": [
+                  "hue",
+                  "sat",
+                  "red",
+                  "green",
+                  "blue"
+                ]
+              }
+            },
+            "out_lvl_switch": {
+              "addr": "/rt:dev/rn:hue/ad:1/sv:out_lvl_switch/ad:l4_0",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.set",
+                "cmd.lvl.set",
+                "cmd.lvl.start",
+                "cmd.lvl.stop",
+                "evt.binary.report",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "max_lvl": 255,
+                "min_lvl": 0
+              }
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:hue/ad:1/sv:scene_ctrl/ad:l4_0",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {
+                "sup_scenes": [
+                  "none",
+                  "select",
+                  "lselect",
+                  "colorloop"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 51,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "light": []
+            },
+            "type": "light"
+          }
+        },
+        {
+          "client": {
+            "name": "Hue remote"
+          },
+          "fimp": {
+            "adapter": "hue",
+            "address": "s6",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 56,
+          "lrn": true,
+          "model": "Philips_RWL021",
+          "modelAlias": "Office switch",
+          "param": {
+            "timestamp": "2020-02-23 17:05:34 +0100"
+          },
+          "problem": false,
+          "room": 10,
+          "services": {
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:hue/ad:1/sv:scene_ctrl/ad:s6_0",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {
+                "sup_scenes": []
+              }
+            }
+          },
+          "supports": [
+            "clear"
+          ],
+          "thing": 52,
+          "type": {
+            "subtype": null,
+            "supported": {},
+            "type": null
+          }
+        },
+        {
+          "client": {
+            "name": "SDCO Battery"
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "22",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 58,
+          "lrn": true,
+          "model": "zw_398_3_19",
+          "modelAlias": "SDCO Battery",
+          "param": {
+            "alarms": {
+              "burglar": [
+                "tamper_removed_cover"
+              ]
+            },
+            "batteryLevel": "ok",
+            "batteryPercentage": 30,
+            "humidity": 54,
+            "siren": "silence",
+            "smoke": false,
+            "supportedAlarms": {
+              "burglar": [
+                "tamper_removed_cover"
+              ],
+              "fire": [
+                "smoke",
+                "smoke_test"
+              ],
+              "gas": [
+                "CO"
+              ],
+              "heat": [
+                "overheat"
+              ]
+            },
+            "temperature": 21.8099994659424,
+            "timestamp": "2020-02-23 22:41:18 +0100"
+          },
+          "problem": false,
+          "room": 8,
+          "services": {
+            "alarm_burglar": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:alarm_burglar/ad:22_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.get_report",
+                "evt.alarm.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_events": [
+                  "tamper_removed_cover"
+                ]
+              }
+            },
+            "alarm_fire": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:alarm_fire/ad:22_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.get_report",
+                "evt.alarm.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_events": [
+                  "smoke",
+                  "smoke_test"
+                ]
+              }
+            },
+            "alarm_gas": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:alarm_gas/ad:22_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.get_report",
+                "evt.alarm.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_events": [
+                  "CO"
+                ]
+              }
+            },
+            "alarm_heat": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:alarm_heat/ad:22_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.get_report",
+                "evt.alarm.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_events": [
+                  "overheat"
+                ]
+              }
+            },
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:22_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "battery": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:battery/ad:22_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "complex_alarm_system": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:complex_alarm_system/ad:22_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.silence",
+                "evt.alarm.silence"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:22_0",
+              "enabled": true,
+              "intf": [
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "cmd.ping.send",
+                "evt.group.members_report",
+                "evt.ping.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "indicator_ctrl": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:indicator_ctrl/ad:22_0",
+              "enabled": true,
+              "intf": [
+                "cmd.indicator.set_visual_element"
+              ],
+              "props": {
+                "duration": "",
+                "is_secure": false,
+                "is_unsecure": true
+              }
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:scene_ctrl/ad:22_0",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_scenes": null
+              }
+            },
+            "sensor_humid": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_humid/ad:22_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "g/m3",
+                  "%",
+                  "%",
+                  "%",
+                  "g/m3",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "g/m3",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "g/m3",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%"
+                ]
+              }
+            },
+            "sensor_temp": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_temp/ad:22_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "sup_units": [
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "F",
+                  "C",
+                  "C",
+                  "C",
+                  "F",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "F",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "F",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C"
+                ]
+              }
+            },
+            "siren_ctrl": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:siren_ctrl/ad:22_0",
+              "enabled": true,
+              "intf": [
+                "cmd.mode.get_report",
+                "cmd.mode.set",
+                "evt.mode.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_modes": [
+                  "on",
+                  "off",
+                  "fire",
+                  "CO"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 54,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "fire_detector": []
+            },
+            "type": "fire_detector"
+          }
+        },
+        {
+          "client": {
+            "name": "SDCO"
+          },
+          "fimp": {
+            "adapter": "zwave-ad",
+            "address": "25",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 60,
+          "lrn": true,
+          "model": "zw_398_3_21",
+          "modelAlias": "SDCO AC - S",
+          "param": {
+            "alarms": {
+              "power": [
+                "ac_off",
+                "ac_on"
+              ]
+            },
+            "batteryLevel": "ok",
+            "batteryPercentage": 40,
+            "humidity": 34,
+            "siren": null,
+            "smoke": false,
+            "supportedAlarms": {
+              "burglar": [
+                "tamper_removed_cover"
+              ],
+              "fire": [
+                "smoke",
+                "smoke_test"
+              ],
+              "gas": [
+                "CO"
+              ],
+              "heat": [
+                "overheat"
+              ],
+              "power": [
+                "ac_off",
+                "ac_on"
+              ]
+            },
+            "temperature": 27.0300006866455,
+            "timestamp": "2020-02-23 22:49:30 +0100"
+          },
+          "problem": false,
+          "room": 10,
+          "services": {
+            "alarm_burglar": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:alarm_burglar/ad:25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.get_report",
+                "evt.alarm.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_events": [
+                  "tamper_removed_cover"
+                ]
+              }
+            },
+            "alarm_fire": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:alarm_fire/ad:25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.get_report",
+                "evt.alarm.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_events": [
+                  "smoke",
+                  "smoke_test"
+                ]
+              }
+            },
+            "alarm_gas": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:alarm_gas/ad:25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.get_report",
+                "evt.alarm.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_events": [
+                  "CO"
+                ]
+              }
+            },
+            "alarm_heat": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:alarm_heat/ad:25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.get_report",
+                "evt.alarm.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_events": [
+                  "overheat"
+                ]
+              }
+            },
+            "alarm_power": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:alarm_power/ad:25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.get_report",
+                "evt.alarm.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_events": [
+                  "ac_off",
+                  "ac_on"
+                ]
+              }
+            },
+            "basic": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:basic/ad:25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": true
+              }
+            },
+            "battery": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:battery/ad:25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false
+              }
+            },
+            "complex_alarm_system": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:complex_alarm_system/ad:25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.alarm.silence",
+                "evt.alarm.silence"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false
+              }
+            },
+            "dev_sys": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.group.add_members",
+                "cmd.group.delete_members",
+                "cmd.group.get_members",
+                "cmd.ping.send",
+                "evt.group.members_report",
+                "evt.ping.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false
+              }
+            },
+            "indicator_ctrl": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:indicator_ctrl/ad:25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.indicator.set_visual_element"
+              ],
+              "props": {
+                "duration": "",
+                "is_secure": true,
+                "is_unsecure": false
+              }
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:scene_ctrl/ad:25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_scenes": null
+              }
+            },
+            "sensor_humid": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_humid/ad:25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_units": [
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "g/m3",
+                  "%",
+                  "%",
+                  "%",
+                  "g/m3",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "g/m3",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "g/m3",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%",
+                  "%"
+                ]
+              }
+            },
+            "sensor_temp": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:sensor_temp/ad:25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_units": [
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "F",
+                  "C",
+                  "C",
+                  "C",
+                  "F",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "F",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "F",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C",
+                  "C"
+                ]
+              }
+            },
+            "siren_ctrl": {
+              "addr": "/rt:dev/rn:zw/ad:1/sv:siren_ctrl/ad:25_0",
+              "enabled": true,
+              "intf": [
+                "cmd.mode.get_report",
+                "cmd.mode.set",
+                "evt.mode.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_modes": [
+                  "on",
+                  "off",
+                  "fire",
+                  "CO"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 56,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "fire_detector": []
+            },
+            "type": "fire_detector"
+          }
+        },
+        {
+          "client": {
+            "name": "Hue motion sensor 1"
+          },
+          "fimp": {
+            "adapter": "hue",
+            "address": "s16",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 62,
+          "lrn": true,
+          "model": "Philips_SML001",
+          "modelAlias": "Hue motion sensor 1",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "presence": false,
+            "timestamp": "2020-02-23 22:48:41 +0100"
+          },
+          "problem": false,
+          "room": 13,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:hue/ad:1/sv:battery/ad:",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_presence": {
+              "addr": "/rt:dev/rn:hue/ad:1/sv:sensor_presence/ad:s16_0",
+              "enabled": true,
+              "intf": [
+                "cmd.presence.get_report",
+                "evt.presence.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 58,
+          "type": {
+            "subtype": "presence",
+            "supported": {
+              "sensor": [
+                "presence"
+              ]
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Spot GU10 WS 400lm"
+          },
+          "fimp": {
+            "adapter": "zigbee",
+            "address": "1",
+            "group": "ch_1"
+          },
+          "functionality": null,
+          "id": 63,
+          "lrn": true,
+          "model": null,
+          "modelAlias": "TRADFRI bulb GU10 WS 400lm",
+          "param": {
+            "color": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "dimValue": 1,
+            "power": "on",
+            "timestamp": "2020-02-23 18:35:23 +0100"
+          },
+          "problem": false,
+          "room": 13,
+          "services": {
+            "color_ctrl": {
+              "addr": "/rt:dev/rn:zigbee/ad:1/sv:color_ctrl/ad:1_1",
+              "enabled": true,
+              "intf": [
+                "cmd.color.get_report",
+                "cmd.color.set",
+                "evt.color.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_components": [
+                  "temp"
+                ]
+              }
+            },
+            "out_bin_switch": {
+              "addr": "/rt:dev/rn:zigbee/ad:1/sv:out_bin_switch/ad:1_1",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.get_report",
+                "cmd.binary.set",
+                "evt.binary.report"
+              ],
+              "props": {}
+            },
+            "out_lvl_switch": {
+              "addr": "/rt:dev/rn:zigbee/ad:1/sv:out_lvl_switch/ad:1_1",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.set",
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "cmd.lvl.start",
+                "cmd.lvl.stop",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "max_lvl": 254,
+                "min_lvl": 0
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 59,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "light": []
+            },
+            "type": null
+          }
+        },
+        {
+          "client": {
+            "name": "Spot GU10 WS 400lm"
+          },
+          "fimp": {
+            "adapter": "zigbee",
+            "address": "2",
+            "group": "ch_1"
+          },
+          "functionality": null,
+          "id": 64,
+          "lrn": true,
+          "model": null,
+          "modelAlias": "TRADFRI bulb GU10 WS 400lm",
+          "param": {
+            "color": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "dimValue": 1,
+            "power": "on",
+            "timestamp": "2020-02-23 18:35:23 +0100"
+          },
+          "problem": false,
+          "room": 13,
+          "services": {
+            "color_ctrl": {
+              "addr": "/rt:dev/rn:zigbee/ad:1/sv:color_ctrl/ad:2_1",
+              "enabled": true,
+              "intf": [
+                "cmd.color.get_report",
+                "cmd.color.set",
+                "evt.color.report"
+              ],
+              "props": {
+                "is_secure": true,
+                "is_unsecure": false,
+                "sup_components": [
+                  "temp"
+                ]
+              }
+            },
+            "out_bin_switch": {
+              "addr": "/rt:dev/rn:zigbee/ad:1/sv:out_bin_switch/ad:2_1",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.get_report",
+                "cmd.binary.set",
+                "evt.binary.report"
+              ],
+              "props": {}
+            },
+            "out_lvl_switch": {
+              "addr": "/rt:dev/rn:zigbee/ad:1/sv:out_lvl_switch/ad:2_1",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.set",
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "cmd.lvl.start",
+                "cmd.lvl.stop",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "max_lvl": 254,
+                "min_lvl": 0
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 60,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "light": []
+            },
+            "type": null
+          }
+        },
+        {
+          "client": {
+            "name": "Dimmer Switch 6 SceneCycle"
+          },
+          "fimp": {
+            "adapter": "hue",
+            "address": "s7",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 65,
+          "lrn": true,
+          "model": "Philips_PHWA01",
+          "modelAlias": "Dimmer Switch 6 SceneCycle",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "timestamp": null
+          },
+          "problem": false,
+          "room": null,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:hue/ad:1/sv:battery/ad:",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 61,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        },
+        {
+          "client": {
+            "name": "Play and stop"
+          },
+          "fimp": {
+            "adapter": "hue",
+            "address": "s5",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 66,
+          "lrn": true,
+          "model": "Philips_HUELABSVTOGGLE",
+          "modelAlias": "Play and stop",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "timestamp": null
+          },
+          "problem": false,
+          "room": null,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:hue/ad:1/sv:battery/ad:",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 62,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        },
+        {
+          "client": {
+            "name": "Hue temperature sensor 1"
+          },
+          "fimp": {
+            "adapter": "hue",
+            "address": "s18",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 67,
+          "lrn": true,
+          "model": "Philips_SML001",
+          "modelAlias": "Hue temperature sensor 1",
+          "param": {
+            "batteryLevel": "ok",
+            "batteryPercentage": 100,
+            "temperature": 21.02,
+            "timestamp": "2020-02-23 22:47:33 +0100"
+          },
+          "problem": false,
+          "room": 13,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:hue/ad:1/sv:battery/ad:s18_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_temp": {
+              "addr": "/rt:dev/rn:hue/ad:1/sv:sensor_temp/ad:s18_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "sup_units": [
+                  "C"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 63,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "sensor": []
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Hue ambient light sensor 1"
+          },
+          "fimp": {
+            "adapter": "hue",
+            "address": "s17",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 68,
+          "lrn": true,
+          "model": "Philips_SML001",
+          "modelAlias": "Hue ambient light sensor 1",
+          "param": {
+            "batteryLevel": "ok",
+            "batteryPercentage": 100,
+            "illuminance": 4737,
+            "timestamp": "2020-02-23 22:47:55 +0100"
+          },
+          "problem": false,
+          "room": 13,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:hue/ad:1/sv:battery/ad:s17_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "sensor_lumin": {
+              "addr": "/rt:dev/rn:hue/ad:1/sv:sensor_lumin/ad:s17_0",
+              "enabled": true,
+              "intf": [
+                "cmd.sensor.get_report",
+                "evt.sensor.report"
+              ],
+              "props": {
+                "sup_units": [
+                  "Lux"
+                ]
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 64,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "sensor": []
+            },
+            "type": "sensor"
+          }
+        },
+        {
+          "client": {
+            "name": "Flow switch"
+          },
+          "fimp": {
+            "adapter": "flow",
+            "address": "LYamzPEOIOin0mj",
+            "group": "ch_0"
+          },
+          "functionality": "appliance",
+          "id": 69,
+          "lrn": true,
+          "model": "flow_LYamzPEOIOin0mj",
+          "modelAlias": "Flow switch",
+          "param": {
+            "power": "on",
+            "timestamp": "2020-02-20 23:50:50 +0100"
+          },
+          "problem": false,
+          "room": 15,
+          "services": {
+            "out_bin_switch": {
+              "addr": "/rt:dev/rn:flow/ad:1/sv:out_bin_switch/ad:LYamzPEOIOin0mj_0",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.set"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 65,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "appliance": [],
+              "blinds": [],
+              "fan": [],
+              "heater": [],
+              "light": [],
+              "siren": []
+            },
+            "type": "appliance"
+          }
+        },
+        {
+          "client": {
+            "name": "LOM001"
+          },
+          "fimp": {
+            "adapter": "zigbee",
+            "address": "7",
+            "group": "ch_11"
+          },
+          "functionality": "lighting",
+          "id": 70,
+          "lrn": true,
+          "model": null,
+          "modelAlias": "LOM001",
+          "param": {
+            "dimValue": null,
+            "power": "on",
+            "timestamp": "2020-02-23 13:44:28 +0100"
+          },
+          "problem": false,
+          "room": null,
+          "services": {
+            "out_bin_switch": {
+              "addr": "/rt:dev/rn:zigbee/ad:1/sv:out_bin_switch/ad:7_11",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.get_report",
+                "cmd.binary.set",
+                "evt.binary.report"
+              ],
+              "props": {}
+            },
+            "out_lvl_switch": {
+              "addr": "/rt:dev/rn:zigbee/ad:1/sv:out_lvl_switch/ad:7_11",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.set",
+                "cmd.lvl.get_report",
+                "cmd.lvl.set",
+                "cmd.lvl.start",
+                "cmd.lvl.stop",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "is_secure": false,
+                "is_unsecure": true,
+                "max_lvl": 254,
+                "min_lvl": 0
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 66,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "appliance": [],
+              "blinds": [],
+              "fan": [],
+              "heater": [],
+              "light": []
+            },
+            "type": "light"
+          }
+        },
+        {
+          "client": {
+            "name": "KADRILJ roller blind"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "l8",
+            "group": "ch_0"
+          },
+          "functionality": "shading",
+          "id": 71,
+          "lrn": true,
+          "model": "IKEA of Sweden_KADRILJ roller blind",
+          "modelAlias": "KADRILJ roller blind",
+          "param": {
+            "dimValue": null,
+            "power": "off",
+            "timestamp": null
+          },
+          "problem": false,
+          "room": 7,
+          "services": {
+            "out_lvl_switch": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:out_lvl_switch/ad:l8_0",
+              "enabled": true,
+              "intf": [
+                "cmd.binary.set",
+                "cmd.lvl.set",
+                "cmd.lvl.start",
+                "cmd.lvl.stop",
+                "evt.binary.report",
+                "evt.lvl.report"
+              ],
+              "props": {
+                "max_lvl": 255,
+                "min_lvl": 0
+              }
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 67,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "appliance": [],
+              "blinds": [],
+              "fan": [],
+              "heater": [],
+              "light": []
+            },
+            "type": "blinds"
+          }
+        },
+        {
+          "client": {
+            "name": "KADRILJ roller blind"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s22",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 72,
+          "lrn": true,
+          "model": "IKEA of Sweden_KADRILJ roller blind",
+          "modelAlias": "KADRILJ roller blind",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "timestamp": null
+          },
+          "problem": false,
+          "room": null,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s22_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 68,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        },
+        {
+          "client": {
+            "name": "TRADFRI open/close remote"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s23",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 73,
+          "lrn": true,
+          "model": "IKEA of Sweden_TRADFRI open/close remote",
+          "modelAlias": "TRADFRI open/close remote",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "timestamp": "2020-02-23 17:04:24 +0100"
+          },
+          "problem": false,
+          "room": null,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s23_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:scene_ctrl/ad:s23_0",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 69,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        },
+        {
+          "client": {
+            "name": "TRADFRI remote control"
+          },
+          "fimp": {
+            "adapter": "conbee",
+            "address": "s4",
+            "group": "ch_0"
+          },
+          "functionality": null,
+          "id": 74,
+          "lrn": true,
+          "model": "IKEA of Sweden_TRADFRI remote control",
+          "modelAlias": "TRADFRI remote control",
+          "param": {
+            "batteryLevel": null,
+            "batteryPercentage": null,
+            "timestamp": null
+          },
+          "problem": false,
+          "room": null,
+          "services": {
+            "battery": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:battery/ad:s4_0",
+              "enabled": true,
+              "intf": [
+                "cmd.lvl.get_report",
+                "evt.alarm.report",
+                "evt.lvl.report"
+              ],
+              "props": {}
+            },
+            "scene_ctrl": {
+              "addr": "/rt:dev/rn:conbee/ad:1/sv:scene_ctrl/ad:s4_0",
+              "enabled": true,
+              "intf": [
+                "cmd.scene.get_report",
+                "cmd.scene.set",
+                "evt.scene.report"
+              ],
+              "props": {}
+            }
+          },
+          "supports": [
+            "clear",
+            "poll"
+          ],
+          "thing": 70,
+          "type": {
+            "subtype": null,
+            "supported": {
+              "battery": []
+            },
+            "type": "battery"
+          }
+        }
+      ],
+      "room": [
+        {
+          "alias": "Living room",
+          "area": 1,
+          "client": {
+            "name": "Living room"
+          },
+          "id": 7,
+          "outside": false,
+          "param": {
+            "heating": {
+              "actuator": false,
+              "desired": 23,
+              "humidity": 44,
+              "power": "on",
+              "target": 23,
+              "temperature": 21.25500038146975,
+              "thermostat": false
+            },
+            "lighting": {
+              "illuminance": 13
+            },
+            "security": {
+              "mode": null,
+              "presence": false
+            },
+            "sensors": [
+              "temperature",
+              "presence",
+              "illuminance",
+              "humidity"
+            ],
+            "shading": {},
+            "triggers": {
+              "magnetHeat": 19,
+              "motionLight": {
+                "all": {
+                  "devices": {
+                    "29": null,
+                    "38": null,
+                    "40": null,
+                    "47": null
+                  },
+                  "enabled": true,
+                  "timeout": 300000
+                },
+                "sleep": {
+                  "devices": {
+                    "29": null,
+                    "38": 20,
+                    "40": 20,
+                    "47": null
+                  },
+                  "enabled": true,
+                  "timeout": 300000
+                }
+              }
+            }
+          },
+          "type": "living"
+        },
+        {
+          "alias": "Kitchen",
+          "area": 1,
+          "client": {
+            "name": "Kitchen"
+          },
+          "id": 8,
+          "outside": false,
+          "param": {
+            "heating": {
+              "actuator": false,
+              "desired": 23,
+              "humidity": 54,
+              "power": "on",
+              "target": 23,
+              "temperature": 21.8099994659424,
+              "thermostat": false
+            },
+            "lighting": {},
+            "security": {
+              "mode": null,
+              "openState": "closed",
+              "presence": false,
+              "smoke": false
+            },
+            "sensors": [
+              "temperature",
+              "presence",
+              "openState",
+              "smoke",
+              "humidity"
+            ],
+            "shading": {},
+            "triggers": {
+              "magnetHeat": 19,
+              "motionLight": {
+                "all": {
+                  "devices": {},
+                  "enabled": true,
+                  "timeout": 300000
+                },
+                "sleep": {
+                  "devices": {},
+                  "enabled": true,
+                  "timeout": 660001
+                }
+              }
+            }
+          },
+          "type": "kitchen"
+        },
+        {
+          "alias": "Children’s room",
+          "area": 1,
+          "client": {
+            "name": "Children’s room"
+          },
+          "id": 9,
+          "outside": false,
+          "param": {
+            "heating": {
+              "actuator": false,
+              "desired": 23,
+              "humidity": 43,
+              "power": "on",
+              "target": 23,
+              "temperature": 22.73,
+              "thermostat": false
+            },
+            "lighting": {},
+            "security": {
+              "mode": null
+            },
+            "sensors": [
+              "temperature",
+              "humidity"
+            ],
+            "shading": {},
+            "triggers": {
+              "magnetHeat": 19,
+              "motionLight": {
+                "all": {
+                  "devices": {
+                    "32": "on"
+                  },
+                  "enabled": true,
+                  "timeout": 300000
+                },
+                "sleep": {
+                  "devices": {
+                    "32": null
+                  },
+                  "enabled": true,
+                  "timeout": 300000
+                }
+              }
+            }
+          },
+          "type": "childrens"
+        },
+        {
+          "alias": "office",
+          "area": 1,
+          "client": {
+            "name": "office"
+          },
+          "id": 10,
+          "outside": false,
+          "param": {
+            "heating": {
+              "actuator": false,
+              "desired": 23,
+              "humidity": 35,
+              "power": "off",
+              "target": 23,
+              "temperature": 25.315000534057603,
+              "thermostat": false
+            },
+            "lighting": {
+              "illuminance": 61
+            },
+            "security": {
+              "mode": null,
+              "openState": "closed",
+              "presence": true,
+              "smoke": false
+            },
+            "sensors": [
+              "temperature",
+              "presence",
+              "openState",
+              "smoke",
+              "illuminance",
+              "humidity"
+            ],
+            "shading": {},
+            "triggers": {
+              "magnetHeat": 19,
+              "motionLight": {
+                "all": {
+                  "devices": {},
+                  "enabled": true,
+                  "timeout": 300000
+                },
+                "sleep": {
+                  "devices": {},
+                  "enabled": true,
+                  "timeout": 300000
+                }
+              }
+            }
+          },
+          "type": "office"
+        },
+        {
+          "alias": "Bedroom",
+          "area": 1,
+          "client": {
+            "name": "Bedroom"
+          },
+          "id": 11,
+          "outside": false,
+          "param": {
+            "heating": {
+              "actuator": false,
+              "desired": 23,
+              "power": "off",
+              "target": 23,
+              "thermostat": false
+            },
+            "lighting": {},
+            "security": {
+              "mode": null
+            },
+            "sensors": [],
+            "shading": {},
+            "triggers": {
+              "magnetHeat": 19,
+              "motionLight": {
+                "all": {
+                  "devices": {
+                    "53": "on",
+                    "54": "on"
+                  },
+                  "enabled": true,
+                  "timeout": 300000
+                },
+                "sleep": {
+                  "devices": {
+                    "53": 20,
+                    "54": 20
+                  },
+                  "enabled": true,
+                  "timeout": 300000
+                }
+              }
+            }
+          },
+          "type": "bed"
+        },
+        {
+          "alias": "Bathroom",
+          "area": 1,
+          "client": {
+            "name": "Bathroom"
+          },
+          "id": 12,
+          "outside": false,
+          "param": {
+            "heating": {
+              "actuator": false,
+              "desired": 23,
+              "humidity": 38,
+              "power": "on",
+              "target": 23,
+              "temperature": 22.67,
+              "thermostat": false
+            },
+            "lighting": {},
+            "security": {
+              "mode": null
+            },
+            "sensors": [
+              "temperature",
+              "humidity"
+            ],
+            "shading": {},
+            "triggers": {
+              "magnetHeat": 19,
+              "motionLight": {
+                "all": {
+                  "devices": {},
+                  "enabled": true,
+                  "timeout": 300000
+                },
+                "sleep": {
+                  "devices": {},
+                  "enabled": true,
+                  "timeout": 300000
+                }
+              }
+            }
+          },
+          "type": "bath"
+        },
+        {
+          "alias": "Hallway",
+          "area": 1,
+          "client": {
+            "name": "Hallway"
+          },
+          "id": 13,
+          "outside": false,
+          "param": {
+            "heating": {
+              "actuator": false,
+              "desired": 23,
+              "power": "on",
+              "target": 23,
+              "temperature": 21.02,
+              "thermostat": false
+            },
+            "lighting": {
+              "illuminance": 4737
+            },
+            "security": {
+              "mode": null,
+              "presence": true
+            },
+            "sensors": [
+              "temperature",
+              "presence",
+              "illuminance"
+            ],
+            "shading": {},
+            "triggers": {
+              "magnetHeat": 19,
+              "motionLight": {
+                "all": {
+                  "devices": {
+                    "55": null
+                  },
+                  "enabled": true,
+                  "timeout": 1200001
+                },
+                "sleep": {
+                  "devices": {
+                    "55": 20
+                  },
+                  "enabled": true,
+                  "timeout": 300000
+                }
+              }
+            }
+          },
+          "type": "hallway"
+        },
+        {
+          "alias": "Staircase",
+          "area": 2,
+          "client": {
+            "name": "Staircase"
+          },
+          "id": 14,
+          "outside": false,
+          "param": {
+            "heating": {
+              "actuator": false,
+              "desired": 23,
+              "power": "off",
+              "target": 23,
+              "thermostat": false
+            },
+            "lighting": {},
+            "security": {
+              "mode": null,
+              "presence": false
+            },
+            "sensors": [
+              "presence"
+            ],
+            "shading": {},
+            "triggers": {
+              "magnetHeat": 19,
+              "motionLight": {
+                "all": {
+                  "devices": {},
+                  "enabled": true,
+                  "timeout": 300000
+                },
+                "sleep": {
+                  "devices": {},
+                  "enabled": true,
+                  "timeout": 300000
+                }
+              }
+            }
+          },
+          "type": "stairs"
+        },
+        {
+          "alias": "Home lab",
+          "area": 1,
+          "client": {
+            "name": "Home lab"
+          },
+          "id": 15,
+          "outside": false,
+          "param": {
+            "heating": {
+              "actuator": false,
+              "desired": 23,
+              "power": "off",
+              "target": 23,
+              "thermostat": false
+            },
+            "lighting": {},
+            "security": {
+              "mode": null
+            },
+            "sensors": [],
+            "shading": {},
+            "triggers": {
+              "magnetHeat": 19,
+              "motionLight": {
+                "all": {
+                  "devices": {},
+                  "enabled": true,
+                  "timeout": 300000
+                },
+                "sleep": {
+                  "devices": {},
+                  "enabled": true,
+                  "timeout": 300000
+                }
+              }
+            }
+          },
+          "type": "technical"
+        }
+      ],
+      "thing": [
+        {
+          "addr": "/rn:zw/ad:1/ad:9",
+          "devices": [
+            1
+          ],
+          "id": 1,
+          "name": "zw_398_3_13",
+          "props": {
+            "manufacturer_id": "398",
+            "product_hash": "zw_398_3_13",
+            "product_id": "3_13",
+            "product_name": null
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zw/ad:1/ad:10",
+          "devices": [
+            6
+          ],
+          "id": 6,
+          "name": "zw_398_4_24",
+          "props": {
+            "manufacturer_id": "398",
+            "product_hash": "zw_398_4_24",
+            "product_id": "4_24",
+            "product_name": null
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s33",
+          "devices": [
+            7
+          ],
+          "id": 7,
+          "name": "lumi.sensor_switch",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_switch",
+            "product_id": "lumi.sensor_switch",
+            "product_name": "lumi.sensor_switch"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zw/ad:1/ad:11",
+          "devices": [
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "id": 8,
+          "name": "zw_134_2_130",
+          "props": {
+            "manufacturer_id": "134",
+            "product_hash": "zw_134_2_130",
+            "product_id": "2_130",
+            "product_name": null
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s34",
+          "devices": [
+            14
+          ],
+          "id": 10,
+          "name": "lumi.sensor_motion",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_motion",
+            "product_id": "lumi.sensor_motion",
+            "product_name": "lumi.sensor_motion"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s25",
+          "devices": [
+            15
+          ],
+          "id": 11,
+          "name": "lumi.sensor_ht",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_ht",
+            "product_id": "lumi.sensor_ht",
+            "product_name": "lumi.sensor_ht"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s26",
+          "devices": [
+            16
+          ],
+          "id": 12,
+          "name": "lumi.sensor_ht",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_ht",
+            "product_id": "lumi.sensor_ht",
+            "product_name": "lumi.sensor_ht"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s24",
+          "devices": [
+            17
+          ],
+          "id": 13,
+          "name": "lumi.sensor_motion",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_motion",
+            "product_id": "lumi.sensor_motion",
+            "product_name": "lumi.sensor_motion"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zw/ad:1/ad:13",
+          "devices": [
+            18
+          ],
+          "id": 14,
+          "name": "zw_271_2048_4097",
+          "props": {
+            "manufacturer_id": "271",
+            "product_hash": "zw_271_2048_4097",
+            "product_id": "2048_4097",
+            "product_name": null
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s30",
+          "devices": [
+            19
+          ],
+          "id": 15,
+          "name": "lumi.sensor_motion",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_motion",
+            "product_id": "lumi.sensor_motion",
+            "product_name": "lumi.sensor_motion"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zw/ad:1/ad:14",
+          "devices": [
+            20
+          ],
+          "id": 16,
+          "name": "zw_134_2_100",
+          "props": {
+            "manufacturer_id": "134",
+            "product_hash": "zw_134_2_100",
+            "product_id": "2_100",
+            "product_name": null
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s28",
+          "devices": [
+            21
+          ],
+          "id": 17,
+          "name": "lumi.sensor_ht",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_ht",
+            "product_id": "lumi.sensor_ht",
+            "product_name": "lumi.sensor_ht"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s29",
+          "devices": [
+            22
+          ],
+          "id": 18,
+          "name": "lumi.sensor_ht",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_ht",
+            "product_id": "lumi.sensor_ht",
+            "product_name": "lumi.sensor_ht"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:flow/ad:1/ad:nmaPcGi1Nh14b6O",
+          "devices": [
+            23
+          ],
+          "id": 19,
+          "name": "Yamaha AVR control",
+          "props": {
+            "manufacturer_id": "fh",
+            "product_hash": "flow_nmaPcGi1Nh14b6O",
+            "product_id": "flow_1",
+            "product_name": "Yamaha AVR control"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s3",
+          "devices": [
+            24
+          ],
+          "id": 20,
+          "name": "lumi.sensor_ht",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_ht",
+            "product_id": "lumi.sensor_ht",
+            "product_name": "lumi.sensor_ht"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s1",
+          "devices": [
+            25
+          ],
+          "id": 21,
+          "name": "PHDL00",
+          "props": {
+            "manufacturer_id": "Philips",
+            "product_hash": "Philips_PHDL00",
+            "product_id": "PHDL00",
+            "product_name": "PHDL00"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s18",
+          "devices": [
+            26
+          ],
+          "id": 22,
+          "name": "TRADFRI remote control",
+          "props": {
+            "manufacturer_id": "IKEA of Sweden",
+            "product_hash": "IKEA of Sweden_TRADFRI remote control",
+            "product_id": "TRADFRI remote control",
+            "product_name": "TRADFRI remote control"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s5",
+          "devices": [
+            27
+          ],
+          "id": 23,
+          "name": "lumi.sensor_switch",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_switch",
+            "product_id": "lumi.sensor_switch",
+            "product_name": "lumi.sensor_switch"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zw/ad:1/ad:15",
+          "devices": [
+            29
+          ],
+          "id": 25,
+          "name": "Fibaro - Wall Plug - FGWPE-102",
+          "props": {
+            "manufacturer_id": "271",
+            "product_hash": "zw_271_1536_4096",
+            "product_id": "1536_4096",
+            "product_name": "Fibaro - Wall Plug - FGWPE-102"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zw/ad:1/ad:17",
+          "devices": [
+            30
+          ],
+          "id": 26,
+          "name": "zw_398_4_2",
+          "props": {
+            "manufacturer_id": "398",
+            "product_hash": "zw_398_4_2",
+            "product_id": "4_2",
+            "product_name": null
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zw/ad:1/ad:18",
+          "devices": [
+            32
+          ],
+          "id": 28,
+          "name": "Fibaro - Wall Plug - FGWPE-102",
+          "props": {
+            "manufacturer_id": "271",
+            "product_hash": "zw_271_1536_4096",
+            "product_id": "1536_4096",
+            "product_name": "Fibaro - Wall Plug - FGWPE-102"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s2",
+          "devices": [
+            34
+          ],
+          "id": 30,
+          "name": "lumi.sensor_ht",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_ht",
+            "product_id": "lumi.sensor_ht",
+            "product_name": "lumi.sensor_ht"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s27",
+          "devices": [
+            35
+          ],
+          "id": 31,
+          "name": "lumi.sensor_magnet",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_magnet",
+            "product_id": "lumi.sensor_magnet",
+            "product_name": "lumi.sensor_magnet"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s6",
+          "devices": [
+            36
+          ],
+          "id": 32,
+          "name": "lumi.sensor_magnet",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_magnet",
+            "product_id": "lumi.sensor_magnet",
+            "product_name": "lumi.sensor_magnet"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:l5",
+          "devices": [
+            38
+          ],
+          "id": 34,
+          "name": "TRADFRI bulb E27 WS opal 980lm",
+          "props": {
+            "manufacturer_id": "IKEA of Sweden",
+            "product_hash": "IKEA of Sweden_TRADFRI bulb E27 WS opal 980lm",
+            "product_id": "TRADFRI bulb E27 WS opal 980lm",
+            "product_name": "TRADFRI bulb E27 WS opal 980lm"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:l6",
+          "devices": [
+            40
+          ],
+          "id": 36,
+          "name": "TRADFRI bulb E27 WS opal 980lm",
+          "props": {
+            "manufacturer_id": "IKEA of Sweden",
+            "product_hash": "IKEA of Sweden_TRADFRI bulb E27 WS opal 980lm",
+            "product_id": "TRADFRI bulb E27 WS opal 980lm",
+            "product_name": "TRADFRI bulb E27 WS opal 980lm"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s19",
+          "devices": [
+            41
+          ],
+          "id": 37,
+          "name": "TRADFRI remote control",
+          "props": {
+            "manufacturer_id": "IKEA of Sweden",
+            "product_hash": "IKEA of Sweden_TRADFRI remote control",
+            "product_id": "TRADFRI remote control",
+            "product_name": "TRADFRI remote control"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s7",
+          "devices": [
+            42
+          ],
+          "id": 38,
+          "name": "lumi.sensor_motion",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_motion",
+            "product_id": "lumi.sensor_motion",
+            "product_name": "lumi.sensor_motion"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zw/ad:1/ad:19",
+          "devices": [
+            43
+          ],
+          "id": 39,
+          "name": "Fibaro - Motion Sensor - FGMS-001 - S",
+          "props": {
+            "manufacturer_id": "271",
+            "product_hash": "zw_271_2049_4097",
+            "product_id": "2049_4097",
+            "product_name": "Fibaro - Motion Sensor - FGMS-001 - S"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s13",
+          "devices": [
+            44
+          ],
+          "id": 40,
+          "name": "lumi.sensor_switch",
+          "props": {
+            "manufacturer_id": "LUMI",
+            "product_hash": "LUMI_lumi.sensor_switch",
+            "product_id": "lumi.sensor_switch",
+            "product_name": "lumi.sensor_switch"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s20",
+          "devices": [
+            46
+          ],
+          "id": 42,
+          "name": "SYMFONISK Sound Controller",
+          "props": {
+            "manufacturer_id": "IKEA of Sweden",
+            "product_hash": "IKEA of Sweden_SYMFONISK Sound Controller",
+            "product_id": "SYMFONISK Sound Controller",
+            "product_name": "SYMFONISK Sound Controller"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:flow/ad:1/ad:zcPkemLaH9BAy2p",
+          "devices": [
+            47
+          ],
+          "id": 43,
+          "name": "twinkly",
+          "props": {
+            "manufacturer_id": "fh",
+            "product_hash": "flow_zcPkemLaH9BAy2p",
+            "product_id": "flow_1",
+            "product_name": "twinkly"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zigbee/ad:1/ad:3",
+          "devices": [
+            52
+          ],
+          "id": 48,
+          "name": "TRADFRI signal repeater",
+          "props": {
+            "manufacturer_id": "IKEA of Sweden",
+            "product_hash": null,
+            "product_id": null,
+            "product_name": "TRADFRI signal repeater"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zigbee/ad:1/ad:4",
+          "devices": [
+            53
+          ],
+          "id": 49,
+          "name": "TRADFRI bulb E14 WS opal 400lm",
+          "props": {
+            "manufacturer_id": "IKEA of Sweden",
+            "product_hash": null,
+            "product_id": null,
+            "product_name": "TRADFRI bulb E14 WS opal 400lm"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zigbee/ad:1/ad:5",
+          "devices": [
+            54
+          ],
+          "id": 50,
+          "name": "TRADFRI transformer 10W",
+          "props": {
+            "manufacturer_id": "IKEA of Sweden",
+            "product_hash": null,
+            "product_id": null,
+            "product_name": "TRADFRI transformer 10W"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:hue/ad:1/ad:l4",
+          "devices": [
+            55
+          ],
+          "id": 51,
+          "name": "Hue color lamp 1",
+          "props": {
+            "manufacturer_id": "Philips",
+            "product_hash": "Philips_Philips-LCT015-1-A19ECLv5",
+            "product_id": "Philips-LCT015-1-A19ECLv5",
+            "product_name": "Hue color lamp 1"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:hue/ad:1/ad:s6",
+          "devices": [
+            56
+          ],
+          "id": 52,
+          "name": "Office switch",
+          "props": {
+            "manufacturer_id": "Philips",
+            "product_hash": "Philips_RWL021",
+            "product_id": "RWL021",
+            "product_name": "Office switch"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zw/ad:1/ad:22",
+          "devices": [
+            58
+          ],
+          "id": 54,
+          "name": "SDCO Battery",
+          "props": {
+            "manufacturer_id": "398",
+            "product_hash": "zw_398_3_19",
+            "product_id": "3_19",
+            "product_name": "SDCO Battery"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zw/ad:1/ad:25",
+          "devices": [
+            60
+          ],
+          "id": 56,
+          "name": "SDCO AC - S",
+          "props": {
+            "manufacturer_id": "398",
+            "product_hash": "zw_398_3_21",
+            "product_id": "3_21",
+            "product_name": "SDCO AC - S"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:hue/ad:1/ad:s16",
+          "devices": [
+            62
+          ],
+          "id": 58,
+          "name": "Hue motion sensor 1",
+          "props": {
+            "manufacturer_id": "Philips",
+            "product_hash": "Philips_SML001",
+            "product_id": "SML001",
+            "product_name": "Hue motion sensor 1"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zigbee/ad:1/ad:1",
+          "devices": [
+            63
+          ],
+          "id": 59,
+          "name": "TRADFRI bulb GU10 WS 400lm",
+          "props": {
+            "manufacturer_id": "IKEA of Sweden",
+            "product_hash": null,
+            "product_id": null,
+            "product_name": "TRADFRI bulb GU10 WS 400lm"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zigbee/ad:1/ad:2",
+          "devices": [
+            64
+          ],
+          "id": 60,
+          "name": "TRADFRI bulb GU10 WS 400lm",
+          "props": {
+            "manufacturer_id": "IKEA of Sweden",
+            "product_hash": null,
+            "product_id": null,
+            "product_name": "TRADFRI bulb GU10 WS 400lm"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:hue/ad:1/ad:s7",
+          "devices": [
+            65
+          ],
+          "id": 61,
+          "name": "Dimmer Switch 6 SceneCycle",
+          "props": {
+            "manufacturer_id": "Philips",
+            "product_hash": "Philips_PHWA01",
+            "product_id": "PHWA01",
+            "product_name": "Dimmer Switch 6 SceneCycle"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:hue/ad:1/ad:s5",
+          "devices": [
+            66
+          ],
+          "id": 62,
+          "name": "Play and stop",
+          "props": {
+            "manufacturer_id": "Philips",
+            "product_hash": "Philips_HUELABSVTOGGLE",
+            "product_id": "HUELABSVTOGGLE",
+            "product_name": "Play and stop"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:hue/ad:1/ad:s18",
+          "devices": [
+            67
+          ],
+          "id": 63,
+          "name": "Hue temperature sensor 1",
+          "props": {
+            "manufacturer_id": "Philips",
+            "product_hash": "Philips_SML001",
+            "product_id": "SML001",
+            "product_name": "Hue temperature sensor 1"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:hue/ad:1/ad:s17",
+          "devices": [
+            68
+          ],
+          "id": 64,
+          "name": "Hue ambient light sensor 1",
+          "props": {
+            "manufacturer_id": "Philips",
+            "product_hash": "Philips_SML001",
+            "product_id": "SML001",
+            "product_name": "Hue ambient light sensor 1"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:flow/ad:1/ad:LYamzPEOIOin0mj",
+          "devices": [
+            69
+          ],
+          "id": 65,
+          "name": "Flow switch",
+          "props": {
+            "manufacturer_id": "fh",
+            "product_hash": "flow_LYamzPEOIOin0mj",
+            "product_id": "flow_1",
+            "product_name": "Flow switch"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:zigbee/ad:1/ad:7",
+          "devices": [
+            70
+          ],
+          "id": 66,
+          "name": "LOM001",
+          "props": {
+            "manufacturer_id": "Philips",
+            "product_hash": null,
+            "product_id": null,
+            "product_name": "LOM001"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:l8",
+          "devices": [
+            71
+          ],
+          "id": 67,
+          "name": "KADRILJ roller blind",
+          "props": {
+            "manufacturer_id": "IKEA of Sweden",
+            "product_hash": "IKEA of Sweden_KADRILJ roller blind",
+            "product_id": "KADRILJ roller blind",
+            "product_name": "KADRILJ roller blind"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s22",
+          "devices": [
+            72
+          ],
+          "id": 68,
+          "name": "KADRILJ roller blind",
+          "props": {
+            "manufacturer_id": "IKEA of Sweden",
+            "product_hash": "IKEA of Sweden_KADRILJ roller blind",
+            "product_id": "KADRILJ roller blind",
+            "product_name": "KADRILJ roller blind"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s23",
+          "devices": [
+            73
+          ],
+          "id": 69,
+          "name": "TRADFRI open/close remote",
+          "props": {
+            "manufacturer_id": "IKEA of Sweden",
+            "product_hash": "IKEA of Sweden_TRADFRI open/close remote",
+            "product_id": "TRADFRI open/close remote",
+            "product_name": "TRADFRI open/close remote"
+          },
+          "room": null
+        },
+        {
+          "addr": "/rn:conbee/ad:1/ad:s4",
+          "devices": [
+            74
+          ],
+          "id": 70,
+          "name": "TRADFRI remote control",
+          "props": {
+            "manufacturer_id": "IKEA of Sweden",
+            "product_hash": "IKEA of Sweden_TRADFRI remote control",
+            "product_id": "TRADFRI remote control",
+            "product_name": "TRADFRI remote control"
+          },
+          "room": null
+        }
+      ]
+    },
+    "requestId": 7294000000007,
+    "success": true
+  },
+  "val_t": "object",
+  "ver": "1"
+}

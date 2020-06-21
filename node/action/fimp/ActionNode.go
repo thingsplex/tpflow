@@ -69,6 +69,14 @@ func (node *Node) LoadNodeConfig() error {
 				return "", errors.New("Only simple types are supported ")
 			}
 		},
+		"setting": func(name string) (interface{}, error) {
+			if node.FlowOpCtx().FlowMeta.Settings != nil {
+				s := node.FlowOpCtx().FlowMeta.Settings[name]
+				return s.String(),nil
+			}else {
+				return "",nil
+			}
+		},
 	}
 	node.addressTemplate, err = template.New("address").Funcs(funcMap).Parse(node.Meta().Address)
 	if err != nil {

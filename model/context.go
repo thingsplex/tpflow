@@ -131,7 +131,7 @@ type Context struct {
 func NewContextDB(storageLocation string) (*Context, error) {
 	var err error
 	gob.Register(map[string]interface{}{})
-	ctx := Context{storageLocation:storageLocation}
+	ctx := Context{storageLocation: storageLocation}
 	//ctx.inMemoryStore = make(map[string][]ContextRecord)
 	ctx.db, err = bolt.Open(storageLocation, 0600, nil)
 	if err != nil {
@@ -150,7 +150,6 @@ func (ctx *Context) FactoryReset() {
 	ctx.Close()
 	os.Remove(ctx.storageLocation)
 }
-
 
 func (ctx *Context) RegisterFlow(flowId string) error {
 	ctx.db.Update(func(tx *bolt.Tx) error {

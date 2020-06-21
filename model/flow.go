@@ -25,6 +25,20 @@ type ReactorEvent struct {
 	SrcNodeId        NodeID
 }
 
+type Setting struct {
+	Value       interface{}
+	ValueType   string   // only simple types supported - int,string,float,bool
+	Description string  `json:"omitempty"`   // Human readable description
+	InitVar     bool    `json:"omitempty"`    // If set , flow will init variable during startup
+	TVarSType   string  `json:"omitempty"`    // Target variable storage type - mem_local, disk_local,disk_global
+	TVarPType   string  `json:"omitempty"`    // Target variable payload type - int , string , float , bool
+}
+
+func (s *Setting) String() string {
+	r, _ := s.Value.(string)
+	return r
+}
+
 type FlowMeta struct {
 	Id                string // Instance id . Is different for every instance
 	ClassId           string // Class id , all instances share the same ClassId
@@ -36,9 +50,9 @@ type FlowMeta struct {
 	Group             string
 	Description       string
 	Nodes             []MetaNode
-	Settings          map[string]string
+	Settings          map[string]Setting
 	IsDisabled        bool
-	IsDefault         bool // default flows are read only and can't be deleted
+	IsDefault         bool   // default flows are read only and can't be deleted
 	ParallelExecution string // keep_first , keep_last , parallel
 }
 

@@ -36,7 +36,7 @@ github.com/dchest/uniuri
 # github.com/eclipse/paho.mqtt.golang v1.2.0
 github.com/eclipse/paho.mqtt.golang
 github.com/eclipse/paho.mqtt.golang/packets
-# github.com/futurehomeno/fimpgo v1.5.3
+# github.com/futurehomeno/fimpgo v1.5.4-0.20200621092738-fa5833b696ec
 github.com/futurehomeno/fimpgo
 github.com/futurehomeno/fimpgo/fimptype
 github.com/futurehomeno/fimpgo/fimptype/primefimp
@@ -51,8 +51,6 @@ github.com/influxdata/influxdb/pkg/escape
 github.com/kelvins/sunrisesunset
 # github.com/konsorten/go-windows-terminal-sequences v1.0.1
 github.com/konsorten/go-windows-terminal-sequences
-# github.com/labstack/echo v3.2.1+incompatible
-github.com/labstack/echo
 # github.com/labstack/gommon v0.2.1
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
@@ -79,8 +77,6 @@ github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4
 github.com/valyala/fasttemplate
 # golang.org/x/crypto v0.0.0-20181030102418-4d3f4d9ffa16
-golang.org/x/crypto/acme
-golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/net v0.0.0-20180826012351-8a410e7b638d
 golang.org/x/net/html

@@ -124,12 +124,11 @@ func (node *TriggerNode) LoadNodeConfig() error {
 		},
 		"setting": func(name string) (interface{}, error) {
 			if node.FlowOpCtx().FlowMeta.Settings != nil {
-				return node.FlowOpCtx().FlowMeta.Settings[name],nil
+				s := node.FlowOpCtx().FlowMeta.Settings[name]
+				return s.String(),nil
 			}else {
 				return "",nil
 			}
-
-
 		},
 	}
 	node.addressTemplate, err = template.New("address").Funcs(funcMap).Parse(node.Meta().Address)
