@@ -1,0 +1,120 @@
+{
+  "type": "evt.thing.inclusion_report",
+  "serv": "zigbee",
+  "val_t": "object",
+  "val": {
+    "integr_id": "",
+    "address": "10",
+    "type": "",
+    "product_hash": "TRADFRI_E27_250lm",
+    "alias": "",
+    "comm_tech": "zigbee",
+    "product_id": "",
+    "product_name": "TRADFRI bulb E27 WW clear 250lm",
+    "manufacturer_id": "IKEA of Sweden",
+    "device_id": "14:b4:57:ff:fe:4a:ef:b6",
+    "hw_ver": "2",
+    "sw_ver": "2.1.022",
+    "power_source": "ac",
+    "wakeup_interval": "-1",
+    "security": "",
+    "tags": null,
+    "groups": [
+      "ch_1"
+    ],
+    "prop_set": null,
+    "tech_specific_props": {
+      "zigbee_address": "0x8C0D"
+    },
+    "services": [
+      {
+        "name": "out_bin_switch",
+        "alias": "",
+        "address": "/rt:dev/rn:zigbee/ad:1/sv:out_bin_switch/ad:10_1",
+        "enabled": true,
+        "groups": [
+          "ch_1"
+        ],
+        "props": {},
+        "tags": null,
+        "prop_set_ref": "",
+        "interfaces": [
+          {
+            "intf_t": "out",
+            "msg_t": "evt.binary.report",
+            "val_t": "bool",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.binary.set",
+            "val_t": "bool",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.binary.get_report",
+            "val_t": "null",
+            "ver": "1"
+          }
+        ]
+      },
+      {
+        "name": "out_lvl_switch",
+        "alias": "",
+        "address": "/rt:dev/rn:zigbee/ad:1/sv:out_lvl_switch/ad:10_1",
+        "enabled": true,
+        "groups": [
+          "ch_1"
+        ],
+        "props": {
+          "is_secure": false,
+          "is_unsecure": true,
+          "max_lvl": 254,
+          "min_lvl": 0
+        },
+        "tags": null,
+        "prop_set_ref": "",
+        "interfaces": [
+          {
+            "intf_t": "out",
+            "msg_t": "evt.lvl.report",
+            "val_t": "int",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.lvl.set",
+            "val_t": "int",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.lvl.start",
+            "val_t": "string",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.lvl.stop",
+            "val_t": "null",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.lvl.get_report",
+            "val_t": "null",
+            "ver": "1"
+          }
+        ]
+      }
+    ]
+  },
+  "tags": null,
+  "props": null,
+  "ver": "1",
+  "corid": "",
+  "ctime": "2020-06-21T13:27:09.918+02:00",
+  "uid": "e0f53e6d-1b40-4502-a6b4-727a4137f9cb",
+  "topic": "pt:j1/mt:evt/rt:ad/rn:zigbee/ad:1"
+}

@@ -1,0 +1,243 @@
+{
+  "ctime": "2020-06-29T19:27:04+0200",
+  "props": {},
+  "serv": "zwave-ad",
+  "tags": [],
+  "type": "evt.thing.inclusion_report",
+  "val": {
+    "address": "35",
+    "category": "UNKNOWN ",
+    "comm_tech": "zw",
+    "device_id": "000000000000000000",
+    "groups": [
+      "ch_0"
+    ],
+    "hw_ver": "1",
+    "is_sensor": "0",
+    "manufacturer_id": "773",
+    "power_source": "battery",
+    "product_hash": "zw_773_768_117",
+    "product_id": "768_117",
+    "product_name": "Futurehome Modeswitch",
+    "prop_set": {
+      "nif_0": {
+        "zw_generic_dev_class": "24",
+        "zw_installer_icon": "0",
+        "zw_node_type": "0",
+        "zw_plus_version": "1",
+        "zw_role_type": "4",
+        "zw_specific_dev_class": "1",
+        "zw_supported_cc": [
+          32,
+          94,
+          85,
+          152,
+          159,
+          108,
+          104,
+          35,
+          134,
+          133,
+          92,
+          142,
+          112,
+          91,
+          89,
+          114,
+          90,
+          115,
+          128,
+          132,
+          122
+        ]
+      }
+    },
+    "security": "secure_S2",
+    "services": [
+      {
+        "address": "/rt:dev/rn:zw/ad:1/sv:basic/ad:35_0",
+        "enabled": true,
+        "groups": [
+          "ch_0"
+        ],
+        "interfaces": [
+          {
+            "intf_t": "out",
+            "msg_t": "evt.lvl.report",
+            "val_t": "int",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.lvl.set",
+            "val_t": "int",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.lvl.get_report",
+            "val_t": "null",
+            "ver": "1"
+          }
+        ],
+        "location": "",
+        "name": "basic",
+        "prop_set_ref": "nif_0",
+        "props": {
+          "is_secure": true,
+          "is_unsecure": true
+        }
+      },
+      {
+        "address": "/rt:dev/rn:zw/ad:1/sv:dev_sys/ad:35_0",
+        "enabled": true,
+        "groups": [
+          "ch_0"
+        ],
+        "interfaces": [
+          {
+            "intf_t": "out",
+            "msg_t": "evt.group.members_report",
+            "val_t": "object",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.group.add_members",
+            "val_t": "object",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.group.delete_members",
+            "val_t": "object",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.group.get_members",
+            "val_t": "string",
+            "ver": "1"
+          },
+          {
+            "intf_t": "out",
+            "msg_t": "evt.config.report",
+            "val_t": "str_map",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.config.set",
+            "val_t": "str_map",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.config.get_report",
+            "val_t": "str_array",
+            "ver": "1"
+          },
+          {
+            "intf_t": "out",
+            "msg_t": "evt.ping.report",
+            "val_t": "str_map",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.ping.send",
+            "val_t": "string",
+            "ver": "1"
+          }
+        ],
+        "location": "",
+        "name": "dev_sys",
+        "prop_set_ref": "nif_0",
+        "props": {
+          "is_secure": true,
+          "is_unsecure": false
+        }
+      },
+      {
+        "address": "/rt:dev/rn:zw/ad:1/sv:scene_ctrl/ad:35_0",
+        "enabled": true,
+        "groups": [
+          "ch_0"
+        ],
+        "interfaces": [
+          {
+            "intf_t": "out",
+            "msg_t": "evt.scene.report",
+            "val_t": "string",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.scene.get_report",
+            "val_t": "null",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.scene.set",
+            "val_t": "string",
+            "ver": "1"
+          }
+        ],
+        "location": "",
+        "name": "scene_ctrl",
+        "prop_set_ref": "nif_0",
+        "props": {
+          "is_secure": true,
+          "is_unsecure": false,
+          "sup_scenes": null
+        }
+      },
+      {
+        "address": "/rt:dev/rn:zw/ad:1/sv:battery/ad:35_0",
+        "enabled": true,
+        "groups": [
+          "ch_0"
+        ],
+        "interfaces": [
+          {
+            "intf_t": "out",
+            "msg_t": "evt.lvl.report",
+            "val_t": "int",
+            "ver": "1"
+          },
+          {
+            "intf_t": "out",
+            "msg_t": "evt.alarm.report",
+            "val_t": "str_map",
+            "ver": "1"
+          },
+          {
+            "intf_t": "in",
+            "msg_t": "cmd.lvl.get_report",
+            "val_t": "null",
+            "ver": "1"
+          }
+        ],
+        "location": "",
+        "name": "battery",
+        "prop_set_ref": "nif_0",
+        "props": {
+          "is_secure": true,
+          "is_unsecure": false
+        }
+      }
+    ],
+    "sw_ver": "284",
+    "tech_specific_props": {
+      "delivery_priority": "10",
+      "zw_lib_type": "3",
+      "zw_product_id": "117",
+      "zw_product_type": "768",
+      "zw_protocol_ver": "1283",
+      "zw_sleep_capable": "1"
+    }
+  },
+  "val_t": "object",
+  "topic": "pt:j1/mt:evt/rt:ad/rn:zw/ad:1"
+}

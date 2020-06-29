@@ -120,10 +120,14 @@ func main() {
 
 	log.Info("<main> Started")
     //<< PPPROF >>
-	//go func() {
-	//	// http://cube.local:6060/debug/pprof/
-	//	http.ListenAndServe(":6060", nil)
-	//}()
+    //if configs.EnableProfiler {
+	//	go func() {
+	//		// http://cube.local:6060/debug/pprof/
+	//		//  go tool pprof  http://cube.local:6060/debug/pprof/heap
+	//		http.ListenAndServe(":6060", nil)
+	//	}()
+	//}
+
 
 
 

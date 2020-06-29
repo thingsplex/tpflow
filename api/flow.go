@@ -381,11 +381,15 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				settings["dev.tech"] = model.Setting{Value:inclReport.CommTechnology,ValueType: "string",Description: "communication technology"}
 				prodHash := inclReport.ProductHash
 				settings["dev.prod.hash"] = model.Setting{Value:prodHash,ValueType: "string",Description: "hash code of the product"}
+				if ctx.flowManager.GetFlowBySettings(settings) != nil {
+					log.Info("<api> Flow with similar setting already registered . Operation skipped")
+					break
+				}
 				flowName := fmt.Sprintf("auto_config_prod_hash_%s",prodHash)
 				ac := flow.NewAutoConfig(ctx.config.FlowStorageDir)
 				err = ac.LoadFlowFromTemplate(flowName)
 				if err != nil {
-					log.Debugf("<api> Can't load flow from template ",err)
+					log.Debug("<api> Can't load flow from template . Err: ",err.Error())
 					break
 				}
 				ac.SetSettings(settings)
@@ -399,9 +403,26 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				}
 
 			case "evt.thing.exclusion_report":
-				//TODO : implement flow removal process
-				// Get device address and tech
-				// Delete flow
+				exclReport := &fimptype.ThingExclusionReport{}
+				err := newMsg.Payload.GetObjectValue(exclReport)
+				if err != nil {
+					break
+				}
+				tech := newMsg.Addr.ResourceName
+				addr := exclReport.Address
+				log.Infof("<api> Deleting auto flow , tech = %s , addr = %s ",tech,addr)
+				settings := map[string]model.Setting{}
+				settings["dev.address"] = model.Setting{Value:addr,ValueType: "string",Description: "device address"}
+				settings["dev.tech"] = model.Setting{Value:tech,ValueType: "string",Description: "communication technology"}
+				flow := ctx.flowManager.GetFlowBySettings(settings)
+				if flow != nil {
+					if !flow.FlowMeta.IsDefault {
+						log.Infof("<api> Deleting flow , id = %s ",flow.Id)
+						ctx.flowManager.DeleteFlowFromStorage(flow.Id)
+					}
+				}else {
+					log.Debug("<api> Flow not found ")
+				}
 
 			}
 

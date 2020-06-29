@@ -103,7 +103,7 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 		}
 		newNode := fl.GetNodeById(metaNode.Id)
 		if newNode == nil {
-			fl.getLog().Infof(" Loading node NEW . Type = %s , Label = %s", metaNode.Type, metaNode.Label)
+			fl.getLog().Debugf(" Loading node NEW . Type = %s , Label = %s", metaNode.Type, metaNode.Label)
 			constructor, ok := node.Registry[metaNode.Type]
 			if ok {
 				newNode = constructor(&fl.opContext, metaNode, fl.globalContext)
@@ -123,15 +123,15 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 			fl.getLog().Infof(" Reusing existing node ")
 		}
 
-		fl.getLog().Info(" Running Init() function of the node")
+		fl.getLog().Debug(" Running Init() function of the node")
 		newNode.Init()
-		fl.getLog().Info(" Done")
+		fl.getLog().Debug(" Done")
 		if newNode.IsStartNode() {
 			newNode.SetFlowRunner(fl.StartFlowInstance)
 			// Starts trigger node listener.When node is triggered , it executed in its own goroutine by fl.run method.
 			go newNode.WaitForEvent(nil)
 		}
-		fl.getLog().Info(" Node is loaded and added.")
+		fl.getLog().Debug(" Node is loaded and added.")
 
 	}
 	fl.opContext.State = "CONFIGURED"

@@ -249,6 +249,29 @@ func (mg *Manager) GetFlowById(id string) *Flow {
 	return nil
 }
 
+func (mg *Manager) GetFlowBySettings(settings map[string]model.Setting) *Flow {
+	for i := range mg.flowRegistry {
+		fullMatch := true
+		log.Debug("Flow ",mg.flowRegistry[i].Name)
+		for si := range settings {
+			if mg.flowRegistry[i].FlowMeta != nil {
+				flSet := mg.flowRegistry[i].FlowMeta.Settings[si]
+				sSet := settings[si]
+				log.Debugf( "key = %s, flSet = %s , sSet = %s",si,flSet.String(),sSet.String())
+				if flSet.String() != sSet.String() {
+					fullMatch = false
+				}
+			}else {
+				fullMatch = false
+			}
+		}
+		if fullMatch {
+			return mg.flowRegistry[i]
+		}
+	}
+	return nil
+}
+
 func (mg *Manager) GetFlowList() []FlowListItem {
 	response := make([]FlowListItem, len(mg.flowRegistry))
 	var c int

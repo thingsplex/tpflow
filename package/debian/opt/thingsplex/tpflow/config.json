@@ -11,6 +11,6 @@
   "log_file":"/var/log/thingsplex/tpflow/tpflow.log",
   "log_level":"info",
   "log_format":"json",
-  "ext_libs_dir":"./extlibs"
-
+  "ext_libs_dir":"./extlibs",
+  "is_dev_mode": false
 }
