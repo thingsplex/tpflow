@@ -265,7 +265,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			}
 			return []model.NodeID{node.Meta().SuccessTransition}, nil
 	} else if node.nodeConfig.TransformType == "template" {
-			node.GetLog().Info(" Doing template transformation ")
+			node.GetLog().Debug(" Doing template transformation ")
 			var templateBuffer bytes.Buffer
 			var template = struct {
 				Variable interface{}
@@ -273,9 +273,9 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			node.template.Execute(&templateBuffer, template)
 
 			err = json.Unmarshal(templateBuffer.Bytes(), &result.Value)
-			node.GetLog().Debug("Template output:", templateBuffer.String())
+			node.GetLog().Debug("Template output:", result.Value)
 			if err != nil {
-				node.GetLog().Warn("Error Unmarshaling template output", err)
+				node.GetLog().Warn("Error Unmarshaled template output", err)
 				return []model.NodeID{node.Meta().ErrorTransition}, err
 			}
 
@@ -292,9 +292,13 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		// Save value into variable
 		// Save default value from node config to variable
 		if node.nodeConfig.IsTargetVariableGlobal {
-			node.ctx.SetVariable(node.nodeConfig.TargetVariableName, result.ValueType, result.Value, "", "global", node.nodeConfig.IsTargetVariableInMemory)
+			err = node.ctx.SetVariable(node.nodeConfig.TargetVariableName, result.ValueType, result.Value, "", "global", node.nodeConfig.IsTargetVariableInMemory)
 		} else {
-			node.ctx.SetVariable(node.nodeConfig.TargetVariableName, result.ValueType, result.Value, "", node.FlowOpCtx().FlowId, node.nodeConfig.IsTargetVariableInMemory)
+			//node.GetLog().Debug("Setting local variable.",result.Value)
+			err = node.ctx.SetVariable(node.nodeConfig.TargetVariableName, result.ValueType, result.Value, "", node.FlowOpCtx().FlowId, node.nodeConfig.IsTargetVariableInMemory)
+		}
+		if err != nil {
+			node.GetLog().Error("Can't save variable . Err:",err.Error())
 		}
 
 	}

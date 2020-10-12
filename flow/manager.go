@@ -1,6 +1,7 @@
 package flow
 
 import (
+	"bytes"
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow"
@@ -8,7 +9,9 @@ import (
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/trigger/fimp"
 	"github.com/thingsplex/tpflow/utils"
+	fgoutils "github.com/futurehomeno/fimpgo/utils"
 	"runtime/debug"
+	"text/template"
 	"time"
 
 	//thingsplexmodel "github.com/thingsplex/thingsplex/model"
@@ -36,6 +39,11 @@ type FlowListItem struct {
 	ErrorCounter   int64
 	Stats          *model.FlowStatsReport
 	IsDisabled     bool
+}
+
+type ImportTemplateVars struct {
+	HubId string
+	SiteId string
 }
 
 func NewManager(config tpflow.Configs) (*Manager, error) {
@@ -185,9 +193,37 @@ func (mg *Manager) ReloadFlowFromStorage(id string) error {
 func (mg *Manager) ImportFlow(flowJsonDef []byte) error {
 	newId := utils.GenerateId(15)
 	flowMeta := model.FlowMeta{}
-	err := json.Unmarshal(flowJsonDef, &flowMeta)
+
+	flowTemplate, err := template.New("flow").Parse(string(flowJsonDef))
+	if err == nil {
+		hubInfo , err  := fgoutils.NewHubUtils().GetHubInfo()
+		if err == nil {
+			log.Debug("Hub info No error ")
+			var templateBuffer bytes.Buffer
+			templateVars := ImportTemplateVars{
+				HubId:  hubInfo.HubId,  // in template it can be used as {{.HubId}}
+				SiteId: hubInfo.SiteId, // in template it can be used as {{.SiteId}}
+			}
+			flowTemplate.Execute(&templateBuffer,templateVars)
+			flowJsonDef = templateBuffer.Bytes()
+		}else {
+			log.Debug("HUb info Error ")
+			var templateBuffer bytes.Buffer
+			templateVars := ImportTemplateVars{
+				HubId:  "test_hub_id",  // in template it can be used as {{.HubId}}
+				SiteId: "test_site_id", // in template it can be used as {{.SiteId}}
+			}
+			err = flowTemplate.Execute(&templateBuffer,templateVars)
+			if err != nil {
+				log.Error("Template error ",err.Error())
+			}
+			flowJsonDef = templateBuffer.Bytes()
+			//log.Debug(templateBuffer.String())
+		}
+	}
+	err = json.Unmarshal(flowJsonDef, &flowMeta)
 	if err != nil {
-		log.Error("<FlMan> Can't unmarshel imported flow 1.")
+		log.Error("<FlMan> Can't unmarshal imported flow 1.Err :",err.Error())
 		return err
 	}
 	oldId := flowMeta.Id

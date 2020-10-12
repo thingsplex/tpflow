@@ -130,7 +130,17 @@ type Context struct {
 
 func NewContextDB(storageLocation string) (*Context, error) {
 	var err error
+	gob.Register([]interface{}{})
+	gob.Register([]string{})
+	gob.Register([]int64{})
+	gob.Register([]float64{})
+	gob.Register([]bool{})
 	gob.Register(map[string]interface{}{})
+	gob.Register(map[string]string{})
+	gob.Register(map[string]int64{})
+	gob.Register(map[string]float64{})
+	gob.Register(map[string]bool{})
+
 	ctx := Context{storageLocation: storageLocation}
 	//ctx.inMemoryStore = make(map[string][]ContextRecord)
 	ctx.db, err = bolt.Open(storageLocation, 0600, nil)

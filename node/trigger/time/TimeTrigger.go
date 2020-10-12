@@ -73,7 +73,7 @@ func (node *Node) Init() error {
 	} else {
 		for i := range node.config.Expressions {
 			node.cron.AddFunc(node.config.Expressions[i].Expression, func() {
-				node.GetLog().Debug("New time event")
+				node.GetLog().Debug("--- New time event ---")
 				msg := model.Message{Payload: fimpgo.FimpMessage{Value: node.nextAstroEvent, ValueType: fimpgo.VTypeString},
 					Header: map[string]string{"name": node.config.Expressions[i].Name}}
 				node.cronMessageCh <- msg

@@ -41,27 +41,33 @@ func (node *SetVariableNode) LoadNodeConfig() error {
 }
 
 func (node *SetVariableNode) OnInput(msg *model.Message) ([]model.NodeID, error) {
-	node.GetLog().Debug(" Executing SetVariableNode . Name = ", node.Meta().Label)
+	node.GetLog().Debugf(" Executing SetVariableNode . Name = ", node.Meta().Label)
 
 	if node.nodeConfig.UpdateInputMsg {
 		// Update input value with value from node config .
 		msg.Payload.Value = node.nodeConfig.DefaultValue.Value
 		msg.Payload.ValueType = node.nodeConfig.DefaultValue.ValueType
 	} else {
+		node.GetLog().Debugf("Var name = %s , type = %s, value = %+v",node.nodeConfig.Name,msg.Payload.ValueType,msg.Payload.Value)
 		// Save input value to variable
+		var err error
 		if node.nodeConfig.DefaultValue.ValueType == "" {
 			if node.nodeConfig.UpdateGlobal {
-				node.ctx.SetVariable(node.nodeConfig.Name, msg.Payload.ValueType, msg.Payload.Value, node.nodeConfig.Description, "global", node.nodeConfig.IsVariableInMemory)
+				err = node.ctx.SetVariable(node.nodeConfig.Name, msg.Payload.ValueType, msg.Payload.Value, node.nodeConfig.Description, "global", node.nodeConfig.IsVariableInMemory)
 			} else {
-				node.ctx.SetVariable(node.nodeConfig.Name, msg.Payload.ValueType, msg.Payload.Value, node.nodeConfig.Description, node.FlowOpCtx().FlowId, node.nodeConfig.IsVariableInMemory)
+				err = node.ctx.SetVariable(node.nodeConfig.Name, msg.Payload.ValueType, msg.Payload.Value, node.nodeConfig.Description, node.FlowOpCtx().FlowId, node.nodeConfig.IsVariableInMemory)
 			}
 		} else {
 			// Save default value from node config to variable
 			if node.nodeConfig.UpdateGlobal {
-				node.ctx.SetVariable(node.nodeConfig.Name, node.nodeConfig.DefaultValue.ValueType, node.nodeConfig.DefaultValue.Value, node.nodeConfig.Description, "global", node.nodeConfig.IsVariableInMemory)
+				err = node.ctx.SetVariable(node.nodeConfig.Name, node.nodeConfig.DefaultValue.ValueType, node.nodeConfig.DefaultValue.Value, node.nodeConfig.Description, "global", node.nodeConfig.IsVariableInMemory)
 			} else {
-				node.ctx.SetVariable(node.nodeConfig.Name, node.nodeConfig.DefaultValue.ValueType, node.nodeConfig.DefaultValue.Value, node.nodeConfig.Description, node.FlowOpCtx().FlowId, node.nodeConfig.IsVariableInMemory)
+				err = node.ctx.SetVariable(node.nodeConfig.Name, node.nodeConfig.DefaultValue.ValueType, node.nodeConfig.DefaultValue.Value, node.nodeConfig.Description, node.FlowOpCtx().FlowId, node.nodeConfig.IsVariableInMemory)
 			}
+
+		}
+		if err != nil {
+			node.GetLog().Error("Set Variable error :",err)
 		}
 	}
 	return []model.NodeID{node.Meta().SuccessTransition}, nil
