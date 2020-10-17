@@ -51,7 +51,6 @@ func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *
 	node.SetFlowOpCtx(flowOpCtx)
 	node.SetMeta(meta)
 	node.config = NodeConfig{}
-	node.cron = cron.New()
 	node.cronMessageCh = make(model.MsgPipeline)
 	node.SetupBaseNode()
 	return &node
@@ -68,23 +67,30 @@ func (node *Node) LoadNodeConfig() error {
 
 // is invoked when node is started
 func (node *Node) Init() error {
+	node.cron = cron.New()
+	node.cron.Stop()
 	if node.config.GenerateAstroTimeEvents {
 
 	} else {
 		for i := range node.config.Expressions {
 			node.cron.AddFunc(node.config.Expressions[i].Expression, func() {
-				node.GetLog().Debug("--- New time event ---")
+				node.GetLog().Info("--- New time event--")
 				msg := model.Message{Payload: fimpgo.FimpMessage{Value: node.nextAstroEvent, ValueType: fimpgo.VTypeString},
 					Header: map[string]string{"name": node.config.Expressions[i].Name}}
 				node.cronMessageCh <- msg
+				node.logNextEvent()
 			})
 		}
 		node.cron.Start()
 	}
-	for _,e := range node.cron.Entries() {
-		node.GetLog().Debug("Next job will run at:", e.Next.Format(TIME_FORMAT))
-	}
+	node.logNextEvent()
 	return nil
+}
+
+func (node *Node) logNextEvent() {
+	for _,e := range node.cron.Entries() {
+		node.GetLog().Info("Next task will run at:", e.Next.Format(TIME_FORMAT))
+	}
 }
 
 func (node *Node) getSunriseAndSunset(nextDay bool) (sunrise time.Time, sunset time.Time, err error) {
@@ -201,19 +207,18 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 	node.SetReactorRunning(true)
 	defer func() {
 		node.SetReactorRunning(false)
-		node.GetLog().Debug(" Reactor-WaitForEvent is stopped ")
+		node.GetLog().Info(" Reactor-WaitForEvent is stopped ")
 	}()
 	for {
 		if node.config.GenerateAstroTimeEvents {
 			node.scheduleNextAstroEvent()
 		}
-
+		node.GetLog().Debug(" --- Waiting for time event ---- ")
 		select {
 		case newMsg := <-node.cronMessageCh:
 			newEvent := model.ReactorEvent{Msg: newMsg, TransitionNodeId: node.Meta().SuccessTransition}
 			node.FlowRunner()(newEvent)
 		case signal := <-node.FlowOpCtx().TriggerControlSignalChannel:
-			node.GetLog().Debug("Control signal ")
 			if signal == model.SIGNAL_STOP {
 				node.GetLog().Info("Trigger stopped by SIGNAL_STOP ")
 				return

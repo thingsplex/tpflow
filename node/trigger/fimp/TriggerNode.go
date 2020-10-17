@@ -193,7 +193,7 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 
 	defer func() {
 		node.SetReactorRunning(false)
-		node.GetLog().Debug("Msg processed by the node ")
+		node.GetLog().Debug("WaitForEvent has quit. ")
 		timer.Stop()
 	}()
 

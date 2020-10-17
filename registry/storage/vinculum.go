@@ -56,12 +56,12 @@ func (r *VinculumRegistryStore) Disconnect() {
 }
 
 func (VinculumRegistryStore) GetServiceById(Id model.ID) (*model.Service, error) {
-	log.Warn("GetServiceById NOT implemented !!!!")
+	//log.Warn("GetServiceById NOT implemented !!!!")
 	return nil, errors.New("not implemented")
 }
 
 func (VinculumRegistryStore) GetServiceByFullAddress(address string) (*model.ServiceExtendedView, error) {
-	log.Warn("GetServiceByFullAddress NOT implemented !!!!")
+	//log.Warn("GetServiceByFullAddress NOT implemented !!!!")
 	return nil, errors.New("not implemented")
 }
 
@@ -189,12 +189,12 @@ func (r *VinculumRegistryStore) GetAllServices() ([]model.Service, error) {
 }
 
 func (VinculumRegistryStore) GetThingExtendedViewById(Id model.ID) (*model.ThingExtendedView, error) {
-	log.Warn("GetThingExtendedViewById NOT implemented  !!!!")
+	//log.Warn("GetThingExtendedViewById NOT implemented  !!!!")
 	return nil, errors.New("not implemented")
 }
 
 func (VinculumRegistryStore) GetServiceByAddress(serviceName string, serviceAddress string) (*model.Service, error) {
-	log.Warn("GetServiceByAddress NOT implemented  !!!!")
+	//log.Warn("GetServiceByAddress NOT implemented  !!!!")
 	return nil, errors.New("not implemented")
 }
 
@@ -236,17 +236,17 @@ func (r *VinculumRegistryStore) GetAllLocations() ([]model.Location, error) {
 }
 
 func (VinculumRegistryStore) GetThingById(Id model.ID) (*model.Thing, error) {
-	log.Warn("GetThingById NOT implemented  !!!!")
+	//log.Warn("GetThingById NOT implemented  !!!!")
 	return nil, errors.New("not implemented")
 }
 
 func (VinculumRegistryStore) GetThingByAddress(technology string, address string) (*model.Thing, error) {
-	log.Warn("GetThingByAddress NOT implemented  !!!!")
+	//log.Warn("GetThingByAddress NOT implemented  !!!!")
 	return nil, errors.New("not implemented")
 }
 
 func (VinculumRegistryStore) GetThingExtendedViewByAddress(technology string, address string) (*model.ThingExtendedView, error) {
-	log.Warn("GetThingExtendedViewByAddress NOT implemented  !!!!")
+	//log.Warn("GetThingExtendedViewByAddress NOT implemented  !!!!")
 	return nil, errors.New("not implemented")
 }
 
@@ -270,7 +270,7 @@ func (r *VinculumRegistryStore) GetThingsByLocationId(locationId model.ID) ([]mo
 }
 
 func (VinculumRegistryStore) GetThingByIntegrationId(id string) (*model.Thing, error) {
-	log.Warn("GetThingByIntegrationId NOT implemented  !!!!")
+	//log.Warn("GetThingByIntegrationId NOT implemented  !!!!")
 	return nil, errors.New("not implemented")
 }
 
@@ -334,22 +334,22 @@ func (r *VinculumRegistryStore) GetExtendedDevices() ([]model.DeviceExtendedView
 }
 
 func (VinculumRegistryStore) GetDeviceById(Id model.ID) (*model.DeviceExtendedView, error) {
-	log.Warn("GetThingByIntegrationId NOT implemented  !!!!")
+	//log.Warn("GetThingByIntegrationId NOT implemented  !!!!")
 	return nil, errors.New("not implemented")
 }
 
 func (VinculumRegistryStore) GetDevicesByLocationId(locationId model.ID) ([]model.Device, error) {
-	log.Warn("GetThingByIntegrationId NOT implemented  !!!!")
+	//log.Warn("GetThingByIntegrationId NOT implemented  !!!!")
 	return nil, errors.New("not implemented")
 }
 
 func (VinculumRegistryStore) GetDeviceByIntegrationId(id string) (*model.Device, error) {
-	log.Warn("GetThingByIntegrationId NOT implemented  !!!!")
+	//log.Warn("GetThingByIntegrationId NOT implemented  !!!!")
 	return nil, errors.New("not implemented")
 }
 
 func (VinculumRegistryStore) GetLocationByIntegrationId(id string) (*model.Location, error) {
-	log.Warn("GetThingByIntegrationId NOT implemented  !!!!")
+	//log.Warn("GetThingByIntegrationId NOT implemented  !!!!")
 	return nil, errors.New("not implemented")
 }
 

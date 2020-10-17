@@ -104,7 +104,7 @@ func (node *Node) WaitForEvent(responseChannel chan model.ReactorEvent) {
 
 func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	node.GetLog().Info("Executing Node . Name = ", node.Meta().Label)
-	node.GetLog().Infof("Request uuid %s",msg.Payload.UID)
+	//node.GetLog().Infof("Request uuid %s",msg.Payload.UID)
 	//fimpMsg := fimpgo.FimpMessage{Type: node.Meta().ServiceInterface, Service: node.Meta().Service, Properties: node.config.Props}
 	fimpMsg := fimpgo.NewMessage(node.Meta().ServiceInterface,node.Meta().Service,"",nil,node.config.Props,nil,nil)
 	fimpMsg.Source = "flow_"+node.FlowOpCtx().FlowId
