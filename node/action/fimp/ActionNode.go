@@ -29,6 +29,7 @@ type NodeConfig struct {
 	VirtualServiceProps      map[string]interface{} // mostly used to announce supported features of the service , for instance supported modes , states , setpoints , etc...
 	ResponseToTopic          string // in request-response communication requester can set topic to which server will send response
 	IsResponseToReq          bool // Indicates that the action is response to request and corid field should be set to the same value as request uuid
+	ConnectorID              string
 }
 
 func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
@@ -82,8 +83,10 @@ func (node *Node) LoadNodeConfig() error {
 	if err != nil {
 		node.GetLog().Error(" Failed while parsing url template.Error:", err)
 	}
-
-	fimpTransportInstance := node.ConnectorRegistry().GetInstance("fimpmqtt")
+	if node.config.ConnectorID == "" {
+		node.config.ConnectorID = "fimpmqtt"
+	}
+	fimpTransportInstance := node.ConnectorRegistry().GetInstance(node.config.ConnectorID)
 	var ok bool
 	if fimpTransportInstance != nil {
 		node.transport, ok = fimpTransportInstance.Connection.GetConnection().(*fimpgo.MqttTransport)

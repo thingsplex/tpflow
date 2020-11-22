@@ -27,6 +27,7 @@ type TriggerNode struct {
 
 type TriggerConfig struct {
 	Timeout                      int64 // in seconds
+	ConnectorID                  string // If set node will use non-default connector , for instance it can be used to listen events on remote hub
 	ValueFilter                  model.Variable
 	PropFilterName               string // fimp props filter . Property name
 	PropFilterValue              string // Property value
@@ -149,7 +150,11 @@ func (node *TriggerNode) LoadNodeConfig() error {
 		node.GetLog().Error("Connector registry doesn't have thing_registry instance")
 	}
 
-	fimpTransportInstance := node.ConnectorRegistry().GetInstance("fimpmqtt")
+	if node.config.ConnectorID == "" {
+		node.config.ConnectorID = "fimpmqtt"
+	}
+
+	fimpTransportInstance := node.ConnectorRegistry().GetInstance(node.config.ConnectorID)
 	if fimpTransportInstance != nil {
 		node.transport, ok = fimpTransportInstance.Connection.GetConnection().(*fimpgo.MqttTransport)
 		if !ok {
@@ -205,7 +210,6 @@ func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 		}
 		select {
 		case newMsg := <-node.msgInStream:
-			//node.GetLog().Debug("--New message--")
 			node.GetLog().Debug("--New message--")
 			if node.config.ValueJPath != "" {
 				rMsg := model.Message{RawPayload:newMsg.Payload.ValueObj }

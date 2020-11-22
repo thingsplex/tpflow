@@ -1,12 +1,14 @@
 package fimp
 
 import (
+	"bytes"
 	"errors"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/mitchellh/mapstructure"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	"github.com/thingsplex/tpflow/registry/storage"
+	"text/template"
 	"time"
 )
 
@@ -20,10 +22,13 @@ type ReceiveNode struct {
 	msgInStreamName     string
 	config              ReceiveConfig
 	thingRegistry       *storage.LocalRegistryStore
+	addressTemplate 	*template.Template
+	subAddress          string
 }
 
 type ReceiveConfig struct {
 	Timeout                  int64 // in seconds
+	ConnectorID              string // If set node will use non-default connector , for instance it can be used to listen events on remote hub
 	ValueFilter              model.Variable
 	InputVariableType        string
 	IsValueFilterEnabled     bool
@@ -87,6 +92,42 @@ func (node *ReceiveNode) LoadNodeConfig() error {
 		node.GetLog().Error("Failed to load node configs.Err:", err)
 	}
 
+	funcMap := template.FuncMap{
+		"variable": func(varName string, isGlobal bool) (interface{}, error) {
+			//node.GetLog().Debug("Getting variable by name ",varName)
+			var vari model.Variable
+			var err error
+			if isGlobal {
+				vari, err = node.ctx.GetVariable(varName, "global")
+			} else {
+				vari, err = node.ctx.GetVariable(varName, node.FlowOpCtx().FlowId)
+			}
+
+			if vari.IsNumber() {
+				return vari.ToNumber()
+			}
+			vstr, ok := vari.Value.(string)
+			if ok {
+				return vstr, err
+			} else {
+				node.GetLog().Debug("Only simple types are supported ")
+				return "", errors.New("Only simple types are supported ")
+			}
+		},
+		"setting": func(name string) (interface{}, error) {
+			if node.FlowOpCtx().FlowMeta.Settings != nil {
+				s := node.FlowOpCtx().FlowMeta.Settings[name]
+				return s.String(),nil
+			}else {
+				return "",nil
+			}
+		},
+	}
+	node.addressTemplate, err = template.New("address").Funcs(funcMap).Parse(node.Meta().Address)
+	var addrTemplateBuffer bytes.Buffer
+	node.addressTemplate.Execute(&addrTemplateBuffer, nil)
+	node.subAddress = addrTemplateBuffer.String()
+
 	connInstance := node.ConnectorRegistry().GetInstance("thing_registry")
 	var ok bool
 	if connInstance != nil {
@@ -99,7 +140,11 @@ func (node *ReceiveNode) LoadNodeConfig() error {
 		node.GetLog().Error("Connector registry doesn't have thing_registry instance")
 	}
 
-	fimpTransportInstance := node.ConnectorRegistry().GetInstance("fimpmqtt")
+	if node.config.ConnectorID == "" {
+		node.config.ConnectorID = "fimpmqtt"
+	}
+
+	fimpTransportInstance := node.ConnectorRegistry().GetInstance(node.config.ConnectorID)
 	if fimpTransportInstance != nil {
 		node.transport, ok = fimpTransportInstance.Connection.GetConnection().(*fimpgo.MqttTransport)
 		if !ok {
@@ -110,7 +155,6 @@ func (node *ReceiveNode) LoadNodeConfig() error {
 		node.GetLog().Error("Connector registry doesn't have fimp instance")
 		return errors.New("can't find fimp connector")
 	}
-
 
 	return err
 }
@@ -137,7 +181,7 @@ func (node *ReceiveNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 		}
 		select {
 		case newMsg := <-node.msgInStream:
-			node.GetLog().Info("New message :")
+			node.GetLog().Debug("New message :")
 			if !node.config.IsValueFilterEnabled {
 					rMsg := model.Message{AddressStr: newMsg.Topic, Address: *newMsg.Addr, Payload: *newMsg.Payload}
 					newEvent := model.ReactorEvent{Msg: rMsg, TransitionNodeId: node.Meta().SuccessTransition}
