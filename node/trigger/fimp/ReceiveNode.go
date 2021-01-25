@@ -25,7 +25,7 @@ type ReceiveNode struct {
 	addressTemplate 	*template.Template
 	subAddress          string
 }
-
+// TODO : Copy Json path value extraction
 type ReceiveConfig struct {
 	Timeout                  int64 // in seconds
 	ConnectorID              string // If set node will use non-default connector , for instance it can be used to listen events on remote hub
@@ -64,23 +64,23 @@ func (node *ReceiveNode) initSubscriptions() {
 	node.GetLog().Info("ReceiveNode is listening for events . Name = ", node.Meta().Label)
 	needToSubscribe := true
 	for i := range node.activeSubscriptions {
-		if (node.activeSubscriptions)[i] == node.Meta().Address {
+		if (node.activeSubscriptions)[i] == node.subAddress {
 			needToSubscribe = false
 			break
 		}
 	}
 	if needToSubscribe {
-		if node.Meta().Address != "" {
-			node.GetLog().Info("Subscribing for service by address :", node.Meta().Address)
-			node.transport.Subscribe(node.Meta().Address)
-			node.activeSubscriptions = append(node.activeSubscriptions, node.Meta().Address)
+		if node.subAddress != "" {
+			node.GetLog().Info("Subscribing for service by address :", node.subAddress)
+			node.transport.Subscribe(node.subAddress)
+			node.activeSubscriptions = append(node.activeSubscriptions, node.subAddress)
 		} else {
 			node.GetLog().Error("Can't subscribe to service with empty address")
 		}
 	}
 	node.msgInStream = make(fimpgo.MessageCh, 10)
 	node.transport.RegisterChannelWithFilter(node.msgInStreamName, node.msgInStream,fimpgo.FimpFilter{
-		Topic:     node.Meta().Address,
+		Topic:     node.subAddress,
 		Service:   node.Meta().Service,
 		Interface: node.Meta().ServiceInterface,
 	})

@@ -1,8 +1,9 @@
-version="1.0.1"
+version="1.0.3"
 version_file=VERSION
 working_dir=$(shell pwd)
 arch="armhf"
 remote_host = "fh@cube.local"
+reprepo_host = "reprepro@archive.futurehome.no"
 
 clean:
 	-rm tpflow
@@ -57,5 +58,8 @@ remote-install : deb-arm upload
 
 run :
 	go run cmd/main.go -c testdata/var/config.json
+
+publish-reprepo:
+	scp package/build/tpflow_$(version)_armhf.deb $(reprepo_host):~/apps
 
 .phony : clean
