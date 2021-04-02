@@ -1,0 +1,136 @@
+package stats
+
+import (
+	"github.com/mitchellh/mapstructure"
+	"github.com/thingsplex/tpflow/model"
+	"github.com/thingsplex/tpflow/node/base"
+)
+
+type MetricsNode struct {
+	base.BaseNode
+	ctx        *model.Context
+	nodeConfig MetricsNodeConfig
+}
+
+type MetricsNodeConfig struct {
+	Operation              string  //  inc,dec, add(float64),sub(float64)
+	Step                   float64 // step for inc and dec operations. Default value = 1
+	InputVar               model.NodeVariableDef  // argument for add and sub will be taken from the variable , if empty , value is taken from input message
+	TargetVar              model.NodeVariableDef // Variable to save result
+	MaxValue               float64 // mac
+	MinValue               float64 //
+	ResetValue             float64
+	LimitAction            string // reset - reset to ResetValue , keep_limit - keep border value , no_limits - value is not limited
+}
+
+func NewMetricsNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+	node := MetricsNode{ctx: ctx}
+	node.SetMeta(meta)
+	node.SetFlowOpCtx(flowOpCtx)
+	node.SetupBaseNode()
+	return &node
+}
+
+func (node *MetricsNode) LoadNodeConfig() error {
+	defValue := MetricsNodeConfig{}
+	err := mapstructure.Decode(node.Meta().Config, &defValue)
+	if err != nil {
+		node.GetLog().Error(" Can't decode configuration", err)
+	} else {
+		node.nodeConfig = defValue
+	}
+	return nil
+}
+
+func (node *MetricsNode) OnInput(msg *model.Message) ([]model.NodeID, error) {
+	var value float64
+	var err error
+	node.GetLog().Debugf(" Executing MetricsNode . Name = %s", node.Meta().Label)
+
+
+	inputVarFlowId := "global"
+	if !node.nodeConfig.InputVar.IsGlobal {
+		inputVarFlowId = node.FlowOpCtx().FlowId
+	}
+
+	targetVarFlowId := "global"
+	if !node.nodeConfig.TargetVar.IsGlobal {
+		targetVarFlowId = node.FlowOpCtx().FlowId
+	}
+
+	valVar, err := node.ctx.GetVariable(node.nodeConfig.TargetVar.Name, targetVarFlowId)
+	if err != nil {
+		node.GetLog().Error("Value variable doesn't exist . Err:", err.Error())
+		return []model.NodeID{node.Meta().ErrorTransition}, err
+	}
+
+	value,err = valVar.ToNumber()
+	if err != nil {
+		node.GetLog().Error("Value variable has incorrect type . Err:", err.Error())
+		return []model.NodeID{node.Meta().ErrorTransition}, err
+	}
+
+	switch node.nodeConfig.Operation {
+	case "inc":
+		value += node.nodeConfig.Step
+	case "dec":
+		value -= node.nodeConfig.Step
+	case "add":
+		fallthrough
+	case "sub":
+		fallthrough
+	case "set":
+		var inputVar model.Variable
+		if node.nodeConfig.InputVar.Name != "" {
+			inputVar, err = node.ctx.GetVariable(node.nodeConfig.InputVar.Name, inputVarFlowId)
+			if err != nil {
+				node.GetLog().Error("Variable doesn't exist . Err:", err.Error())
+				return []model.NodeID{node.Meta().ErrorTransition}, err
+			}
+		}else {
+			inputVar.Value = msg.Payload.Value
+			inputVar.ValueType = msg.Payload.ValueType
+		}
+
+		if inputVar.IsNumber() {
+			nVar, err := inputVar.ToNumber()
+			if err != nil {
+				node.GetLog().Error("Variable is not a number . Err:", err.Error())
+				return []model.NodeID{node.Meta().ErrorTransition}, err
+			}
+			switch node.nodeConfig.Operation {
+			case "add":
+				value += nVar
+			case "sub":
+				value -= nVar
+			case "set":
+				value = nVar
+			}
+		}
+	}
+
+	if value > node.nodeConfig.MaxValue {
+		if node.nodeConfig.LimitAction == "reset" {
+			//TODO : maybe transition to red/fail node
+			value = node.nodeConfig.ResetValue
+		} else if node.nodeConfig.LimitAction == "keep_limit" {
+			value = node.nodeConfig.MaxValue
+		}
+	}
+
+	if value < node.nodeConfig.MinValue {
+		if node.nodeConfig.LimitAction == "reset" {
+			value = node.nodeConfig.ResetValue
+		} else if node.nodeConfig.LimitAction == "keep_limit" {
+			value = node.nodeConfig.MinValue
+		}
+	}
+
+	err = node.ctx.SetVariable(node.nodeConfig.TargetVar.Name, "float", value, "", targetVarFlowId, node.nodeConfig.TargetVar.InMemory)
+
+	return []model.NodeID{node.Meta().SuccessTransition}, err
+}
+
+func (node *MetricsNode) WaitForEvent(responseChannel chan model.ReactorEvent) {
+
+}

@@ -63,7 +63,6 @@ func TestExecNode_OnInput_Python(t *testing.T) {
 		Properties:    nil,
 		Version:       "",
 		CorrelationID: "",
-		CreationTime:  time.Time{},
 		UID:           "",
 	}}
 

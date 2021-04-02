@@ -3,11 +3,9 @@ package transform
 import (
 	"encoding/json"
 	"github.com/futurehomeno/fimpgo"
+	"github.com/thingsplex/tpflow/model"
 	"os"
 	"testing"
-	"time"
-
-	"github.com/thingsplex/tpflow/model"
 )
 
 func TestNode_OnInput_Calc(t *testing.T) {
@@ -67,7 +65,6 @@ func TestNode_OnInput_Calc(t *testing.T) {
 		Properties:    nil,
 		Version:       "",
 		CorrelationID: "",
-		CreationTime:  time.Time{},
 		UID:           "",
 	}}
 	_, err = node.OnInput(&msg)
@@ -166,7 +163,6 @@ func TestNode_OnInput_Jpath(t *testing.T) {
 		Properties:    nil,
 		Version:       "",
 		CorrelationID: "",
-		CreationTime:  time.Time{},
 		UID:           "",
 	}}
 

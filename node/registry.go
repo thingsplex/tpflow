@@ -12,9 +12,11 @@ import (
 	"github.com/thingsplex/tpflow/node/control/ratelimit"
 	"github.com/thingsplex/tpflow/node/control/wait"
 	"github.com/thingsplex/tpflow/node/data/setvar"
+	"github.com/thingsplex/tpflow/node/data/stats"
 	"github.com/thingsplex/tpflow/node/data/transform"
 	trigfimp "github.com/thingsplex/tpflow/node/trigger/fimp"
 	"github.com/thingsplex/tpflow/node/trigger/time"
+
 )
 
 type Constructor func(context *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node
@@ -35,4 +37,6 @@ var Registry = map[string]Constructor{
 	"time_trigger": time.NewNode,
 	"transform":    transform.NewNode,
 	"exec":         exec.NewNode,
+	"timetools":   stats.NewTimeToolsNode,
+	"metrics":      stats.NewMetricsNode,
 }

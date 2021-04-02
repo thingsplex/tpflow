@@ -218,7 +218,7 @@ func (ctx *Context) PutRecord(rec *ContextRecord, flowId string, inMemory bool) 
 
 func (ctx *Context) DeleteRecord(name string, flowId string, inMemory bool) error {
 	if inMemory {
-
+	  //TODO : Implement in-memory variable removal
 	} else {
 		log.Infof("<ctx> Deleting variable %s from flow %s", name, flowId)
 		err := ctx.db.Update(func(tx *bolt.Tx) error {
@@ -280,8 +280,8 @@ func (ctx *Context) GetRecord(name string, flowId string) (*ContextRecord, error
 }
 
 func (ctx *Context) GetRecords(flowId string) []ContextRecord {
-	result := []ContextRecord{}
-	log.Info("<ctx> GEtting records")
+	var result []ContextRecord
+	log.Debug("<ctx> Getting records")
 	ctx.db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte(flowId))

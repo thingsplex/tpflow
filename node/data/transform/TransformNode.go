@@ -200,6 +200,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			result.ValueType = node.nodeConfig.TargetVariableType
 
 	} else if node.nodeConfig.TransformType == "map" {
+			// TODO: Add interpolation for numeric values
 			for i := range node.nodeConfig.ValueMapping {
 				//node.GetLog().Debug(" record Value ",node.nodeConfig.ValueMapping[i].LValue.Value)
 				//node.GetLog().Debug(" record input Value = ",lValue.Value )

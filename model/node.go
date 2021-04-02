@@ -20,6 +20,13 @@ type MetaNode struct {
 	Ui                interface{}
 }
 
+type NodeVariableDef struct {
+	Name        string
+	InMemory    bool
+	IsGlobal    bool
+	Type        string
+}
+
 type Node interface {
 	OnInput(msg *Message) ([]NodeID, error)
 	// reactor nodes should publish events into the channel
