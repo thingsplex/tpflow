@@ -2,14 +2,17 @@ package exec
 
 import (
 	"encoding/json"
+	"github.com/mitchellh/mapstructure"
+	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
-	"github.com/mitchellh/mapstructure"
+	"github.com/traefik/yaegi/interp"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"sync"
 )
 
 type Node struct {
@@ -17,6 +20,9 @@ type Node struct {
 	ctx            *model.Context
 	config         NodeConfig
 	scriptFullPath string
+	intp           *interp.Interpreter
+	scriptFunc     func(*model.Message,*model.Context)string
+	localStorage   sync.Map
 }
 
 type NodeConfig struct {
@@ -47,10 +53,22 @@ func (node *Node) LoadNodeConfig() error {
 	if err != nil {
 		node.GetLog().Error("Can't decode config file.Eee:", err)
 	}
-	if node.config.ExecType == "python" {
+	switch node.config.ExecType {
+	case "python":
 		node.scriptFullPath = filepath.Join(node.FlowOpCtx().StoragePath, node.FlowOpCtx().FlowId+"_"+string(node.Meta().Id)+".py")
 		err = ioutil.WriteFile(node.scriptFullPath, []byte(node.config.ScriptBody), 0644)
+	case "golang":
+		initScriptExports()
+		node.intp = interp.New(interp.Options{})
+		node.intp.Use(Symbols)
+		v, err := node.intp.Eval(node.config.ScriptBody)
+		if err != nil {
+			log.Errorf("Error running golang script %v",err)
+		}
+		v, _ = node.intp.Eval("ext.Run")
+		node.scriptFunc = v.Interface().(func(*model.Message,*model.Context)string)
 	}
+
 	return err
 }
 
@@ -76,6 +94,13 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		cmd = exec.Command(node.config.Command)
 	case "sh-cmd":
 		cmd = exec.Command("bash", "-c", node.config.Command)
+
+	case "golang":
+
+		r := node.scriptFunc(msg,node.ctx)
+		log.Debug("go script output :",r)
+		return []model.NodeID{node.Meta().SuccessTransition}, nil
+
 	case "python":
 		var iValue model.Variable
 		if node.config.InputVariableName == "" {

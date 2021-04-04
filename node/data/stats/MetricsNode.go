@@ -13,14 +13,14 @@ type MetricsNode struct {
 }
 
 type MetricsNodeConfig struct {
-	Operation              string  //  inc,dec, add(float64),sub(float64)
-	Step                   float64 // step for inc and dec operations. Default value = 1
-	InputVar               model.NodeVariableDef  // argument for add and sub will be taken from the variable , if empty , value is taken from input message
-	TargetVar              model.NodeVariableDef // Variable to save result
-	MaxValue               float64 // mac
-	MinValue               float64 //
-	ResetValue             float64
-	LimitAction            string // reset - reset to ResetValue , keep_limit - keep border value , no_limits - value is not limited
+	Operation   string                //  inc,dec, add(float64),sub(float64)
+	Step        float64               // step for inc and dec operations. Default value = 1
+	InputVar    model.NodeVariableDef // argument for add and sub will be taken from the variable , if empty , value is taken from input message
+	OutputVar   model.NodeVariableDef // Variable to save result
+	MaxValue    float64               // mac
+	MinValue    float64               //
+	ResetValue  float64
+	LimitAction string // reset - reset to ResetValue , keep_limit - keep border value , no_limits - value is not limited
 }
 
 func NewMetricsNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
@@ -54,21 +54,19 @@ func (node *MetricsNode) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	}
 
 	targetVarFlowId := "global"
-	if !node.nodeConfig.TargetVar.IsGlobal {
+	if !node.nodeConfig.OutputVar.IsGlobal {
 		targetVarFlowId = node.FlowOpCtx().FlowId
 	}
 
-	valVar, err := node.ctx.GetVariable(node.nodeConfig.TargetVar.Name, targetVarFlowId)
+	valVar, err := node.ctx.GetVariable(node.nodeConfig.OutputVar.Name, targetVarFlowId)
 	if err != nil {
-		node.GetLog().Error("Value variable doesn't exist . Err:", err.Error())
-		return []model.NodeID{node.Meta().ErrorTransition}, err
+		node.GetLog().Debug("Value variable doesn't exist , configuring default limit. Err:", err.Error())
+		value = node.nodeConfig.ResetValue
+		err = nil
+	}else {
+		value,err = valVar.ToNumber()
 	}
 
-	value,err = valVar.ToNumber()
-	if err != nil {
-		node.GetLog().Error("Value variable has incorrect type . Err:", err.Error())
-		return []model.NodeID{node.Meta().ErrorTransition}, err
-	}
 
 	switch node.nodeConfig.Operation {
 	case "inc":
@@ -125,9 +123,12 @@ func (node *MetricsNode) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			value = node.nodeConfig.MinValue
 		}
 	}
-
-	err = node.ctx.SetVariable(node.nodeConfig.TargetVar.Name, "float", value, "", targetVarFlowId, node.nodeConfig.TargetVar.InMemory)
-
+	//node.GetLog().Debugf("Output var name = %s , flow = %s",node.nodeConfig.OutputVar.Name,targetVarFlowId)
+	err = node.ctx.SetVariable(node.nodeConfig.OutputVar.Name, "float", value, "", targetVarFlowId, node.nodeConfig.OutputVar.InMemory)
+	if err != nil {
+		node.GetLog().Error("Can't save output variable . Err:", err.Error())
+		return []model.NodeID{node.Meta().ErrorTransition}, err
+	}
 	return []model.NodeID{node.Meta().SuccessTransition}, err
 }
 

@@ -27,6 +27,7 @@ require (
 	github.com/pkg/errors v0.8.0
 	github.com/robfig/cron/v3 v3.0.0
 	github.com/sirupsen/logrus v1.3.0
+	github.com/traefik/yaegi v0.9.16
 	github.com/valyala/bytebufferpool v0.0.0-20160817181652-e746df99fe4a // indirect
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 	github.com/vmihailenco/msgpack v4.0.0+incompatible // indirect
