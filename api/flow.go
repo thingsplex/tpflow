@@ -192,8 +192,12 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 					fimp = fimpgo.NewMessage("evt.flow.update_report", "tpflow", "string", err, nil, nil, newMsg.Payload)
 					break
 				}
-				ctx.flowManager.UpdateFlowFromBinJson(flowMeta.Id, flowJsonDef)
-				fimp = fimpgo.NewMessage("evt.flow.update_report", "tpflow", "string", "ok", nil, nil, newMsg.Payload)
+				err = ctx.flowManager.UpdateFlowFromBinJson(flowMeta.Id, flowJsonDef)
+				report := "ok"
+				if err != nil {
+					report = err.Error()
+				}
+				fimp = fimpgo.NewMessage("evt.flow.update_report", "tpflow", "string", report, nil, nil, newMsg.Payload)
 
 			case "cmd.flow.import":
 				resp := "ok"

@@ -179,10 +179,10 @@ func (mg *Manager) UpdateFlowFromBinJson(id string, flowJsonDef []byte) error {
 		return err
 	}
 	if !flowMeta.IsDisabled {
-		mg.StartFlow(id)
+		err = mg.StartFlow(id)
 	}
 	log.Infof("<FlMan> Flow %s is valid , saving to disk",id)
-	return nil
+	return err
 }
 
 func (mg *Manager) ReloadFlowFromStorage(id string) error {
@@ -339,7 +339,7 @@ func (mg *Manager) ControlFlow(cmd string, flowId string) error {
 	return nil
 }
 
-func (mg *Manager) StartFlow(flowId string) {
+func (mg *Manager) StartFlow(flowId string) error {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Error("-------ERROR 2 Flow can't be loaded from file : ", r)
@@ -355,13 +355,12 @@ func (mg *Manager) StartFlow(flowId string) {
 	if flow != nil {
 		if flow.GetFlowState() != "RUNNING" {
 			//flow.SetMessageStream(mg.GetNewStream(flow.Id))
-			flow.Start()
+			return flow.Start()
 		}
 	}else {
 		log.Error("No flow with Id = ",flowId)
 	}
-
-
+	return nil
 }
 
 func (mg *Manager) StopFlow(id string) {

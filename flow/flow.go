@@ -1,6 +1,7 @@
 package flow
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow/connector"
@@ -85,16 +86,18 @@ func (fl *Flow) initFromMetaFlow(meta *model.FlowMeta) {
 }
 
 // LoadAndConfigureAllNodes creates all nodes objects from FlowMeta definitions and configures node inbound streams .
-func (fl *Flow) LoadAndConfigureAllNodes() {
+func (fl *Flow) LoadAndConfigureAllNodes() (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			fl.getLog().Error(" Flow process CRASHED with error while doing node configuration : ", r)
+			stack := string(debug.Stack())
+			fl.getLog().Error(" Flow process CRASHED with error while doing node configuration : ", stack)
 			debug.PrintStack()
+			err = fmt.Errorf("node configuration crashed with panic.Stack:%s",stack)
 			fl.opContext.State = "CONFIG_ERROR"
+
 		}
 	}()
 	fl.getLog().Infof(" ---------Initializing Flow Id = %s , Name = %s -----------", fl.Id, fl.Name)
-	var err error
 	for _, metaNode := range fl.FlowMeta.Nodes {
 		if !fl.IsNodeValid(&metaNode) {
 			fl.getLog().Errorf(" Node %s contains invalid configuration parameters ", metaNode.Label)
@@ -135,6 +138,7 @@ func (fl *Flow) LoadAndConfigureAllNodes() {
 
 	}
 	fl.opContext.State = "CONFIGURED"
+	return err
 }
 
 func (fl *Flow) GetContext() *model.Context {
@@ -420,7 +424,7 @@ func (fl *Flow) Start() error {
 	fl.getLog().Info(" Starting flow : ", fl.Name)
 	fl.opContext.State = "STARTING"
 	fl.opContext.IsFlowRunning = true
-	fl.LoadAndConfigureAllNodes()
+	err := fl.LoadAndConfigureAllNodes()
 	if fl.opContext.State == "CONFIGURED" {
 		// Init all nodes
 		//for i := range fl.nodes {
@@ -432,7 +436,11 @@ func (fl *Flow) Start() error {
 	} else {
 		fl.opContext.State = "NOT_CONFIGURED"
 		fl.getLog().Errorf(" Flow %s is not valid and will not be started.Flow should have at least one trigger or wait node ", fl.Name)
-		return errors.New("Flow should have at least one trigger or wait node")
+		if err == nil {
+			return errors.New("Flow should have at least one trigger or wait node")
+		}
+		return err
+
 	}
 	return nil
 }
