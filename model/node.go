@@ -28,8 +28,8 @@ type NodeVariableDef struct {
 }
 
 type Node interface {
+	// OnInput is invoked by flow runner. msg is original message from trigger , node can perform even mutation.
 	OnInput(msg *Message) ([]NodeID, error)
-	// reactor nodes should publish events into the channel
 	WaitForEvent(responseChannel chan ReactorEvent)
 	GetMetaNode() *MetaNode
 	GetNextSuccessNodes() []NodeID
@@ -39,10 +39,9 @@ type Node interface {
 	IsStartNode() bool
 	IsMsgReactorNode() bool
 	IsReactorRunning() bool
-	//ConfigureInStream(activeSubscriptions *[]string,msgInStream MsgPipeline)
-	// Invoked when node is started
+	// Init is invoked when node is started
 	Init() error
-	// Invoked when node is stopped
+	// Cleanup is invoked when node is stopped
 	Cleanup() error
 	SetConnectorRegistry(connectorRegistry *connector.Registry)
 	SetFlowRunner(runner FlowRunner)

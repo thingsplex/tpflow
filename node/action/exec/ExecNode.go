@@ -86,7 +86,6 @@ func (node *Node) LoadNodeConfig() error {
 			node.GetLog().Error("Connector registry doesn't have thing_registry instance")
 		}
 
-
 		node.intp = interp.New(interp.Options{})
 		node.intp.Use(Symbols)
 		v, err := node.intp.Eval(node.config.ScriptBody)

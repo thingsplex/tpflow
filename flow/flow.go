@@ -237,7 +237,7 @@ func (fl *Flow) IsNodeValid(node *model.MetaNode) bool {
 	//}
 	return true
 }
-// T
+//StartFlowInstance starts new flow instance using configured mode
 func (fl *Flow) StartFlowInstance(reactorEvent model.ReactorEvent) {
 	switch fl.FlowMeta.ParallelExecution {
 	case model.ParallelExecutionKeepFirst:
@@ -266,7 +266,7 @@ func (fl *Flow) StartFlowInstance(reactorEvent model.ReactorEvent) {
 	go fl.run(reactorEvent)
 }
 
-// Terminating all running instance except 1 caller instance
+// TerminateRunningInstances  terminates all running instance except 1 caller instance
 func (fl *Flow) TerminateRunningInstances() {
 	// aborting all run loops
 	fl.opContext.IsFlowRunning = false
@@ -288,7 +288,7 @@ func (fl *Flow) TerminateRunningInstances() {
 	fl.getLog().Debugf("-- All instances were terminated --")
 }
 
-// Invoked by trigger node in it's own goroutine
+// run is Invoked by trigger node in its own goroutine
 func (fl *Flow) run(reactorEvent model.ReactorEvent) {
 	var transitionNodeId model.NodeID
 	flowId := utils.GenerateRandomNumber()
@@ -299,8 +299,8 @@ func (fl *Flow) run(reactorEvent model.ReactorEvent) {
 		//delete(fl.instances,flowId)
 		fl.mtx.Unlock()
 		if r := recover(); r != nil {
-			fl.getLog().Error(" Flow process CRASHED with error : ", r)
-			fl.getLog().Errorf(" Crashed while processing message from Current Node = %v Next Node = %v ", instance.CurrentNodeId, transitionNodeId)
+			fl.getLog().Errorf(" Flow CRASHED while processing message from Current Node = %v Next Node = %v ", instance.CurrentNodeId, transitionNodeId)
+			fl.getLog().Error( string(debug.Stack()))
 			transitionNodeId = ""
 		}
 		fl.LastExecutionTime = time.Since(fl.StartedAt)

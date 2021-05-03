@@ -7,6 +7,7 @@ type RegistryStorage interface {
 	Disconnect()
 	GetBackendName()string
 	GetServiceById(Id model.ID) (*model.Service, error)
+	GetServicesByLocationAndName(locId model.ID,name string) ([]model.Service, error)
 	GetServiceByFullAddress(address string) (*model.ServiceExtendedView, error)
 	GetLocationById(Id model.ID) (*model.Location, error)
 	GetAllThings() ([]model.Thing, error)

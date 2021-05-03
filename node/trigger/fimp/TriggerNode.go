@@ -184,7 +184,6 @@ func (node *TriggerNode) LookupAddressToAlias(address string) {
 }
 // WaitForEvent is started during flow initialization  or from another flow .
 // Method acts as event listener and creates flow on new event .
-
 func (node *TriggerNode) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 	node.SetReactorRunning(true)
 	timeout := time.Second * time.Duration(node.config.Timeout)

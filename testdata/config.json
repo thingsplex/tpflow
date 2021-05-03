@@ -12,5 +12,6 @@
   "log_file":"",
   "log_level":"debug",
   "log_format":"text",
-  "instance_address":"1"
+  "instance_address":"1",
+  "is_dev_mode": true
 }

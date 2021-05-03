@@ -1,0 +1,9 @@
+{
+  "ID": "httpserver",
+  "Name": "httpserver",
+  "Plugin": "httpserver",
+  "State": "",
+  "Config": {
+    "BindAddress": ":9090"
+  }
+}

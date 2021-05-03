@@ -21,10 +21,15 @@ type LocalRegistryStore struct {
 	locations []model.Location
 }
 
+
 func NewThingRegistryStore(storeFile string) RegistryStorage {
 	store := LocalRegistryStore{thingRegistryStoreFile: storeFile}
 	store.Connect()
 	return &store
+}
+
+func (st *LocalRegistryStore) GetServicesByLocationAndName(locId model.ID, name string) ([]model.Service, error) {
+	return nil , nil
 }
 
 func (st *LocalRegistryStore) GetExtendedDevices() ([]model.DeviceExtendedView, error) {

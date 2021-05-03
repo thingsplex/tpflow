@@ -6,9 +6,9 @@ import (
 	"errors"
 	"github.com/Knetic/govaluate"
 	"github.com/futurehomeno/fimpgo"
+	"github.com/mitchellh/mapstructure"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
-	"github.com/mitchellh/mapstructure"
 	"text/template"
 )
 
@@ -273,11 +273,15 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			}{Variable: lValue.Value}
 			node.template.Execute(&templateBuffer, template)
 
-			err = json.Unmarshal(templateBuffer.Bytes(), &result.Value)
-			node.GetLog().Debug("Template output:", result.Value)
-			if err != nil {
-				node.GetLog().Warn("Error Unmarshaled template output", err)
-				return []model.NodeID{node.Meta().ErrorTransition}, err
+			if node.nodeConfig.TargetVariableType == "string" {
+				result.Value = string(templateBuffer.Bytes())
+			}else {
+				err = json.Unmarshal(templateBuffer.Bytes(), &result.Value)
+				node.GetLog().Debug("Template output:", result.Value)
+				if err != nil {
+					node.GetLog().Warn("Error Unmarshaled template output", err)
+					return []model.NodeID{node.Meta().ErrorTransition}, err
+				}
 			}
 
 			result.ValueType = node.nodeConfig.TargetVariableType

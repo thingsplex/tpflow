@@ -24,19 +24,19 @@ func NewRegistry(configDir string) *Registry {
 	return &reg
 }
 
-// Adds existing connection as connector instance into the registry
+// AddConnection Adds existing connection as connector instance into the registry
 func (reg *Registry) AddConnection(id string, name string, connType string, conn model.ConnInterface) {
 	inst := model.Instance{ID: id, Name: name, Plugin: connType, Connection: conn}
 	reg.instances = append(reg.instances, &inst)
 }
 
-// Adds existing instance to registry
+// AddInstance Adds existing instance to registry
 func (reg *Registry) AddInstance(inst *model.Instance) {
 	reg.instances = append(reg.instances, inst)
 	log.Info("<ConnRegistry> Instance was added , id = %s , name = %s ", inst.ID, inst.Name)
 }
 
-// Creates instance of connector using one of registered plugins
+// CreateInstance Creates instance of connector using one of registered plugins
 func (reg *Registry) CreateInstance(id string, name string, plugin string, config interface{}) model.ConnInterface {
 	connPlugin := plugins.GetPlugin(plugin)
 	if connPlugin != nil {
@@ -50,7 +50,7 @@ func (reg *Registry) CreateInstance(id string, name string, plugin string, confi
 	return nil
 }
 
-// Returns pointer to existing instance of connector
+// GetInstance Returns pointer to existing instance of connector
 func (reg *Registry) GetInstance(id string) *model.Instance {
 	for i := range reg.instances {
 		if reg.instances[i].ID == id {
@@ -60,7 +60,7 @@ func (reg *Registry) GetInstance(id string) *model.Instance {
 	return nil
 }
 
-// Returns pointer to existing instance of connector
+// GetAllInstances Returns pointer to existing instance of connector
 func (reg *Registry) GetAllInstances() []model.InstanceView {
 	var instList []model.InstanceView
 	for i := range reg.instances {

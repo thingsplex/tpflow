@@ -2,9 +2,9 @@ package fimpmqtt
 
 import (
 	"github.com/futurehomeno/fimpgo"
-	"github.com/thingsplex/tpflow/connector/model"
-	"github.com/labstack/gommon/log"
 	"github.com/mitchellh/mapstructure"
+	log "github.com/sirupsen/logrus"
+	"github.com/thingsplex/tpflow/connector/model"
 )
 
 type Connector struct {

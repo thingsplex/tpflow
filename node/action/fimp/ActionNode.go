@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"github.com/futurehomeno/fimpgo"
+	"github.com/mitchellh/mapstructure"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
-	"github.com/mitchellh/mapstructure"
 	"text/template"
 )
 
@@ -20,7 +20,7 @@ type Node struct {
 
 type NodeConfig struct {
 	DefaultValue             model.Variable
-	VariableName              string
+	VariableName             string
 	VariableType             string
 	IsVariableGlobal         bool
 	Props                    fimpgo.Props

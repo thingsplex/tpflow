@@ -65,6 +65,20 @@ func (VinculumRegistryStore) GetServiceByFullAddress(address string) (*model.Ser
 	return nil, errors.New("not implemented")
 }
 
+func (r *VinculumRegistryStore) GetServicesByLocationAndName(locId model.ID, name string) ([]model.Service, error) {
+	var result []model.Service
+	services , err := r.GetAllServices()
+	if err != nil {
+		return nil, err
+	}
+	for i := range services {
+		if (services[i].Name == name || name =="" )&& services[i].LocationId == locId {
+			result = append(result,services[i])
+		}
+	}
+	return result , err
+}
+
 func (r *VinculumRegistryStore) GetLocationById(Id model.ID) (*model.Location, error) {
 	locations, err := r.GetAllLocations()
 	if err != nil {
@@ -81,6 +95,7 @@ func (r *VinculumRegistryStore) GetLocationById(Id model.ID) (*model.Location, e
 
 func (r *VinculumRegistryStore) GetAllThings() ([]model.Thing, error) {
 	site, err := r.vApi.GetSite(true)
+
 	if err != nil {
 		return nil, err
 	}
