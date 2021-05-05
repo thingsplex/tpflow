@@ -1,4 +1,4 @@
-version="1.1.1"
+version="1.2.0"
 version_file=VERSION
 working_dir=$(shell pwd)
 arch="armhf"
@@ -30,6 +30,7 @@ package-tar:
 
 package-deb-doc:
 	@echo "Packaging application as debian package"
+	find package/ -name ".DS_Store" -type f -delete
 	chmod a+x package/debian/DEBIAN/*
 	cp tpflow package/debian/opt/thingsplex/tpflow/
 	cp -R extlibs package/debian/opt/thingsplex/tpflow/

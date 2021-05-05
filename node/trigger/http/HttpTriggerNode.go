@@ -33,6 +33,8 @@ type Config struct {
 	PayloadFormat       string // fimp,json, none , form
 	Method              string // GET,POST,PUT,DELETE
 	IsSync              bool   // sync - the flow will wait for reply action , async - response is returned to caller right away
+	IsWs                bool   // A flow must have only one websocket trigger node.
+	MapFormParamsToVars bool
 }
 
 func NewHttpTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
@@ -43,13 +45,12 @@ func NewHttpTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.Meta
 	node.SetMeta(meta)
 	node.config = Config{}
 	node.SetupBaseNode()
-	node.nodeGlobalId = node.FlowOpCtx().FlowId + "_" + string(node.GetMetaNode().Id)
 	return &node
 }
 
 func (node *Node) Init() error {
 	node.msgInStream = make(chan http.RequestEvent,10)
-	node.httpServerConn.RegisterFlow(node.nodeGlobalId,node.config.IsSync,node.msgInStream)
+	node.httpServerConn.RegisterFlow(node.nodeGlobalId,node.config.IsSync,node.config.IsWs,false,node.msgInStream)
 	return nil
 }
 
@@ -60,7 +61,6 @@ func (node *Node) Cleanup() error {
 
 	return nil
 }
-
 
 func (node *Node) LoadNodeConfig() error {
 	err := mapstructure.Decode(node.Meta().Config, &node.config)
@@ -84,6 +84,13 @@ func (node *Node) LoadNodeConfig() error {
 	} else {
 		node.GetLog().Error("Connector registry doesn't have httpserv instance")
 		return errors.New("can't find httpserv connector")
+	}
+	if node.config.IsWs {
+		// Flow shares single WS connection.
+		node.nodeGlobalId = node.FlowOpCtx().FlowId
+	}else {
+		// Flow can have multiple rest endpoints.
+		node.nodeGlobalId = node.FlowOpCtx().FlowId + "_" + string(node.GetMetaNode().Id)
 	}
 
 	return err
@@ -119,15 +126,20 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 			if newMsg.HttpRequest.Method != node.config.Method {
 				continue
 			}
-
+			var err error
 			switch node.config.PayloadFormat {
 			case PayloadFormatFimp:
 				var body []byte
-				_ , err := newMsg.HttpRequest.Body.Read(body)
-				if err != nil {
-					node.GetLog().Info("Can't read http payload . Err ",err.Error())
-					continue
+				if newMsg.IsWsMsg {
+					body = newMsg.Payload
+				}else {
+					_ , err = newMsg.HttpRequest.Body.Read(body)
+					if err != nil {
+						node.GetLog().Info("Can't read http payload . Err ",err.Error())
+						continue
+					}
 				}
+
 				fimpMsg,err = fimpgo.NewMessageFromBytes(body)
 				if err != nil {
 					node.GetLog().Info("Can't decode fimp message from http payload . Err ",err.Error())
@@ -135,13 +147,18 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 				}
 			case PayloadFormatJson:
 				var body []byte
-				_ , err := newMsg.HttpRequest.Body.Read(body)
-				if err != nil {
-					node.GetLog().Info("Can't read http payload . Err ",err.Error())
-					continue
+				if newMsg.IsWsMsg {
+					body = newMsg.Payload
+				}else {
+					_ , err = newMsg.HttpRequest.Body.Read(body)
+					if err != nil {
+						node.GetLog().Info("Can't read http payload . Err ",err.Error())
+						continue
+					}
 				}
+				node.GetLog().Debug("New json message: ",string(body))
 				var jVal interface{}
-				err = json.Unmarshal(body,jVal)
+				err = json.Unmarshal(body,&jVal)
 				if err != nil {
 					node.GetLog().Info("Can't unmarshal JSON from HTTP payload . Err ",err.Error())
 					continue
@@ -153,7 +170,16 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 
 			case PayloadFormatForm:
 				newMsg.HttpRequest.ParseForm()
-				fimpMsg = fimpgo.NewObjectMessage("evt.httpserv.form_request","tpflow",	newMsg.HttpRequest.Form,nil,nil,nil)
+				r := map[string]string {}
+				for k,v :=range newMsg.HttpRequest.Form {
+					if len(v)>0 {
+						r[k] = v[0]
+						if node.config.MapFormParamsToVars {
+							node.ctx.SetVariable(k, "string", v[0], "", node.FlowOpCtx().FlowId, true)
+						}
+					}
+				}
+				fimpMsg = fimpgo.NewObjectMessage("evt.httpserv.form_request","tpflow",r,nil,nil,nil)
 			}
 
 			rMsg := model.Message{RequestId: newMsg.RequestId,Payload: *fimpMsg}

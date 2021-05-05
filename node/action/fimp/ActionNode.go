@@ -30,6 +30,8 @@ type NodeConfig struct {
 	ResponseToTopic          string // in request-response communication requester can set topic to which server will send response
 	IsResponseToReq          bool // Indicates that the action is response to request and corid field should be set to the same value as request uuid
 	ConnectorID              string
+	ReplyToReq               bool
+	ForwardInputMessage      bool
 }
 
 func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
@@ -141,10 +143,16 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			fimpMsg.ValueType = node.config.DefaultValue.ValueType
 		}
 	}
+	var address string
+	if node.config.ReplyToReq && msg.Payload.ResponseToTopic != "" {
+		address = msg.Payload.ResponseToTopic
+		fimpMsg.CorrelationID = msg.Payload.UID
+	}else {
+		var addrTemplateBuffer bytes.Buffer
+		node.addressTemplate.Execute(&addrTemplateBuffer, nil)
+		address = addrTemplateBuffer.String()
+	}
 
-	var addrTemplateBuffer bytes.Buffer
-	node.addressTemplate.Execute(&addrTemplateBuffer, nil)
-	address := addrTemplateBuffer.String()
 	node.GetLog().Debug(" Publishing to: ", address)
 	node.transport.PublishToTopic(address,fimpMsg)
 	return []model.NodeID{node.Meta().SuccessTransition}, nil

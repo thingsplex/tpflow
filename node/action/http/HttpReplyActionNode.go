@@ -12,17 +12,18 @@ import (
 // Node is Http reply node that sends response to request received from HTTP trigger node
 type Node struct {
 	base.BaseNode
-	ctx    *model.Context
-	config NodeConfig
+	ctx            *model.Context
+	config         NodeConfig
 	httpServerConn *http.Connector
+	nodeGlobalId   string
 }
 
 type NodeConfig struct {
-	ConnectorID      string
-	VariableName     string
-	VariableType     string
-	IsVariableGlobal bool
-	ResponsePayloadFormat string // json,xml,html
+	ConnectorID           string
+	InputVar              model.NodeVariableDef
+	ResponsePayloadFormat string // json,fimp,xml,html
+	IsWs                  bool   // message is sent over active WS connection
+	IsPublishOnly         bool   // true - means there is no trigger node , only publish
 }
 
 func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
@@ -55,6 +56,19 @@ func (node *Node) LoadNodeConfig() error {
 		node.GetLog().Error("Connector registry doesn't have httpserv instance")
 		return fmt.Errorf("can't find httpserv connector")
 	}
+
+	if node.config.IsWs {
+		// Flow shares single WS connection.
+		node.nodeGlobalId = node.FlowOpCtx().FlowId
+	} else {
+		// Flow can have multiple rest endpoints.
+		node.nodeGlobalId = node.FlowOpCtx().FlowId + "_" + string(node.GetMetaNode().Id)
+	}
+
+	if node.config.IsWs && node.config.IsPublishOnly {
+		node.httpServerConn.RegisterFlow(node.nodeGlobalId, true, true, true, nil)
+	}
+
 	return err
 }
 
@@ -63,21 +77,25 @@ func (node *Node) WaitForEvent(responseChannel chan model.ReactorEvent) {
 
 func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	node.GetLog().Info(" Executing Node . Name = ", node.Meta().Label)
-
-	variable, err := node.ctx.GetVariable(node.config.VariableName, node.FlowOpCtx().FlowId)
-	if err != nil {
-		node.GetLog().Error("Can't get variable . Error:", err)
-		return nil, err
-	}
 	var body []byte
-	if variable.ValueType == "string" {
-		body = []byte(variable.Value.(string))
-	}else {
-		body,err = json.Marshal(variable.Value)
+	if node.config.InputVar.Name != "" {
+		variable, err := node.ctx.GetVariable(node.config.InputVar.Name, node.FlowOpCtx().FlowId)
 		if err != nil {
-			node.GetLog().Error("Can't marshal json . Error:", err)
-			return []model.NodeID{node.Meta().ErrorTransition}, err
+			node.GetLog().Error("Can't get variable . Error:", err)
+			return nil, err
 		}
+
+		if variable.ValueType == "string" {
+			body = []byte(variable.Value.(string))
+		} else {
+			body, err = json.Marshal(variable.Value)
+			if err != nil {
+				node.GetLog().Error("Can't marshal json . Error:", err)
+				return []model.NodeID{node.Meta().ErrorTransition}, err
+			}
+		}
+	} else {
+		body, _ = msg.Payload.SerializeToJson()
 	}
 
 	contentType := "application/json"
@@ -85,8 +103,11 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	if node.config.ResponsePayloadFormat == "html" {
 		contentType = "text/html"
 	}
-
-	node.httpServerConn.ReplyToRequest(msg.RequestId,body,contentType)
+	if node.config.IsWs {
+		node.httpServerConn.PublishWs(node.nodeGlobalId, body)
+	} else {
+		node.httpServerConn.ReplyToRequest(msg.RequestId, body, contentType)
+	}
 
 	return []model.NodeID{node.Meta().SuccessTransition}, nil
 }
