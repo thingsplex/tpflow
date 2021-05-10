@@ -1,12 +1,14 @@
 package http
 
 import (
+	"bytes"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow/connector/model"
 	"github.com/thingsplex/tpflow/utils"
+	"html/template"
 	"net/http"
 	"runtime/debug"
 	"sync"
@@ -16,6 +18,7 @@ import (
 var (
 	brUpgrader = websocket.Upgrader{
 		Subprotocols: []string{},
+		HandshakeTimeout: time.Second*20,
 		CheckOrigin: func(r *http.Request) bool {
 			return true
 		},
@@ -48,8 +51,10 @@ type RequestEvent struct {
 type flowStream struct {
 	reqChannel    chan RequestEvent // channel is used to send message from HTTP/WS to flow trigger node
 	isSync        bool
-	isWs          bool
+	IsWs          bool
 	isPublishOnly bool // true - mean that flow will only send messages to client connection but is not interested in receiving events . false - flow  has trigger
+	FlowIdAlias   string // alias to flowId , can be used in url instead of flowId
+	Name          string // human readable name
 }
 
 type liveConnection struct {
@@ -82,6 +87,7 @@ func (conn *Connector) Init() error {
 	log.Info("<HttpConn> Configuring HTTP router.")
 	conn.server = &http.Server{Addr: conn.config.BindAddress}
 	conn.router = mux.NewRouter()
+	conn.router.HandleFunc("/index", conn.index)
 	conn.router.HandleFunc("/flow/{id}/rest", conn.httpFlowRouter)
 	conn.router.HandleFunc("/flow/{id}/ws", conn.wsFlowRouter)
 	conn.server.Handler = conn.router
@@ -151,7 +157,7 @@ func (conn *Connector) wsFlowRouter(w http.ResponseWriter, r *http.Request) {
 		log.Debug("<HttpConn> no path for ", flowId)
 		return
 	}
-	if !stream.isWs {
+	if !stream.IsWs {
 		log.Info("<HttpConn> The stream doesn't support WS capabilities")
 		return
 	}
@@ -162,7 +168,6 @@ func (conn *Connector) wsFlowRouter(w http.ResponseWriter, r *http.Request) {
 		log.Error("<HttpConn> Can't upgrade to WS . Error:", err)
 		return
 	}
-
 
 	conn.liveConnections.Store(reqId, liveConnection{respWriter: w, startTime: time.Now(),isWs: true,wsConn: ws,flowId: flowId})
 
@@ -188,8 +193,33 @@ func (conn *Connector) wsFlowRouter(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (conn *Connector) index(w http.ResponseWriter, r *http.Request) {
+	const indexTemplate = `
+    <html lang="en">
+    <head> <title> TPflow http/ws endpoints </title> </head>
+    <body>
+    <p>List of endpoints</p>
+    {{ range $index, $element := . }} 
+      {{ if $element.IsWs }}
+        <p> Websocket  : <a href="/flow/{{ $index }}/ws"> /flow/{{ $index }}/ws </a> - {{ $element.Name }} </p> 
+      {{ else }} 
+		<p> Http : <a href="/flow/{{ $index }}/rest"> /flow/{{ $index }}/rest </a> - {{ $element.Name }} </p> 
+      {{ end }} 
+    {{ end }}
+    </body>
+    </html>
+    `
+	t, err := template.New("foo").Parse(indexTemplate)
+	if err != nil {
+		return
+	}
+	var out bytes.Buffer
+	err = t.Execute(&out, conn.flowStreamRegistry)
+	w.Write(out.Bytes())
+}
+
 // RegisterFlow registers node of the flow
-func (conn *Connector) RegisterFlow(flowId string, isSync bool,isWs bool,publishOnly bool, reqChannel chan RequestEvent) {
+func (conn *Connector) RegisterFlow(flowId string, isSync bool,isWs bool,publishOnly bool, reqChannel chan RequestEvent,alias,name string ) {
 	if reqChannel == nil {
 		return
 	}
@@ -201,8 +231,10 @@ func (conn *Connector) RegisterFlow(flowId string, isSync bool,isWs bool,publish
 	conn.flowStreamRegistry[flowId] = flowStream{
 		reqChannel:    reqChannel,
 		isSync:        isSync,
-		isWs:          isWs,
+		IsWs:          isWs,
 		isPublishOnly: publishOnly,
+		FlowIdAlias:  alias,
+		Name: name,
 	}
 	conn.flowStreamMutex.Unlock()
 	log.Debug("<HttpConn> Registered flow with id = ", flowId)
@@ -273,9 +305,13 @@ func (conn *Connector) PublishWs(flowId string,payload []byte) {
 			return true
 		}
 		if lConn.flowId == flowId {
+			// TODO : Research is the operation must be executed in async way to avoid blocking , which can happen if client consumes with different speed.
+			lConn.wsConn.SetWriteDeadline(time.Now().Add(time.Second*10))
 			err := lConn.wsConn.WriteMessage(websocket.TextMessage,payload)
-			if err != nil {
+			if err == nil {
 				log.Debug("<httpConn> Message forwarded to client")
+			}else {
+				log.Info("<httpClient> Can't write to WS connection. Err:",err.Error())
 			}
 		}
 		return true

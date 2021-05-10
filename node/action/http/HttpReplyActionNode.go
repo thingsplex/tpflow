@@ -24,6 +24,7 @@ type NodeConfig struct {
 	ResponsePayloadFormat string // json,fimp,xml,html
 	IsWs                  bool   // message is sent over active WS connection
 	IsPublishOnly         bool   // true - means there is no trigger node , only publish
+	Alias                 string // alias that will be used in url instead of flowId
 }
 
 func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
@@ -66,7 +67,8 @@ func (node *Node) LoadNodeConfig() error {
 	}
 
 	if node.config.IsWs && node.config.IsPublishOnly {
-		node.httpServerConn.RegisterFlow(node.nodeGlobalId, true, true, true, nil)
+		name := fmt.Sprintf("%s %s", node.FlowOpCtx().FlowMeta.Name,node.BaseNode.GetMetaNode().Label)
+		node.httpServerConn.RegisterFlow(node.nodeGlobalId, true, true, true, nil,node.config.Alias,name)
 	}
 
 	return err

@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/mitchellh/mapstructure"
 	"github.com/thingsplex/tpflow/connector/plugins/http"
@@ -35,6 +36,8 @@ type Config struct {
 	IsSync              bool   // sync - the flow will wait for reply action , async - response is returned to caller right away
 	IsWs                bool   // A flow must have only one websocket trigger node.
 	MapFormParamsToVars bool
+	Alias               string // alias to be used instead of flow id
+	OutputVar           model.NodeVariableDef // Defines target storage for payload. If not set , payload will be set to input variable.
 }
 
 func NewHttpTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
@@ -50,7 +53,8 @@ func NewHttpTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.Meta
 
 func (node *Node) Init() error {
 	node.msgInStream = make(chan http.RequestEvent,10)
-	node.httpServerConn.RegisterFlow(node.nodeGlobalId,node.config.IsSync,node.config.IsWs,false,node.msgInStream)
+	name := fmt.Sprintf("%s %s", node.FlowOpCtx().FlowMeta.Name,node.BaseNode.GetMetaNode().Label)
+	node.httpServerConn.RegisterFlow(node.nodeGlobalId,node.config.IsSync,node.config.IsWs,false,node.msgInStream,node.config.Alias,name)
 	return nil
 }
 
@@ -145,6 +149,15 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 					node.GetLog().Info("Can't decode fimp message from http payload . Err ",err.Error())
 					continue
 				}
+
+				if node.config.OutputVar.Name != "" {
+					err = node.ctx.SetVariable(node.config.OutputVar.Name, fimpgo.VTypeObject, fimpMsg,"", node.FlowOpCtx().FlowId, node.config.OutputVar.InMemory)
+					if err != nil {
+						node.GetLog().Error("Can't save input data to variable . Err :",err.Error())
+					}
+					fimpMsg = nil
+				}
+
 			case PayloadFormatJson:
 				var body []byte
 				if newMsg.IsWsMsg {
@@ -163,10 +176,18 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 					node.GetLog().Info("Can't unmarshal JSON from HTTP payload . Err ",err.Error())
 					continue
 				}
-				fimpMsg = fimpgo.NewObjectMessage("evt.httpserv.json_request","tpflow",jVal,nil,nil,nil)
+				if node.config.OutputVar.Name != "" {
+					err = node.ctx.SetVariable(node.config.OutputVar.Name, fimpgo.VTypeObject, jVal,"", node.FlowOpCtx().FlowId, node.config.OutputVar.InMemory)
+					if err != nil {
+						node.GetLog().Error("Can't save input data to variable . Err :",err.Error())
+					}
+					fimpMsg = nil
+				}else {
+					fimpMsg = fimpgo.NewObjectMessage("evt.httpserv.json_request","tpflow",jVal,nil,nil,nil)
+				}
 
 			case PayloadFormatNone:
-				fimpMsg = fimpgo.NewNullMessage("evt.httpserv.empty_request","tpflow",nil,nil,nil)
+				//fimpMsg = fimpgo.NewNullMessage("evt.httpserv.empty_request","tpflow",nil,nil,nil)
 
 			case PayloadFormatForm:
 				newMsg.HttpRequest.ParseForm()
@@ -179,10 +200,21 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 						}
 					}
 				}
-				fimpMsg = fimpgo.NewObjectMessage("evt.httpserv.form_request","tpflow",r,nil,nil,nil)
+				if node.config.OutputVar.Name != "" {
+					err = node.ctx.SetVariable(node.config.OutputVar.Name, fimpgo.VTypeObject, fimpMsg,"", node.FlowOpCtx().FlowId, node.config.OutputVar.InMemory)
+					if err != nil {
+						node.GetLog().Error("Can't save input data to variable . Err :",err.Error())
+					}
+					fimpMsg = nil
+				}else {
+					fimpMsg = fimpgo.NewObjectMessage("evt.httpserv.form_request","tpflow",r,nil,nil,nil)
+				}
 			}
 
-			rMsg := model.Message{RequestId: newMsg.RequestId,Payload: *fimpMsg}
+			rMsg := model.Message{RequestId: newMsg.RequestId}
+			if fimpMsg != nil {
+				rMsg.Payload = *fimpMsg
+			}
 			newEvent := model.ReactorEvent{Msg: rMsg, TransitionNodeId: node.Meta().SuccessTransition}
 			// Flow is executed within flow runner goroutine
 			node.FlowRunner()(newEvent)

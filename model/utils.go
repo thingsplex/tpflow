@@ -89,6 +89,8 @@ func GetValueByPath(msg *Message, pathType string, path string, targetVariableTy
 				}
 			case "bool":
 				switch val := varValue.(type) {
+				case bool:
+					return val,nil
 				case string:
 					return strconv.ParseBool(val)
 				case int64, float64, float32:

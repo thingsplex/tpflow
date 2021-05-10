@@ -89,8 +89,8 @@ func (node *TriggerNode) initSubscriptions() {
 	node.msgInStream = make(fimpgo.MessageCh, 10)
 	node.transport.RegisterChannelWithFilter(node.msgInStreamName, node.msgInStream,fimpgo.FimpFilter{
 		Topic:     node.subAddress,
-		Service:   node.Meta().Service,
-		Interface: node.Meta().ServiceInterface,
+		Service:   node.Meta().Service,           // Supports  wildcards *
+		Interface: node.Meta().ServiceInterface,  // Supports  wildcards *
 	})
 
 }
