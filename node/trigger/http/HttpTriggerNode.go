@@ -9,6 +9,7 @@ import (
 	"github.com/thingsplex/tpflow/connector/plugins/http"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
+	"io/ioutil"
 	"time"
 )
 
@@ -128,6 +129,7 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 		case newMsg := <-node.msgInStream:
 			node.GetLog().Debug("--New http message--")
 			if newMsg.HttpRequest.Method != node.config.Method {
+				node.httpServerConn.ReplyToRequest(newMsg.RequestId, nil, "")
 				continue
 			}
 			var err error
@@ -137,9 +139,10 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 				if newMsg.IsWsMsg {
 					body = newMsg.Payload
 				}else {
-					_ , err = newMsg.HttpRequest.Body.Read(body)
+					body, err = ioutil.ReadAll(newMsg.HttpRequest.Body)
 					if err != nil {
 						node.GetLog().Info("Can't read http payload . Err ",err.Error())
+						node.httpServerConn.ReplyToRequest(newMsg.RequestId, nil, "")
 						continue
 					}
 				}
@@ -147,6 +150,7 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 				fimpMsg,err = fimpgo.NewMessageFromBytes(body)
 				if err != nil {
 					node.GetLog().Info("Can't decode fimp message from http payload . Err ",err.Error())
+					node.httpServerConn.ReplyToRequest(newMsg.RequestId, nil, "")
 					continue
 				}
 
@@ -163,9 +167,10 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 				if newMsg.IsWsMsg {
 					body = newMsg.Payload
 				}else {
-					_ , err = newMsg.HttpRequest.Body.Read(body)
-					if err != nil {
-						node.GetLog().Info("Can't read http payload . Err ",err.Error())
+					body, err = ioutil.ReadAll(newMsg.HttpRequest.Body)
+					if err != nil  {
+						node.GetLog().Info("Can't read http payload or payload is empty . Err:",err.Error())
+						node.httpServerConn.ReplyToRequest(newMsg.RequestId, nil, "")
 						continue
 					}
 				}
@@ -174,6 +179,7 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 				err = json.Unmarshal(body,&jVal)
 				if err != nil {
 					node.GetLog().Info("Can't unmarshal JSON from HTTP payload . Err ",err.Error())
+					node.httpServerConn.ReplyToRequest(newMsg.RequestId, nil, "")
 					continue
 				}
 				if node.config.OutputVar.Name != "" {
@@ -190,8 +196,12 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 				//fimpMsg = fimpgo.NewNullMessage("evt.httpserv.empty_request","tpflow",nil,nil,nil)
 
 			case PayloadFormatForm:
-				newMsg.HttpRequest.ParseForm()
+				err := newMsg.HttpRequest.ParseForm()
+				if err != nil {
+					node.GetLog().Info("Can't parse form params . Err:",err.Error())
+				}
 				r := map[string]string {}
+				node.GetLog().Info("Mappping param ",newMsg.HttpRequest.Form)
 				for k,v :=range newMsg.HttpRequest.Form {
 					if len(v)>0 {
 						r[k] = v[0]
@@ -209,6 +219,10 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 				}else {
 					fimpMsg = fimpgo.NewObjectMessage("evt.httpserv.form_request","tpflow",r,nil,nil,nil)
 				}
+			}
+
+			if !node.config.IsSync {
+				node.httpServerConn.ReplyToRequest(newMsg.RequestId, nil, "")
 			}
 
 			rMsg := model.Message{RequestId: newMsg.RequestId}

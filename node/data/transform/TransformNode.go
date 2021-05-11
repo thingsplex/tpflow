@@ -269,8 +269,11 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			node.GetLog().Debug(" Doing template transformation ")
 			var templateBuffer bytes.Buffer
 			var template = struct {
-				Variable interface{}
-			}{Variable: lValue.Value}
+				Variable interface{} // Available from template
+				FlowId string
+				NodeId model.NodeID
+				NodeLabel string
+			}{Variable: lValue.Value,FlowId: node.FlowOpCtx().FlowId,NodeId: node.GetMetaNode().Id,NodeLabel: node.GetMetaNode().Label}
 			node.template.Execute(&templateBuffer, template)
 
 			if node.nodeConfig.TargetVariableType == "string" {

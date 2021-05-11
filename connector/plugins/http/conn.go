@@ -119,16 +119,15 @@ func (conn *Connector) httpFlowRouter(w http.ResponseWriter, r *http.Request) {
 
 	var reqId int32
 	var responseSignal chan bool
-	if stream.isSync {
-		responseSignal = make(chan bool)
-		reqId = utils.GenerateRandomNumber()
-		conn.liveConnections.Store(reqId, liveConnection{respWriter: w, startTime: time.Now(),responseSignal:responseSignal  })
-	}
+	responseSignal = make(chan bool)
+	reqId = utils.GenerateRandomNumber()
+	conn.liveConnections.Store(reqId, liveConnection{respWriter: w, startTime: time.Now(),responseSignal:responseSignal  })
+
 	if stream.reqChannel != nil {
 		stream.reqChannel <- RequestEvent{RequestId: reqId, HttpRequest: r}
 	}
 
-	if stream.isSync && responseSignal !=nil {
+	if responseSignal !=nil {
 		<-responseSignal
 	}
 
@@ -287,10 +286,12 @@ func (conn *Connector) ReplyToRequest(requestId int32, payload []byte,responseCo
 			log.Debug("<httpConn> Message forwarded to client")
 		}
 	}else{
-		log.Debug("<httpConn> Sending http reply , Payload size = ", len(payload))
-		headers := lConn.respWriter.Header()
-		headers.Set("Content-Type", responseContentType)
-		lConn.respWriter.Write(payload)
+		if payload != nil {
+			log.Debug("<httpConn> Sending http reply , Payload size = ", len(payload))
+			headers := lConn.respWriter.Header()
+			headers.Set("Content-Type", responseContentType)
+			lConn.respWriter.Write(payload)
+		}
 		lConn.responseSignal <- true
 	}
 
