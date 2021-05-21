@@ -49,7 +49,7 @@ func (conn *Connector) Init() error {
 	conn.state = "INIT_FAILED"
 	log.Info("<FimpConn> Initializing fimp MQTT client.")
 	clientId := conn.config.MqttClientIdPrefix + "flow_manager"
-	conn.msgTransport = fimpgo.NewMqttTransport(conn.config.MqttServerURI, clientId, conn.config.MqttUsername, conn.config.MqttPassword, true, 1, 1)
+	conn.msgTransport = fimpgo.NewMqttTransport(conn.config.MqttServerURI, clientId, conn.config.MqttUsername, conn.config.MqttPassword, true, 0, 0)
 	conn.msgTransport.SetGlobalTopicPrefix(conn.config.MqttTopicGlobalPrefix)
 	err := conn.msgTransport.Start()
 	log.Info("<FimpConn> Mqtt transport connected")

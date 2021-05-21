@@ -27,6 +27,7 @@ type ScriptParams struct {
 	FlowId      string
 	Mqtt 		*fimpgo.MqttTransport
 	Registry    storage.RegistryStorage
+	Settings    map[string]model.Setting
 }
 
 type NodeConfig struct {
@@ -65,6 +66,7 @@ func (node *Node) LoadNodeConfig() error {
 	case "golang":
 		initScriptExports()
 		node.scriptParams.FlowId = node.BaseNode.FlowOpCtx().FlowId
+		node.scriptParams.Settings = node.FlowOpCtx().FlowMeta.Settings
 		fimpTransportInstance := node.ConnectorRegistry().GetInstance("fimpmqtt")
 		var ok bool
 		if fimpTransportInstance != nil {
@@ -105,7 +107,7 @@ func (node *Node) LoadNodeConfig() error {
 	return err
 }
 
-// is invoked when node flow is stopped
+// Cleanup is invoked when node flow is stopped
 func (node *Node) Cleanup() error {
 	if node.scriptFullPath != "" {
 		os.Remove(node.scriptFullPath)

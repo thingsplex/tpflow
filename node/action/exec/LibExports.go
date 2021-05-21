@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/thingsplex/tpflow/model"
+	storage "github.com/thingsplex/tpflow/registry/storage"
 	"go/constant"
 	"go/token"
 	"math"
@@ -29,6 +30,10 @@ func initScriptExports() {
 	}
 	Symbols["github.com/thingsplex/tpflow/node/action/exec"] = map[string]reflect.Value{
 		"ScriptParams": reflect.ValueOf((*ScriptParams)(nil)),
+	}
+
+	Symbols["github.com/thingsplex/tpflow/registry/storage"] = map[string]reflect.Value{
+		"RegistryStorage": reflect.ValueOf((*storage.RegistryStorage)(nil)),
 	}
 
 	Symbols["github.com/futurehomeno/fimpgo"] = map[string]reflect.Value{

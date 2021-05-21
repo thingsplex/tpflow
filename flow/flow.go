@@ -414,7 +414,7 @@ func (fl *Flow) run(reactorEvent model.ReactorEvent) {
 
 }
 
-// Starts Flow loop in its own goroutine and sets isFlowRunning flag to true
+// Start starts Flow loop in its own goroutine and sets isFlowRunning flag to true
 // Init sequence : STARTING -> RUNNING , STATING -> NOT_CONFIGURED ,
 func (fl *Flow) Start() error {
 	if fl.GetFlowState() == "RUNNING" {
@@ -445,7 +445,7 @@ func (fl *Flow) Start() error {
 	return nil
 }
 
-// Terminates flow loop , stops goroutine .
+// Stop terminates flow loop , stops goroutine .
 func (fl *Flow) Stop() error {
 	if fl.GetFlowState() == "STOPPING" {
 		log.Info("Flow is already stopping")

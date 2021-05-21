@@ -101,12 +101,12 @@ func (node *BaseNode) IsReactorRunning() bool {
 	return node.isReactorRunning
 }
 
-// is invoked right before is started but after node was configured
+//Init is invoked right before is started but after node was configured
 func (node *BaseNode) Init() error {
 	return nil
 }
 
-// is invoked when node flow is stopped
+//Cleanup is invoked when node flow is stopped
 func (node *BaseNode) Cleanup() error {
 	return nil
 }
