@@ -39,6 +39,7 @@ type Config struct {
 	MapFormParamsToVars bool
 	Alias               string // alias to be used instead of flow id
 	OutputVar           model.NodeVariableDef // Defines target storage for payload. If not set , payload will be set to input variable.
+	AuthConfig          http.AuthConfig // Node level auth config
 }
 
 func NewHttpTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
@@ -55,7 +56,7 @@ func NewHttpTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.Meta
 func (node *Node) Init() error {
 	node.msgInStream = make(chan http.RequestEvent,10)
 	name := fmt.Sprintf("%s %s", node.FlowOpCtx().FlowMeta.Name,node.BaseNode.GetMetaNode().Label)
-	node.httpServerConn.RegisterFlow(node.nodeGlobalId,node.config.IsSync,node.config.IsWs,false,node.msgInStream,node.config.Alias,name)
+	node.httpServerConn.RegisterFlow(node.nodeGlobalId,node.config.IsSync,node.config.IsWs,false,node.msgInStream,node.config.Alias,name,node.config.AuthConfig)
 	return nil
 }
 
@@ -201,7 +202,7 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 					node.GetLog().Info("Can't parse form params . Err:",err.Error())
 				}
 				r := map[string]string {}
-				node.GetLog().Info("Mappping param ",newMsg.HttpRequest.Form)
+				node.GetLog().Info("Mapping param ",newMsg.HttpRequest.Form)
 				for k,v :=range newMsg.HttpRequest.Form {
 					if len(v)>0 {
 						r[k] = v[0]

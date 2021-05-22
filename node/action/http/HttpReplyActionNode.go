@@ -68,7 +68,7 @@ func (node *Node) LoadNodeConfig() error {
 
 	if node.config.IsWs && node.config.IsPublishOnly {
 		name := fmt.Sprintf("%s %s", node.FlowOpCtx().FlowMeta.Name,node.BaseNode.GetMetaNode().Label)
-		node.httpServerConn.RegisterFlow(node.nodeGlobalId, true, true, true, nil,node.config.Alias,name)
+		node.httpServerConn.RegisterFlow(node.nodeGlobalId, true, true, true, nil,node.config.Alias,name,http.AuthConfig{})
 	}
 
 	return err
