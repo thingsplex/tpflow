@@ -1,12 +1,15 @@
 package http
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"github.com/thingsplex/tpflow/connector/plugins/http"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
+	"text/template"
 )
 
 // Node is Http reply node that sends response to request received from HTTP trigger node
@@ -16,6 +19,7 @@ type Node struct {
 	config         NodeConfig
 	httpServerConn *http.Connector
 	nodeGlobalId   string
+	responseTemplate   *template.Template
 }
 
 type NodeConfig struct {
@@ -25,6 +29,7 @@ type NodeConfig struct {
 	IsWs                  bool   // message is sent over active WS connection
 	IsPublishOnly         bool   // true - means there is no trigger node , only publish
 	Alias                 string // alias that will be used in url instead of flowId
+	ResponseTemplate      string // content of template will be used if input variable is not set .
 }
 
 func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
@@ -71,6 +76,44 @@ func (node *Node) LoadNodeConfig() error {
 		node.httpServerConn.RegisterFlow(node.nodeGlobalId, true, true, true, nil,node.config.Alias,name,http.AuthConfig{})
 	}
 
+	if node.config.ResponseTemplate != "" {
+		funcMap := template.FuncMap{
+			"variable": func(varName string, isGlobal bool) (interface{}, error) {
+				var vari model.Variable
+				var err error
+				if isGlobal {
+					vari, err = node.ctx.GetVariable(varName, "global")
+				} else {
+					vari, err = node.ctx.GetVariable(varName, node.FlowOpCtx().FlowId)
+				}
+
+				if vari.IsNumber() {
+					return vari.ToNumber()
+				}
+				vstr, ok := vari.Value.(string)
+				if ok {
+					return vstr, err
+				} else {
+					return "", errors.New("Only simple types are supported ")
+				}
+
+			},
+			"setting": func(name string) (interface{}, error) {
+				if node.FlowOpCtx().FlowMeta.Settings != nil {
+					s := node.FlowOpCtx().FlowMeta.Settings[name]
+					return s.String(),nil
+				}else {
+					return "",nil
+				}
+			},
+		}
+		node.responseTemplate, err = template.New("transform").Funcs(funcMap).Parse(node.config.ResponseTemplate)
+		if err != nil {
+			node.GetLog().Error(" Failed while parsing request template.Error:", err)
+			return err
+		}
+	}
+
 	return err
 }
 
@@ -80,24 +123,38 @@ func (node *Node) WaitForEvent(responseChannel chan model.ReactorEvent) {
 func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	node.GetLog().Info(" Executing Node . Name = ", node.Meta().Label)
 	var body []byte
-	if node.config.InputVar.Name != "" {
-		variable, err := node.ctx.GetVariable(node.config.InputVar.Name, node.FlowOpCtx().FlowId)
-		if err != nil {
-			node.GetLog().Error("Can't get variable . Error:", err)
-			return nil, err
-		}
 
-		if variable.ValueType == "string" {
-			body = []byte(variable.Value.(string))
-		} else {
-			body, err = json.Marshal(variable.Value)
+	if node.config.ResponseTemplate == "" {
+		if node.config.InputVar.Name != "" {
+			variable, err := node.ctx.GetVariable(node.config.InputVar.Name, node.FlowOpCtx().FlowId)
 			if err != nil {
-				node.GetLog().Error("Can't marshal json . Error:", err)
-				return []model.NodeID{node.Meta().ErrorTransition}, err
+				node.GetLog().Error("Can't get variable . Error:", err)
+				return nil, err
 			}
+
+			if variable.ValueType == "string" {
+				body = []byte(variable.Value.(string))
+			} else {
+				body, err = json.Marshal(variable.Value)
+				if err != nil {
+					node.GetLog().Error("Can't marshal json . Error:", err)
+					return []model.NodeID{node.Meta().ErrorTransition}, err
+				}
+			}
+		} else {
+			msg.Payload.Topic = msg.AddressStr
+			body, _ = msg.Payload.SerializeToJson()
 		}
 	} else {
-		body, _ = msg.Payload.SerializeToJson()
+		var templateBuffer bytes.Buffer
+		var template = struct {
+			Variable interface{} // Available from template
+			FlowId string
+			NodeId model.NodeID
+			NodeLabel string
+		}{Variable: msg.Payload.Value,FlowId: node.FlowOpCtx().FlowId,NodeId: node.GetMetaNode().Id,NodeLabel: node.GetMetaNode().Label}
+		node.responseTemplate.Execute(&templateBuffer, template)
+		body = templateBuffer.Bytes()
 	}
 
 	contentType := "application/json"

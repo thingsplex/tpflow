@@ -77,7 +77,7 @@ func NewConnectorInstance(name string, config interface{}) model.ConnInterface {
 func (conn *Connector) LoadConfig(config interface{}) error {
 	err := mapstructure.Decode(config, &conn.config)
 	if conn.config.BindAddress == "" {
-		conn.config.BindAddress = ":9090"
+		conn.config.BindAddress = ":8082"
 	}
 	return err
 }
@@ -88,7 +88,6 @@ func (conn *Connector) Init() error {
 	log.Info("<HttpConn> Configuring HTTP router.")
 	conn.server = &http.Server{Addr: conn.config.BindAddress}
 	conn.router = mux.NewRouter()
-
 	conn.router.HandleFunc("/index", conn.index)
 	conn.router.HandleFunc("/flow/{id}/rest", conn.httpFlowRouter)
 	conn.router.HandleFunc("/flow/{id}/ws", conn.wsFlowRouter)
@@ -115,7 +114,7 @@ func (conn *Connector) httpFlowRouter(w http.ResponseWriter, r *http.Request) {
 	conn.flowStreamMutex.RUnlock()
 
 	if !conn.isRequestAllowed(w,r,stream.authConfig,flowId) {
-		log.Debug("<HttpConn> Request can't be authenticated ",flowId)
+		log.Debug("<HttpConn> Request is not allowed ",flowId)
 		return
 	}
 
@@ -165,7 +164,7 @@ func (conn *Connector) wsFlowRouter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !conn.isRequestAllowed(w,r,stream.authConfig,flowId) {
-		log.Debug("<HttpConn> Request can't be authenticated ",flowId)
+		log.Debug("<HttpConn> Request not allowed ",flowId)
 		return
 	}
 

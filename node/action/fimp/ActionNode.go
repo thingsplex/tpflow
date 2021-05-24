@@ -138,6 +138,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		if node.config.DefaultValue.Value == "" || node.config.DefaultValue.ValueType == "" {
 			fimpMsg.Value = msg.Payload.Value
 			fimpMsg.ValueType = msg.Payload.ValueType
+			fimpMsg.Topic = msg.AddressStr
 		} else {
 			fimpMsg.Value = node.config.DefaultValue.Value
 			fimpMsg.ValueType = node.config.DefaultValue.ValueType
