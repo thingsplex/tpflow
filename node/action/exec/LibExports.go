@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/futurehomeno/fimpgo"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	storage "github.com/thingsplex/tpflow/registry/storage"
 	"go/constant"
@@ -26,7 +27,7 @@ var Symbols = map[string]map[string]reflect.Value{}
 func initScriptExports() {
 	Symbols["github.com/thingsplex/tpflow/model"] = map[string]reflect.Value{
 		"Message": reflect.ValueOf((*model.Message)(nil)),
-		"Context": reflect.ValueOf((*model.Context)(nil)),
+		"Context": reflect.ValueOf((*context.Context)(nil)),
 	}
 	Symbols["github.com/thingsplex/tpflow/node/action/exec"] = map[string]reflect.Value{
 		"ScriptParams": reflect.ValueOf((*ScriptParams)(nil)),

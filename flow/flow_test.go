@@ -1,9 +1,10 @@
 package flow
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/futurehomeno/fimpgo"
+	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow/connector"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	actfimp "github.com/thingsplex/tpflow/node/action/fimp"
 	"github.com/thingsplex/tpflow/node/action/rest"
@@ -50,7 +51,7 @@ func TestWaitFlow(t *testing.T) {
 	mqtt.SetMessageHandler(onMsg)
 	time.Sleep(time.Second * 1)
 
-	ctx, err := model.NewContextDB("TestWaitFlow.db")
+	ctx, err := context.NewContextDB("TestWaitFlow.db")
 
 	flowMeta := model.FlowMeta{}
 	node := model.MetaNode{Id: "1", Label: "Lux trigger", Type: "trigger", Address: "pt:j1/mt:evt/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:199_0", Service: "out_bin_switch", ServiceInterface: "evt.binary.report", SuccessTransition: "2"}
@@ -91,7 +92,7 @@ func TestParallelFlow_keepLast(t *testing.T) {
 	mqtt.SetMessageHandler(onMsg)
 	time.Sleep(time.Second * 1)
 
-	ctx, err := model.NewContextDB("TestWaitFlow.db")
+	ctx, err := context.NewContextDB("TestWaitFlow.db")
 
 	flowMeta := model.FlowMeta{ParallelExecution:model.ParallelExecutionKeepLast}
 	node := model.MetaNode{Id: "1", Label: "Lux trigger", Type: "trigger", Address: "pt:j1/mt:evt/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:199_0", Service: "out_bin_switch", ServiceInterface: "evt.binary.report", SuccessTransition: "2"}
@@ -137,7 +138,7 @@ func TestIfFlow(t *testing.T) {
 	mqtt.SetMessageHandler(onMsg)
 	time.Sleep(time.Second * 1)
 
-	ctx, err := model.NewContextDB("TestIfFlow.db")
+	ctx, err := context.NewContextDB("TestIfFlow.db")
 
 	flowMeta := model.FlowMeta{Id: "TestIfFlow", Name: "If flow test"}
 
@@ -147,24 +148,24 @@ func TestIfFlow(t *testing.T) {
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "1.1", Label: "IF node", Type: "if", Config: ifn.IFExpressions{TrueTransition: "2", FalseTransition: "3", Expression: []ifn.IFExpression{
-		{RightVariable: model.Variable{Value: int64(100), ValueType: "int"}, Operand: "gt", BooleanOperator: "and"},
-		{RightVariable: model.Variable{Value: int64(200), ValueType: "int"}, Operand: "lt"}}}}
+		{RightVariable: context.Variable{Value: int64(100), ValueType: "int"}, Operand: "gt", BooleanOperator: "and"},
+		{RightVariable: context.Variable{Value: int64(200), ValueType: "int"}, Operand: "lt"}}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "2", Label: "Bulb 1.Room light intensity is > 100 lux", Type: "action", Address: "pt:j1/mt:cmd/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:200_0", Service: "out_bin_switch", ServiceInterface: "cmd.binary.set", SuccessTransition: "4",
-		Config: actfimp.NodeConfig{DefaultValue: model.Variable{ValueType: "bool", Value: true}}}
+		Config: actfimp.NodeConfig{DefaultValue: context.Variable{ValueType: "bool", Value: true}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "3", Label: "Bulb 2.Room light intensity is < 100 lux", Type: "action", Address: "pt:j1/mt:cmd/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:200_0", Service: "out_bin_switch", ServiceInterface: "cmd.binary.set", SuccessTransition: "5",
-		Config: actfimp.NodeConfig{DefaultValue: model.Variable{ValueType: "bool", Value: true}}}
+		Config: actfimp.NodeConfig{DefaultValue: context.Variable{ValueType: "bool", Value: true}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "4", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: setvar.SetVariableNodeConfig{Name: "mode", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: model.Variable{Value: "correct", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "mode", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: context.Variable{Value: "correct", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "5", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: setvar.SetVariableNodeConfig{Name: "mode", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: model.Variable{Value: "wrong", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "mode", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: context.Variable{Value: "wrong", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	//data, err := json.Marshal(flowMeta)
@@ -213,22 +214,22 @@ func TestNewFlow3(t *testing.T) {
 	mqtt.SetMessageHandler(onMsg)
 	time.Sleep(time.Second * 1)
 
-	ctx, err := model.NewContextDB("TestNewFlow3.db")
+	ctx, err := context.NewContextDB("TestNewFlow3.db")
 	flowMeta := model.FlowMeta{Id: "TestNewFlow3"}
 
 	node := model.MetaNode{Id: "1", Label: "Button trigger", Type: "trigger", Address: "pt:j1/mt:evt/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:199_0", Service: "out_bin_switch", ServiceInterface: "evt.binary.report", SuccessTransition: "1.1"}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "1.1", Label: "IF node", Type: "if", Config: ifn.IFExpressions{TrueTransition: "2", FalseTransition: "3", Expression: []ifn.IFExpression{
-		{RightVariable: model.Variable{Value: false, ValueType: "bool"}, Operand: "eq"}}}}
+		{RightVariable: context.Variable{Value: false, ValueType: "bool"}, Operand: "eq"}}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "2", Label: "Lights ON", Type: "action", Address: "pt:j1/mt:cmd/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:200_0", Service: "out_bin_switch", ServiceInterface: "cmd.binary.set", SuccessTransition: "",
-		Config: actfimp.NodeConfig{DefaultValue: model.Variable{ValueType: "bool", Value: true}}}
+		Config: actfimp.NodeConfig{DefaultValue: context.Variable{ValueType: "bool", Value: true}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "3", Label: "Lights OFF", Type: "action", Address: "pt:j1/mt:cmd/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:200_0", Service: "out_bin_switch", ServiceInterface: "cmd.binary.set", SuccessTransition: "",
-		Config: actfimp.NodeConfig{DefaultValue: model.Variable{ValueType: "bool", Value: true}}}
+		Config: actfimp.NodeConfig{DefaultValue: context.Variable{ValueType: "bool", Value: true}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	conReg := connector.NewRegistry("../testdata/var/connectors")
@@ -268,14 +269,14 @@ func TestSetVariableFlow(t *testing.T) {
 	mqtt.SetMessageHandler(onMsg)
 	time.Sleep(time.Second * 1)
 
-	ctx, err := model.NewContextDB("TestSetVariableFlow.db")
+	ctx, err := context.NewContextDB("TestSetVariableFlow.db")
 	flowMeta := model.FlowMeta{Id: "TestSetVariableFlow"}
 
 	node := model.MetaNode{Id: "1", Label: "Button trigger", Type: "trigger", Address: "pt:j1/mt:evt/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:199_0", Service: "out_bin_switch", ServiceInterface: "evt.binary.report", SuccessTransition: "2"}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "2", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: setvar.SetVariableNodeConfig{Name: "volume", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: model.Variable{Value: 65, ValueType: "int"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "volume", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: context.Variable{Value: 65, ValueType: "int"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 	//data, err := json.Marshal(flowMeta)
 	//if err == nil {
@@ -323,7 +324,7 @@ func TestTransformFlipFlow(t *testing.T) {
 	mqtt.SetMessageHandler(onMsg)
 	time.Sleep(time.Second * 1)
 
-	ctx, err := model.NewContextDB("TestTransform.db")
+	ctx, err := context.NewContextDB("TestTransform.db")
 	flowMeta := model.FlowMeta{Id: "TestTransformFlow"}
 
 	node := model.MetaNode{Id: "1", Label: "Button trigger", Type: "trigger", Address: "pt:j1/mt:evt/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:199_0", Service: "out_bin_switch", ServiceInterface: "evt.binary.report", SuccessTransition: "2"}
@@ -362,7 +363,7 @@ func TestRestActionFlow(t *testing.T) {
 	mqtt.SetMessageHandler(onMsg)
 	time.Sleep(time.Second * 1)
 
-	ctx, err := model.NewContextDB(dbName)
+	ctx, err := context.NewContextDB(dbName)
 	flowMeta := model.FlowMeta{Id: "TestRestActionFlow"}
 
 	node := model.MetaNode{Id: "1", Label: "Button trigger", Type: "trigger", Address: "pt:j1/mt:evt/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:199_0", Service: "out_bin_switch", ServiceInterface: "evt.binary.report", SuccessTransition: "2"}
@@ -451,14 +452,14 @@ func TestTransformAddFlow(t *testing.T) {
 	mqtt.SetMessageHandler(onMsg)
 	time.Sleep(time.Second * 1)
 
-	ctx, err := model.NewContextDB("TestTransform.db")
+	ctx, err := context.NewContextDB("TestTransform.db")
 	flowMeta := model.FlowMeta{Id: "TestTransformFlow"}
 
 	node := model.MetaNode{Id: "1", Label: "Sensor trigger", Type: "trigger", Address: "pt:j1/mt:evt/rt:dev/rn:test/ad:1/sv:sensor_temp/ad:199_0", Service: "sensor_temp", ServiceInterface: "evt.sensor.report", SuccessTransition: "2"}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "2", Label: "Add transform", Type: "transform", SuccessTransition: "",
-		Config: transform.NodeConfig{Expression: "add", RValue: model.Variable{ValueType: "int", Value: int(2)}}}
+		Config: transform.NodeConfig{Expression: "add", RValue: context.Variable{ValueType: "int", Value: int(2)}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 	conReg := connector.NewRegistry("../testdata/var/connectors")
 	if err := conReg.LoadInstancesFromDisk(); err != nil {
@@ -498,7 +499,7 @@ func TestTransformJsonFlow(t *testing.T) {
 	mqtt.SetMessageHandler(onMsg)
 	time.Sleep(time.Second * 1)
 
-	ctx, err := model.NewContextDB("TestTransform.db")
+	ctx, err := context.NewContextDB("TestTransform.db")
 	flowMeta := model.FlowMeta{Id: "TestTransformFlow"}
 
 	node := model.MetaNode{Id: "1", Label: "Thermostat trigger 1", Type: "trigger", Address: "pt:j1/mt:cmd/rt:dev/rn:test/ad:1/sv:thermostat/ad:199_0", Service: "thermostat", ServiceInterface: "cmd.setpoint.set", SuccessTransition: "2"}
@@ -582,7 +583,7 @@ func TestReceiveFlow(t *testing.T) {
 	mqtt.SetMessageHandler(onMsg)
 	time.Sleep(time.Second * 1)
 
-	ctx, err := model.NewContextDB("TestReceiveFlow.db")
+	ctx, err := context.NewContextDB("TestReceiveFlow.db")
 	flowMeta := model.FlowMeta{Id: "TestReceiveFlow"}
 
 	node := model.MetaNode{Id: "1", Label: "Button trigger", Type: "trigger", Address: "pt:j1/mt:evt/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:199_0", Service: "out_bin_switch", ServiceInterface: "evt.binary.report",
@@ -598,11 +599,11 @@ func TestReceiveFlow(t *testing.T) {
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "4", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: model.Variable{Value: "in_time", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: context.Variable{Value: "in_time", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "5", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: model.Variable{Value: "timeout", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: context.Variable{Value: "timeout", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 	//data, err := json.Marshal(flowMeta)
 	//if err == nil {
@@ -661,7 +662,7 @@ func TestLoopFlow(t *testing.T) {
 	mqtt.SetMessageHandler(onMsg)
 	time.Sleep(time.Second * 1)
 
-	ctx, err := model.NewContextDB("TestLoopFlow.db")
+	ctx, err := context.NewContextDB("TestLoopFlow.db")
 	flowMeta := model.FlowMeta{Id: "TestLoopFlow"}
 
 	node := model.MetaNode{Id: "1", Label: "Button trigger", Type: "trigger", Address: "pt:j1/mt:evt/rt:dev/rn:test/ad:1/sv:out_bin_switch/ad:199_0", Service: "out_bin_switch", ServiceInterface: "evt.binary.report",
@@ -673,11 +674,11 @@ func TestLoopFlow(t *testing.T) {
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "4", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: model.Variable{Value: "counting", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: context.Variable{Value: "counting", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "5", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: model.Variable{Value: "reset", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: context.Variable{Value: "reset", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 	//data, err := json.Marshal(flowMeta)
 	//if err == nil {
@@ -726,7 +727,7 @@ func TestTimeTriggerFlow(t *testing.T) {
 	mqtt.SetMessageHandler(onMsg)
 	time.Sleep(time.Second * 1)
 
-	ctx, err := model.NewContextDB("TestTimeTriggerFlow.db")
+	ctx, err := context.NewContextDB("TestTimeTriggerFlow.db")
 	flowMeta := model.FlowMeta{Id: "TestTimeTriggerFlow"}
 
 	node := model.MetaNode{Id: "1", Label: "Turn ever 1 second", Type: "time_trigger",
@@ -738,11 +739,11 @@ func TestTimeTriggerFlow(t *testing.T) {
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "4", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: model.Variable{Value: "counting", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: context.Variable{Value: "counting", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 
 	node = model.MetaNode{Id: "5", Label: "Set variable", Type: "set_variable", SuccessTransition: "",
-		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: model.Variable{Value: "reset", ValueType: "string"}}}
+		Config: setvar.SetVariableNodeConfig{Name: "status", UpdateGlobal: false, UpdateInputMsg: false, IsVariableInMemory: false, DefaultValue: context.Variable{Value: "reset", ValueType: "string"}}}
 	flowMeta.Nodes = append(flowMeta.Nodes, node)
 	//data, err := json.Marshal(flowMeta)
 	//if err == nil {

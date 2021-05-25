@@ -2,6 +2,7 @@ package stats
 
 import (
 	"github.com/mitchellh/mapstructure"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	"time"
@@ -10,7 +11,7 @@ import (
 // Measures time between invocations
 type TimeToolsNode struct {
 	base.BaseNode
-	ctx        *model.Context
+	ctx        *context.Context
 	nodeConfig TimeToolsNodeConfig
 	timeStamp  time.Time
 }
@@ -22,7 +23,7 @@ type TimeToolsNodeConfig struct {
 	IsTargetVariableGlobal bool
 }
 
-func NewTimeToolsNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewTimeToolsNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := TimeToolsNode{ctx: ctx}
 	node.SetMeta(meta)
 	node.SetFlowOpCtx(flowOpCtx)

@@ -2,6 +2,7 @@ package stats
 
 import (
 	"github.com/mitchellh/mapstructure"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	"time"
@@ -9,7 +10,7 @@ import (
 
 type MeterNode struct {
 	base.BaseNode
-	ctx              *model.Context
+	ctx              *context.Context
 	nodeConfig       MeterNodeConfig
 	lastInputEventTs time.Time
 	lastReportTs     time.Time
@@ -33,7 +34,7 @@ type MeterNodeConfig struct {
 // Input can be either impulse signal which will work along with fixed rate ( constant power usage 100W) or value (W) . Node emits accumulated value either by interval or by once
 // goes over certain limit (for instance 10%) . Every time input value changes , the node calculates usage and adds value to internal accumulator.
 
-func NewMeterNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewMeterNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := MeterNode{ctx: ctx}
 	node.SetMeta(meta)
 	node.SetFlowOpCtx(flowOpCtx)

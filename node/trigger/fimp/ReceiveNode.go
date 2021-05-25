@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/mitchellh/mapstructure"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	"github.com/thingsplex/tpflow/registry/storage"
@@ -15,7 +16,7 @@ import (
 // ReceiveNode
 type ReceiveNode struct {
 	base.BaseNode
-	ctx                 *model.Context
+	ctx                 *context.Context
 	transport           *fimpgo.MqttTransport
 	activeSubscriptions []string
 	msgInStream         fimpgo.MessageCh
@@ -29,14 +30,14 @@ type ReceiveNode struct {
 type ReceiveConfig struct {
 	Timeout                  int64 // in seconds
 	ConnectorID              string // If set node will use non-default connector , for instance it can be used to listen events on remote hub
-	ValueFilter              model.Variable
+	ValueFilter              context.Variable
 	InputVariableType        string
 	IsValueFilterEnabled     bool
 	RegisterAsVirtualService bool
 	VirtualServiceGroup      string
 }
 
-func NewReceiveNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewReceiveNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := ReceiveNode{ctx: ctx}
 	node.SetStartNode(false)
 	node.SetMsgReactorNode(true)
@@ -95,7 +96,7 @@ func (node *ReceiveNode) LoadNodeConfig() error {
 	funcMap := template.FuncMap{
 		"variable": func(varName string, isGlobal bool) (interface{}, error) {
 			//node.GetLog().Debug("Getting variable by name ",varName)
-			var vari model.Variable
+			var vari context.Variable
 			var err error
 			if isGlobal {
 				vari, err = node.ctx.GetVariable(varName, "global")

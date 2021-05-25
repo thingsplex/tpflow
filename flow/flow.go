@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow/connector"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node"
 	"github.com/thingsplex/tpflow/utils"
@@ -18,7 +19,7 @@ type Flow struct {
 	Name              string
 	Description       string
 	FlowMeta          *model.FlowMeta
-	globalContext     *model.Context
+	globalContext     *context.Context
 	opContext         model.FlowOperationalContext
 	currentNodeIds    []model.NodeID
 	nodes             []model.Node
@@ -42,7 +43,7 @@ type Instance struct {
 	StartedAt         time.Time
 }
 
-func NewFlow(metaFlow model.FlowMeta, globalContext *model.Context) *Flow {
+func NewFlow(metaFlow model.FlowMeta, globalContext *context.Context) *Flow {
 	flow := Flow{globalContext: globalContext}
 	if flow.rateLimiter == 0 {
 		flow.rateLimiter = 500
@@ -141,7 +142,7 @@ func (fl *Flow) LoadAndConfigureAllNodes() (err error) {
 	return err
 }
 
-func (fl *Flow) GetContext() *model.Context {
+func (fl *Flow) GetContext() *context.Context {
 	return fl.globalContext
 }
 

@@ -1,6 +1,7 @@
 package wait
 
 import (
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/node/base"
 	"time"
 )
@@ -12,11 +13,11 @@ import (
 type WaitNode struct {
 	base.BaseNode
 	delay     int
-	ctx       *model.Context
+	ctx       *context.Context
 	transport *fimpgo.MqttTransport
 }
 
-func NewWaitNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewWaitNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := WaitNode{ctx: ctx}
 	node.SetMeta(meta)
 	node.SetFlowOpCtx(flowOpCtx)

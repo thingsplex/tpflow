@@ -6,6 +6,7 @@ import (
 	"github.com/futurehomeno/fimpgo"
 	"github.com/futurehomeno/fimpgo/fimptype/primefimp"
 	"github.com/mitchellh/mapstructure"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	"time"
@@ -13,7 +14,7 @@ import (
 
 type VincTriggerNode struct {
 	base.BaseNode
-	ctx                 *model.Context
+	ctx                 *context.Context
 	transport           *fimpgo.MqttTransport
 	msgInStream         fimpgo.MessageCh
 	msgInStreamName     string
@@ -28,7 +29,7 @@ type VincTriggerConfig struct {
 	EventType                    string // mode/shortcut
 }
 
-func NewVincTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewVincTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := VincTriggerNode{ctx: ctx}
 	node.SetStartNode(true)
 	node.SetMsgReactorNode(true)

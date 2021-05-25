@@ -6,10 +6,11 @@ import (
 	"github.com/ChrisTrenkamp/goxpath"
 	"github.com/ChrisTrenkamp/goxpath/tree"
 	"github.com/ChrisTrenkamp/goxpath/tree/xmltree"
-	"github.com/thingsplex/tpflow/model"
-	"github.com/thingsplex/tpflow/node/base"
 	"github.com/mitchellh/mapstructure"
 	"github.com/oliveagle/jsonpath"
+	"github.com/thingsplex/tpflow/flow/context"
+	"github.com/thingsplex/tpflow/model"
+	"github.com/thingsplex/tpflow/node/base"
 	"net/http"
 	"text/template"
 
@@ -23,7 +24,7 @@ import (
 // Node
 type Node struct {
 	base.BaseNode
-	ctx            *model.Context
+	ctx            *context.Context
 	config         NodeConfig
 	reqTemplate    *template.Template
 	urlTemplate    *template.Template
@@ -84,7 +85,7 @@ type RestActionNodeTemplateParams struct {
 	Message  *model.Message
 }
 
-func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := Node{ctx: ctx}
 	node.SetMeta(meta)
 	node.SetFlowOpCtx(flowOpCtx)
@@ -100,7 +101,7 @@ func (node *Node) LoadNodeConfig() error {
 	funcMap := template.FuncMap{
 		"variable": func(varName string, isGlobal bool) (interface{}, error) {
 			//node.GetLog().Debug("Getting variable by name ",varName)
-			var vari model.Variable
+			var vari context.Variable
 			var err error
 			if isGlobal {
 				vari, err = node.ctx.GetVariable(varName, "global")

@@ -2,17 +2,18 @@ package exec
 
 import (
 	"github.com/futurehomeno/fimpgo"
+	log "github.com/sirupsen/logrus"
+	"github.com/thingsplex/tpflow/flow/context"
+	"github.com/thingsplex/tpflow/model"
 	"os"
 	"testing"
 	"time"
-	log "github.com/sirupsen/logrus"
-	"github.com/thingsplex/tpflow/model"
 )
 
 func TestExecNode_OnInput_Python(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	flowId := "ExecTest"
-	ctx, err := model.NewContextDB(flowId+".db")
+	ctx, err := context.NewContextDB(flowId+".db")
 	ctx.RegisterFlow(flowId)
 	meta := model.MetaNode{
 		Id:                "1",

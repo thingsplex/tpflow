@@ -7,6 +7,7 @@ import (
 	"github.com/futurehomeno/fimpgo"
 	"github.com/mitchellh/mapstructure"
 	"github.com/thingsplex/tpflow/connector/plugins/http"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	"io/ioutil"
@@ -22,7 +23,7 @@ const (
 
 type Node struct {
 	base.BaseNode
-	ctx            *model.Context
+	ctx            *context.Context
 	httpServerConn *http.Connector
 	config         Config
 	msgInStream    chan http.RequestEvent
@@ -42,7 +43,7 @@ type Config struct {
 	AuthConfig          http.AuthConfig // Node level auth config
 }
 
-func NewHttpTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewHttpTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := Node{ctx: ctx}
 	node.SetStartNode(true)
 	node.SetMsgReactorNode(true)

@@ -3,6 +3,7 @@ package ratelimit
 import (
 	"context"
 	"github.com/mitchellh/mapstructure"
+	context2 "github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
     "golang.org/x/time/rate"
@@ -20,10 +21,10 @@ type Node struct {
 	base.BaseNode
 	limiter *rate.Limiter
 	config NodeConfig
-	ctx    *model.Context
+	ctx    *context2.Context
 }
 
-func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context2.Context) model.Node {
 	node := Node{ctx: ctx}
 	node.SetMeta(meta)
 	node.SetFlowOpCtx(flowOpCtx)

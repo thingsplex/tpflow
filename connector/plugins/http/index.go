@@ -19,6 +19,11 @@ func (conn *Connector) index(w http.ResponseWriter, r *http.Request) {
 		<p> Http : <a href="/flow/{{ $index }}/rest"> /flow/{{ $index }}/rest </a> - {{ $element.Name }} </p> 
       {{ end }} 
     {{ end }}
+
+    <p> API endpoints </p> 
+    <p> Get list of devices <a href="/api/registry/devices">/api/registry/devices</a> </p> 
+    <p> Get list of locations <a href="/api/registry/locations">/api/registry/locations</a> </p> 
+    <p> Get flow variables <a href="/api/flow/context/global">/api/flow/context/global</a> , change global to flow Id in order to request variables for specific flow  </p> 
     </body>
     </html>
     `

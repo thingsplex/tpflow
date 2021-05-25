@@ -4,16 +4,16 @@ import (
 	"encoding/json"
 	"github.com/futurehomeno/fimpgo"
 	log "github.com/sirupsen/logrus"
-	"github.com/thingsplex/tpflow/model"
+	"github.com/thingsplex/tpflow/flow/context"
 	"time"
 )
 
 type ContextApi struct {
-	ctx  *model.Context
+	ctx  *context.Context
 	msgTransport *fimpgo.MqttTransport
 }
 
-func NewContextApi(ctx *model.Context) *ContextApi {
+func NewContextApi(ctx *context.Context) *ContextApi {
 	ctxApi := ContextApi{ctx: ctx}
 	//ctxApi.RegisterRestApi()
 	return &ctxApi
@@ -61,8 +61,8 @@ func NewContextApi(ctx *model.Context) *ContextApi {
 //}
 
 type ContextExtRecord struct {
-	FlowId string `json:"flow_id"`
-	Rec model.ContextRecord `json:"rec"`
+	FlowId string                `json:"flow_id"`
+	Rec    context.ContextRecord `json:"rec"`
 }
 
 func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {

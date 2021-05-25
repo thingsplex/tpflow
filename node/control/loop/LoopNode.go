@@ -1,15 +1,16 @@
 package loop
 
 import (
+	"github.com/mitchellh/mapstructure"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
-	"github.com/mitchellh/mapstructure"
 )
 
 //Node
 type Node struct {
 	base.BaseNode
-	ctx     *model.Context
+	ctx     *context.Context
 	config  NodeConfig
 	counter int64
 	countUp bool
@@ -22,7 +23,7 @@ type NodeConfig struct {
 	SaveToVariable bool
 }
 
-func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := Node{ctx: ctx}
 	node.SetMeta(meta)
 	node.SetFlowOpCtx(flowOpCtx)

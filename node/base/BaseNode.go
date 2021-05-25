@@ -3,12 +3,13 @@ package base
 import (
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow/connector"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 )
 
 type BaseNode struct {
 	meta              model.MetaNode
-	ctx               *model.Context
+	ctx               *context.Context
 	flowOpCtx         *model.FlowOperationalContext
 	isStartNode       bool // true - if node is first in a flow
 	isMsgReactor      bool // true - node reacts on messages and requires input stream .
@@ -38,11 +39,11 @@ func (node *BaseNode) SetMeta(meta model.MetaNode) {
 	node.meta = meta
 }
 
-func (node *BaseNode) Ctx() *model.Context {
+func (node *BaseNode) Ctx() *context.Context {
 	return node.ctx
 }
 
-func (node *BaseNode) SetCtx(ctx *model.Context) {
+func (node *BaseNode) SetCtx(ctx *context.Context) {
 	node.ctx = ctx
 }
 

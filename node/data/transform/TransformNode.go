@@ -7,6 +7,7 @@ import (
 	"github.com/Knetic/govaluate"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/mitchellh/mapstructure"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	"text/template"
@@ -14,35 +15,35 @@ import (
 
 type Node struct {
 	base.BaseNode
-	ctx        *model.Context
+	ctx        *context.Context
 	nodeConfig NodeConfig
 	template   *template.Template
 	expression *govaluate.EvaluableExpression
 }
 
 type NodeConfig struct {
-	TargetVariableName     string // Variable
-	TargetVariableType     string
-	IsTargetVariableGlobal bool
+	TargetVariableName       string // Variable
+	TargetVariableType       string
+	IsTargetVariableGlobal   bool
 	IsTargetVariableInMemory bool
-	TransformType          string               // map , calc , str-to-json ,json-to-str , jpath , xpath , template
-	IsRVariableGlobal      bool                 // true - update global variable ; false - update local variable
-	IsLVariableGlobal      bool                 // true - update global variable ; false - update local variable
-	Expression             string               // type of transform operation , flip , add , subtract , multiply , divide , to_bool
-	RType                  string               // var , const
-	RValue                 model.Variable       // Constant Right variable value .
-	RVariableName          string               // Right variable name , if empty , RValue will be used instead
-	LVariableName          string               // Update input message if LVariable is empty
-	ValueMapping           []ValueMappingRecord // ["LValue":1,"RValue":"mode-1"]
-	XPathMapping           []TransformXPathRecord
-	Template               string // template used in jtemplate transformation
+	TransformType            string               // map , calc , str-to-json ,json-to-str , jpath , xpath , template
+	IsRVariableGlobal        bool                 // true - update global variable ; false - update local variable
+	IsLVariableGlobal        bool                 // true - update global variable ; false - update local variable
+	Expression               string               // type of transform operation , flip , add , subtract , multiply , divide , to_bool
+	RType                    string               // var , const
+	RValue                   context.Variable     // Constant Right variable value .
+	RVariableName            string               // Right variable name , if empty , RValue will be used instead
+	LVariableName            string               // Update input message if LVariable is empty
+	ValueMapping             []ValueMappingRecord // ["LValue":1,"RValue":"mode-1"]
+	XPathMapping             []TransformXPathRecord
+	Template                 string // template used in jtemplate transformation
 
 	//value mapping
 }
 
 type ValueMappingRecord struct {
-	LValue model.Variable
-	RValue model.Variable
+	LValue context.Variable
+	RValue context.Variable
 }
 
 type TransformXPathRecord struct {
@@ -54,7 +55,7 @@ type TransformXPathRecord struct {
 	UpdateInputVariable    bool
 }
 
-func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := Node{ctx: ctx}
 	node.SetMeta(meta)
 	node.SetFlowOpCtx(flowOpCtx)
@@ -75,7 +76,7 @@ func (node *Node) LoadNodeConfig() error {
 		funcMap := template.FuncMap{
 			"variable": func(varName string, isGlobal bool) (interface{}, error) {
 				//node.GetLog().Debug("Getting variable by name ",varName)
-				var vari model.Variable
+				var vari context.Variable
 				var err error
 				if isGlobal {
 					vari, err = node.ctx.GetVariable(varName, "global")
@@ -125,9 +126,9 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 
 	// There are 3 possible sources for RVariable : default value , inputMessage , variable from context
 	// There are 2 possible destinations for LVariable : inputMessage , variable from context
-	var lValue model.Variable
-	var rValue model.Variable
-	var result model.Variable
+	var lValue context.Variable
+	var rValue context.Variable
+	var result context.Variable
 	var err error
 
 	if node.nodeConfig.LVariableName == "" {

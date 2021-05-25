@@ -1,6 +1,7 @@
 package node
 
 import (
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/action/exec"
 	actfimp "github.com/thingsplex/tpflow/node/action/fimp"
@@ -20,7 +21,7 @@ import (
 	"github.com/thingsplex/tpflow/node/trigger/time"
 )
 
-type Constructor func(context *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node
+type Constructor func(context *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node
 
 var Registry = map[string]Constructor{
 	"trigger":           trigfimp.NewTriggerNode,

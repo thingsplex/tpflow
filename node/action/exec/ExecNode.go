@@ -4,6 +4,7 @@ import (
 	"github.com/futurehomeno/fimpgo"
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	"github.com/thingsplex/tpflow/registry/storage"
@@ -14,11 +15,11 @@ import (
 
 type Node struct {
 	base.BaseNode
-	ctx            *model.Context
+	ctx            *context.Context
 	config         NodeConfig
 	scriptFullPath string
 	intp           *interp.Interpreter
-	scriptFunc     func(*model.Message,*model.Context,ScriptParams)string
+	scriptFunc     func(*model.Message,*context.Context,ScriptParams)string
 	localStorage   sync.Map
 	scriptParams   ScriptParams
 }
@@ -44,7 +45,7 @@ type NodeConfig struct {
 	IsInputJson            bool
 }
 
-func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := Node{ctx: ctx}
 	node.SetMeta(meta)
 	node.SetFlowOpCtx(flowOpCtx)
@@ -100,7 +101,7 @@ func (node *Node) LoadNodeConfig() error {
 				log.Errorf("Error 2 while initializing golang script %v",err)
 				return err
 			}else {
-				node.scriptFunc = v.Interface().(func(*model.Message,*model.Context,ScriptParams)string)
+				node.scriptFunc = v.Interface().(func(*model.Message,*context.Context,ScriptParams)string)
 			}
 		}
 	}

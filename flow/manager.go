@@ -3,13 +3,14 @@ package flow
 import (
 	"bytes"
 	"encoding/json"
+	fgoutils "github.com/futurehomeno/fimpgo/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow"
 	"github.com/thingsplex/tpflow/connector"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/trigger/fimp"
 	"github.com/thingsplex/tpflow/utils"
-	fgoutils "github.com/futurehomeno/fimpgo/utils"
 	"runtime/debug"
 	"text/template"
 	"time"
@@ -24,7 +25,7 @@ import (
 type Manager struct {
 	flowRegistry      []*Flow
 	msgStreams        map[string]model.MsgPipeline
-	globalContext     *model.Context
+	globalContext     *context.Context
 	config            tpflow.Configs
 	connectorRegistry connector.Registry
 }
@@ -51,7 +52,7 @@ func NewManager(config tpflow.Configs) (*Manager, error) {
 	man := Manager{config: config}
 	man.msgStreams = make(map[string]model.MsgPipeline)
 	man.flowRegistry = make([]*Flow, 0)
-	man.globalContext, err = model.NewContextDB(config.ContextStorageDir)
+	man.globalContext, err = context.NewContextDB(config.ContextStorageDir)
 	if err !=nil {
 		log.Error("Can't initialize context DB")
 		return nil,err
@@ -59,12 +60,13 @@ func NewManager(config tpflow.Configs) (*Manager, error) {
 	man.globalContext.RegisterFlow("global")
 	man.connectorRegistry = *connector.NewRegistry(config.ConnectorStorageDir)
 	man.connectorRegistry.LoadInstancesFromDisk()
+
 	return &man, err
 }
 
 func (mg *Manager) GenerateNewFlow() model.FlowMeta {
 	fl := model.FlowMeta{}
-	fl.Nodes = []model.MetaNode{{Id: "1", Type: "trigger", Label: "no label", Config: fimp.TriggerConfig{Timeout: 0, ValueFilter: model.Variable{}, IsValueFilterEnabled: false}}}
+	fl.Nodes = []model.MetaNode{{Id: "1", Type: "trigger", Label: "no label", Config: fimp.TriggerConfig{Timeout: 0, ValueFilter: context.Variable{}, IsValueFilterEnabled: false}}}
 	fl.Id = utils.GenerateId(15)
 	fl.ClassId = fl.Id
 	fl.CreatedAt = time.Now()
@@ -78,7 +80,7 @@ func (mg *Manager) GetNewStream(Id string) model.MsgPipeline {
 	return msgStream
 }
 
-func (mg *Manager) GetGlobalContext() *model.Context {
+func (mg *Manager) GetGlobalContext() *context.Context {
 	return mg.globalContext
 }
 

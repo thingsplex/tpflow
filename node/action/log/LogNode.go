@@ -4,13 +4,14 @@ import (
 	"github.com/futurehomeno/fimpgo"
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 )
 
 type LogNode struct {
 	base.BaseNode
-	ctx             *model.Context
+	ctx             *context.Context
 	transport       *fimpgo.MqttTransport
 	config          LogNodeConfig
 }
@@ -22,7 +23,7 @@ type LogNodeConfig struct {
 	Text                     string
 }
 
-func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := LogNode{ctx: ctx}
 	node.SetMeta(meta)
 	node.SetFlowOpCtx(flowOpCtx)

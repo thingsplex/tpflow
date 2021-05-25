@@ -1,11 +1,14 @@
 package http
 
 import (
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow/connector/model"
+	"github.com/thingsplex/tpflow/flow/context"
+	"github.com/thingsplex/tpflow/registry/storage"
 	"github.com/thingsplex/tpflow/utils"
 	"net/http"
 	"runtime/debug"
@@ -23,7 +26,6 @@ var (
 	}
 )
 
-
 type Connector struct {
 	name               string
 	state              string
@@ -34,7 +36,10 @@ type Connector struct {
 	flowStreamRegistry map[string]flowStream
 	liveConnections    sync.Map // map of type liveConnection
 	isServerStarted    bool     // for lazy loading
+	assetRegistry      storage.RegistryStorage // this is only for exposing registry api
+ 	flowContext        *context.Context
 }
+
 
 type ConnectorConfig struct {
 	BindAddress      string
@@ -91,15 +96,64 @@ func (conn *Connector) Init() error {
 	conn.router.HandleFunc("/index", conn.index)
 	conn.router.HandleFunc("/flow/{id}/rest", conn.httpFlowRouter)
 	conn.router.HandleFunc("/flow/{id}/ws", conn.wsFlowRouter)
-	conn.server.Handler = conn.router
+	conn.configureInternalApi()
 	conn.flowStreamRegistry = map[string]flowStream{}
 	conn.state = "RUNNING"
 	log.Info("<HttpConn> HTTP router configured ")
 	return err
 }
 
+func (conn *Connector) SetAssetRegistry(assetRegistry storage.RegistryStorage) {
+	conn.assetRegistry = assetRegistry
+}
+
+func (conn *Connector) SetFlowContext(flowContext *context.Context) {
+	conn.flowContext = flowContext
+}
+
+func (conn *Connector) configureInternalApi()  {
+	conn.router.HandleFunc("/api/registry/devices", func(w http.ResponseWriter, r *http.Request) {
+		if conn.assetRegistry != nil {
+			devs , _ := conn.assetRegistry.GetExtendedDevices()
+			bresp , err :=  json.Marshal(devs)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			w.Write(bresp)
+		}
+	})
+	conn.router.HandleFunc("/api/registry/locations", func(w http.ResponseWriter, r *http.Request) {
+		if conn.assetRegistry != nil {
+			locs , _ := conn.assetRegistry.GetAllLocations()
+			bresp , err :=  json.Marshal(locs)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			w.Write(bresp)
+		}
+	})
+
+	conn.router.HandleFunc("/api/flow/context/{flowId}", func(w http.ResponseWriter, r *http.Request) {
+		if conn.flowContext != nil {
+			vars := mux.Vars(r)
+			flowId := vars["flowId"]
+			records := conn.flowContext.GetRecords(flowId)
+			bresp , err :=  json.Marshal(records)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			w.Write(bresp)
+		}
+	})
+
+}
+
 func (conn *Connector) StartHttpServer() {
 	log.Info("<HttpConn> Starting HTTP server.")
+	conn.server.Handler = conn.router
 	go conn.server.ListenAndServe()
 	conn.isServerStarted = true
 }

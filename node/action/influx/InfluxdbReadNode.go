@@ -2,15 +2,16 @@ package influx
 
 import (
 	"errors"
-	"github.com/thingsplex/tpflow/model"
 	influx "github.com/influxdata/influxdb/client/v2"
 	"github.com/mitchellh/mapstructure"
+	"github.com/thingsplex/tpflow/flow/context"
+	"github.com/thingsplex/tpflow/model"
 	"text/template"
 )
 
 type InfluxdbReadNode struct {
 	BaseNode
-	ctx *model.Context
+	ctx *context.Context
 	//transport *fimpgo.MqttTransport
 	config        InfluxdbReadConfig
 	queryTemplate *template.Template
@@ -24,7 +25,7 @@ type InfluxdbReadConfig struct {
 	IsLVariableGlobal  bool
 }
 
-func NewInfluxdbReadNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewInfluxdbReadNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := InfluxdbReadNode{ctx: ctx}
 	node.meta = meta
 	node.flowOpCtx = flowOpCtx
@@ -56,7 +57,7 @@ func (node *InfluxdbReadNode) LoadNodeConfig() error {
 	funcMap := template.FuncMap{
 		"variable": func(varName string, isGlobal bool) (interface{}, error) {
 			//node.GetLog().Debug("Getting variable by name ",varName)
-			var vari model.Variable
+			var vari context.Variable
 			var err error
 			if isGlobal {
 				vari, err = node.ctx.GetVariable(varName, "global")

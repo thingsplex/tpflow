@@ -3,6 +3,7 @@ package transform
 import (
 	"encoding/json"
 	"github.com/futurehomeno/fimpgo"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"os"
 	"testing"
@@ -10,7 +11,7 @@ import (
 
 func TestNode_OnInput_Calc(t *testing.T) {
 
-	ctx, err := model.NewContextDB("TestTransform.db")
+	ctx, err := context.NewContextDB("TestTransform.db")
 	ctx.SetVariable("temp","float",20.0,"","test",true)
 	ctx.SetVariable("var2","float",10.0,"","test",true)
 	meta  := model.MetaNode{
@@ -24,21 +25,21 @@ func TestNode_OnInput_Calc(t *testing.T) {
 		Service:           "",
 		ServiceInterface:  "",
 		Config:            NodeConfig{
-			TargetVariableName:     "result_var",
-			TargetVariableType:     "bool",
-			IsTargetVariableGlobal: false,
-			IsTargetVariableInMemory:true,
-			TransformType:          "calc",
-			IsRVariableGlobal:      false,
-			IsLVariableGlobal:      false,
-			Expression:             "(temp+var2+input)==35",
-			RType:                  "",
-			RValue:                 model.Variable{ValueType: "int", Value: int(2)},
-			RVariableName:          "",
-			LVariableName:          "",
-			ValueMapping:           nil,
-			XPathMapping:           nil,
-			Template:               "",
+			TargetVariableName:       "result_var",
+			TargetVariableType:       "bool",
+			IsTargetVariableGlobal:   false,
+			IsTargetVariableInMemory: true,
+			TransformType:            "calc",
+			IsRVariableGlobal:        false,
+			IsLVariableGlobal:        false,
+			Expression:               "(temp+var2+input)==35",
+			RType:                    "",
+			RValue:                   context.Variable{ValueType: "int", Value: int(2)},
+			RVariableName:            "",
+			LVariableName:            "",
+			ValueMapping:             nil,
+			XPathMapping:             nil,
+			Template:                 "",
 		},
 		Ui:                nil,
 	}
@@ -90,7 +91,7 @@ func TestNode_OnInput_Calc(t *testing.T) {
 
 func TestNode_OnInput_Jpath(t *testing.T) {
 
-	ctx, err := model.NewContextDB("TestTransform.db")
+	ctx, err := context.NewContextDB("TestTransform.db")
 	ctx.RegisterFlow("test")
 	meta  := model.MetaNode{
 		Id:                "2",

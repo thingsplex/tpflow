@@ -2,6 +2,7 @@ package ifn
 
 import (
 	"errors"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	"github.com/thingsplex/tpflow/utils"
@@ -16,22 +17,22 @@ type IFExpressions struct {
 }
 
 type IFExpression struct {
-	LeftVariableName     string         // Left variable of expression . If empty , Message value will be used .
-	LeftVariableIsGlobal bool           // true - if left variable is global
-	LeftVariable         model.Variable `json:"-"` // Right variable of expression . Have to be defined , empty value will generate error .
-	RightVariable        model.Variable // Right variable of expression . Have to be defined , empty value will generate error .
-	Operand              string         // eq , gr , lt
-	BooleanOperator      string         // and , or , not
+	LeftVariableName     string           // Left variable of expression . If empty , Message value will be used .
+	LeftVariableIsGlobal bool             // true - if left variable is global
+	LeftVariable         context.Variable `json:"-"` // Right variable of expression . Have to be defined , empty value will generate error .
+	RightVariable        context.Variable // Right variable of expression . Have to be defined , empty value will generate error .
+	Operand              string           // eq , gr , lt
+	BooleanOperator      string           // and , or , not
 }
 
 // IF node
 type Node struct {
 	base.BaseNode
 	config IFExpressions
-	ctx    *model.Context
+	ctx    *context.Context
 }
 
-func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := Node{ctx: ctx}
 	node.SetMeta(meta)
 	node.SetFlowOpCtx(flowOpCtx)
@@ -66,7 +67,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			return nil, errors.New(node.FlowOpCtx().FlowId + "Right variable is not defined. Node is skipped.")
 		}
 		if conf.Expression[i].LeftVariableName == "" {
-			conf.Expression[i].LeftVariable = model.Variable{ValueType: msg.Payload.ValueType, Value: msg.Payload.Value}
+			conf.Expression[i].LeftVariable = context.Variable{ValueType: msg.Payload.ValueType, Value: msg.Payload.Value}
 		} else {
 			flowId := node.FlowOpCtx().FlowId
 			if conf.Expression[i].LeftVariableIsGlobal {

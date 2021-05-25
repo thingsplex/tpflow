@@ -1,14 +1,15 @@
 package setvar
 
 import (
+	"github.com/mitchellh/mapstructure"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
-	"github.com/mitchellh/mapstructure"
 )
 
 type SetVariableNode struct {
 	base.BaseNode
-	ctx        *model.Context
+	ctx        *context.Context
 	nodeConfig SetVariableNodeConfig
 }
 
@@ -18,10 +19,10 @@ type SetVariableNodeConfig struct {
 	UpdateGlobal       bool // true - update global variable ; false - update local variable
 	UpdateInputMsg     bool // true - update input message  ; false - update context variable
 	IsVariableInMemory bool // true - is saved on disk ; false - in memory only
-	DefaultValue       model.Variable
+	DefaultValue       context.Variable
 }
 
-func NewSetVariableNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewSetVariableNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := SetVariableNode{ctx: ctx}
 	node.SetMeta(meta)
 	node.SetFlowOpCtx(flowOpCtx)

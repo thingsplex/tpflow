@@ -2,13 +2,14 @@ package stats
 
 import (
 	"github.com/mitchellh/mapstructure"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 )
 
 type MetricsNode struct {
 	base.BaseNode
-	ctx        *model.Context
+	ctx        *context.Context
 	nodeConfig MetricsNodeConfig
 }
 
@@ -23,7 +24,7 @@ type MetricsNodeConfig struct {
 	LimitAction string // reset - reset to ResetValue , keep_limit - keep border value , no_limits - value is not limited
 }
 
-func NewMetricsNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewMetricsNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := MetricsNode{ctx: ctx}
 	node.SetMeta(meta)
 	node.SetFlowOpCtx(flowOpCtx)
@@ -78,7 +79,7 @@ func (node *MetricsNode) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	case "sub":
 		fallthrough
 	case "set":
-		var inputVar model.Variable
+		var inputVar context.Variable
 		if node.nodeConfig.InputVar.Name != "" {
 			inputVar, err = node.ctx.GetVariable(node.nodeConfig.InputVar.Name, inputVarFlowId)
 			if err != nil {

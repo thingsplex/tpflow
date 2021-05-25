@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	conmodel "github.com/thingsplex/tpflow/connector/model"
 	"github.com/thingsplex/tpflow/flow"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	model2 "github.com/thingsplex/tpflow/registry/model"
 	"github.com/thingsplex/tpflow/utils"
@@ -202,8 +203,8 @@ func (rc *ApiRemoteClient) ImportFlowFromUrl(url string, token string) (string, 
 	return respMsg.GetStringValue()
 }
 
-func (rc *ApiRemoteClient) ContextGetRecords(flowId string) ([]model.ContextRecord, error) {
-	var resp []model.ContextRecord
+func (rc *ApiRemoteClient) ContextGetRecords(flowId string) ([]context.ContextRecord, error) {
+	var resp []context.ContextRecord
 	reqValue := make(map[string]string)
 	reqValue["flow_id"] = flowId
 	reqMsg := fimpgo.NewStrMapMessage("cmd.flow.ctx_get_records","tpflow",reqValue,nil,nil,nil)
@@ -221,7 +222,7 @@ func (rc *ApiRemoteClient) ContextGetRecords(flowId string) ([]model.ContextReco
 	return resp,nil
 }
 
-func (rc *ApiRemoteClient) ContextUpdateRecord(flowId string , rec *model.ContextRecord) (string,error) {
+func (rc *ApiRemoteClient) ContextUpdateRecord(flowId string , rec *context.ContextRecord) (string,error) {
 	reqValue := make(map[string]interface{})
 	reqValue["flow_id"] = flowId
 	reqValue["rec"] = rec

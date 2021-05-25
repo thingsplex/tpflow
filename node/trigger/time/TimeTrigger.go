@@ -2,6 +2,7 @@ package time
 
 import (
 	"github.com/futurehomeno/fimpgo"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	//"github.com/kelvins/sunrisesunset"
@@ -18,7 +19,7 @@ const TIME_FORMAT = "2006-01-02 15:04:05"
 // Time trigger node
 type Node struct {
 	base.BaseNode
-	ctx            *model.Context
+	ctx            *context.Context
 	config         NodeConfig
 	cron           *cron.Cron
 	astroTimer     *time.Timer
@@ -28,7 +29,7 @@ type Node struct {
 }
 
 type NodeConfig struct {
-	DefaultValue            model.Variable
+	DefaultValue            context.Variable
 	Expressions             []TimeExpression
 	GenerateAstroTimeEvents bool
 	Latitude                float64
@@ -44,7 +45,7 @@ type TimeExpression struct {
 	Comment    string
 }
 
-func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := Node{ctx: ctx}
 	node.SetStartNode(true)
 	node.SetMsgReactorNode(true)

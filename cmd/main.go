@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow"
 	fapi "github.com/thingsplex/tpflow/api"
+	"github.com/thingsplex/tpflow/connector/plugins/http"
 	"github.com/thingsplex/tpflow/flow"
 	"github.com/thingsplex/tpflow/registry/integration/fimpcore"
 	"github.com/thingsplex/tpflow/registry/storage"
@@ -79,18 +80,18 @@ func main() {
 
 	SetupLog(configs.LogFile, configs.LogLevel, configs.LogFormat)
 	log.Info("--------------Starting Thingsplex-Flow----------------")
-	var registry storage.RegistryStorage
+	var assetRegistry storage.RegistryStorage
 	//---------THINGS REGISTRY-------------
 	if registryBackend == "vinculum" {
-		registry = storage.NewVinculumRegistryStore(&configs)
-		registry.Connect()
+		assetRegistry = storage.NewVinculumRegistryStore(&configs)
+		assetRegistry.Connect()
 	}else if registryBackend == "local" {
-		log.Info("<main>-------------- Starting service registry ")
-		registry = storage.NewThingRegistryStore(configs.RegistryDbFile)
+		log.Info("<main>-------------- Starting service assetRegistry ")
+		assetRegistry = storage.NewThingRegistryStore(configs.RegistryDbFile)
 		log.Info("<main> Started ")
 	}
-	log.Info("<main>-------------- Starting service registry integration ")
-	regMqttIntegr := fimpcore.NewMqttIntegration(&configs, registry)
+	log.Info("<main>-------------- Starting service assetRegistry integration ")
+	regMqttIntegr := fimpcore.NewMqttIntegration(&configs, assetRegistry)
 	regMqttIntegr.InitMessagingTransport()
 	log.Info("<main> Started ")
 
@@ -100,7 +101,7 @@ func main() {
 	if err != nil {
 		log.Error("Can't Init Flow manager . Error :", err)
 	}
-	flowManager.GetConnectorRegistry().AddConnection("thing_registry", "thing_registry", "thing_registry", registry)
+	flowManager.GetConnectorRegistry().AddConnection("thing_registry", "thing_registry", "thing_registry", assetRegistry)
 	err = flowManager.LoadAllFlowsFromStorage()
 	if err != nil {
 		log.Error("Can't load Flows from storage . Error :", err)
@@ -108,7 +109,16 @@ func main() {
 
 	ctxApi := fapi.NewContextApi(flowManager.GetGlobalContext())
 	flowApi := fapi.NewFlowApi(flowManager, &configs)
-	regApi := fapi.NewRegistryApi(registry)
+	regApi := fapi.NewRegistryApi(assetRegistry)
+
+	connectorReg := flowManager.GetConnectorRegistry()
+
+	if connectorReg != nil {
+		inst := connectorReg.GetInstance("httpserver")
+		httpSrvConnector := inst.Connection.(*http.Connector)
+		httpSrvConnector.SetAssetRegistry(assetRegistry)
+		httpSrvConnector.SetFlowContext(flowManager.GetGlobalContext())
+	}
 
 	apiMqttTransport,err := InitApiMqttTransport(configs)
 
@@ -139,7 +149,7 @@ func main() {
     runtime.GC()
 	select {}
 
-	registry.Disconnect()
+	assetRegistry.Disconnect()
 
 	log.Info("<main> Application is terminated")
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"github.com/thingsplex/tpflow/connector/plugins/http"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	"text/template"
@@ -15,7 +16,7 @@ import (
 // Node is Http reply node that sends response to request received from HTTP trigger node
 type Node struct {
 	base.BaseNode
-	ctx            *model.Context
+	ctx            *context.Context
 	config         NodeConfig
 	httpServerConn *http.Connector
 	nodeGlobalId   string
@@ -32,7 +33,7 @@ type NodeConfig struct {
 	ResponseTemplate      string // content of template will be used if input variable is not set .
 }
 
-func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := Node{ctx: ctx}
 	node.SetMeta(meta)
 	node.SetFlowOpCtx(flowOpCtx)
@@ -79,7 +80,7 @@ func (node *Node) LoadNodeConfig() error {
 	if node.config.ResponseTemplate != "" {
 		funcMap := template.FuncMap{
 			"variable": func(varName string, isGlobal bool) (interface{}, error) {
-				var vari model.Variable
+				var vari context.Variable
 				var err error
 				if isGlobal {
 					vari, err = node.ctx.GetVariable(varName, "global")

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/futurehomeno/fimpgo"
 	"github.com/mitchellh/mapstructure"
+	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	"github.com/thingsplex/tpflow/registry/storage"
@@ -14,7 +15,7 @@ import (
 
 type TriggerNode struct {
 	base.BaseNode
-	ctx                 *model.Context
+	ctx                 *context.Context
 	transport           *fimpgo.MqttTransport
 	activeSubscriptions []string
 	msgInStream         fimpgo.MessageCh
@@ -28,7 +29,7 @@ type TriggerNode struct {
 type TriggerConfig struct {
 	Timeout                      int64 // in seconds
 	ConnectorID                  string // If set node will use non-default connector , for instance it can be used to listen events on remote hub
-	ValueFilter                  model.Variable
+	ValueFilter                  context.Variable
 	PropFilterName               string // fimp props filter . Property name
 	PropFilterValue              string // Property value
 	ValueJPath                   string // JPath path which is used to extract value from trigger message
@@ -42,7 +43,7 @@ type TriggerConfig struct {
 
 }
 
-func NewTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *model.Context) model.Node {
+func NewTriggerNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
 	node := TriggerNode{ctx: ctx}
 	node.SetStartNode(true)
 	node.SetMsgReactorNode(true)
@@ -104,7 +105,7 @@ func (node *TriggerNode) LoadNodeConfig() error {
 	funcMap := template.FuncMap{
 		"variable": func(varName string, isGlobal bool) (interface{}, error) {
 			//node.GetLog().Debug("Getting variable by name ",varName)
-			var vari model.Variable
+			var vari context.Variable
 			var err error
 			if isGlobal {
 				vari, err = node.ctx.GetVariable(varName, "global")
