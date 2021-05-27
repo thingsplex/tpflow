@@ -4,6 +4,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -11,6 +12,10 @@ const (
 	AuthMethodBearer = "bearer"
 	AuthMethodHeaderToken = "header_token"
 	AuthMethodQueryToken = "query_token"
+
+	AuthCodeAuthorized   = 1
+	AuthCodeBasicFailed  = 2
+	AuthCodeFailed       = 3
 )
 
 
@@ -22,7 +27,19 @@ type AuthConfig struct {
 	AuthCustomParamName string `json:"omitempty"` // Name of custom header that stores token. Or name of query parameter that holds token.
 }
 
-func (conn *Connector) isRequestAllowed(w http.ResponseWriter,r *http.Request,streamAuth AuthConfig,flowId string ) bool {
+func (conn *Connector) SendHttpAuthFailureResponse(authCode int , w http.ResponseWriter,flowId string) {
+	switch authCode {
+	case AuthCodeBasicFailed :
+		t := strings.Split(flowId,"_")
+		w.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`,t[0]))
+		w.WriteHeader(401)
+		w.Write([]byte("Unauthorised.\n"))
+	case AuthCodeFailed:
+		w.WriteHeader(401)
+	}
+}
+
+func (conn *Connector) isRequestAllowed(r *http.Request,streamAuth AuthConfig,flowId string ) int {
 	authMethod := conn.config.GlobalAuth.AuthMethod
 	isGlobalAuth := true
 	if streamAuth.AuthMethod != "" {
@@ -32,7 +49,7 @@ func (conn *Connector) isRequestAllowed(w http.ResponseWriter,r *http.Request,st
 	}
 	log.Debugf("Auth method %s , flowId = %s",authMethod,flowId)
 	if authMethod == "" {
-		return true
+		return AuthCodeAuthorized
 	}
 	switch authMethod {
 	case AuthMethodBasic:
@@ -40,57 +57,49 @@ func (conn *Connector) isRequestAllowed(w http.ResponseWriter,r *http.Request,st
 		if ok {
 			if isGlobalAuth {
 				if conn.config.GlobalAuth.AuthUsername == user && conn.config.GlobalAuth.AuthPassword == pass {
-					return true
+					return AuthCodeAuthorized
 				}
 			}else {
 				if streamAuth.AuthUsername == user && streamAuth.AuthPassword == pass {
-					return true
+					return AuthCodeAuthorized
 				}
 			}
 		}
-		realm := "tpflow"
-		if !isGlobalAuth {
-			realm = flowId
-		}
-		w.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`,realm))
-		w.WriteHeader(401)
-		w.Write([]byte("Unauthorised.\n"))
-		return false
+		return AuthCodeBasicFailed
 
 	case AuthMethodBearer:
 		authHeader := r.Header.Get("Authorization")
 		if isGlobalAuth {
 			if authHeader == fmt.Sprintf("Bearer %s",conn.config.GlobalAuth.AuthToken) {
-				return true
+				return AuthCodeAuthorized
 			}
 		}else{
 			if authHeader == fmt.Sprintf("Bearer %s",streamAuth.AuthToken) {
-				return true
+				return AuthCodeAuthorized
 			}
 		}
 
 	case AuthMethodHeaderToken:
 		if isGlobalAuth {
 			if r.Header.Get(conn.config.GlobalAuth.AuthCustomParamName) == fmt.Sprintf("Bearer %s",conn.config.GlobalAuth.AuthToken) {
-				return true
+				return AuthCodeAuthorized
 			}
 		}else{
 			if r.Header.Get(streamAuth.AuthCustomParamName) == fmt.Sprintf("Bearer %s",streamAuth.AuthToken) {
-				return true
+				return AuthCodeAuthorized
 			}
 		}
 	case AuthMethodQueryToken:
 		if isGlobalAuth {
 			if r.URL.Query().Get(conn.config.GlobalAuth.AuthCustomParamName) == conn.config.GlobalAuth.AuthToken {
-				return true
+				return AuthCodeAuthorized
 			}
 		}else {
 			if r.URL.Query().Get(streamAuth.AuthCustomParamName) == streamAuth.AuthToken {
-				return true
+				return AuthCodeAuthorized
 			}
 		}
 
 	}
-	w.WriteHeader(401)
-	return false
+	return AuthCodeFailed
 }

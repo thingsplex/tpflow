@@ -21,6 +21,12 @@ func GenerateRandomNumber() int32 {
 	return r1.Int31()
 }
 
+func GenerateRandomNumber64() int64 {
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+	return r1.Int63()
+}
+
 func ConfigValueToNumber(valueType string, value interface{}) (float64, error) {
 	if valueType == "int" {
 		switch val := value.(type) {

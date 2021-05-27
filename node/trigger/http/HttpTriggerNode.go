@@ -138,7 +138,7 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 			switch node.config.PayloadFormat {
 			case PayloadFormatFimp:
 				var body []byte
-				if newMsg.IsWsMsg {
+				if newMsg.IsWsMsg || newMsg.IsFromCloud {
 					body = newMsg.Payload
 				}else {
 					body, err = ioutil.ReadAll(newMsg.HttpRequest.Body)
@@ -166,7 +166,7 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 
 			case PayloadFormatJson:
 				var body []byte
-				if newMsg.IsWsMsg {
+				if newMsg.IsWsMsg || newMsg.IsFromCloud {
 					body = newMsg.Payload
 				}else {
 					body, err = ioutil.ReadAll(newMsg.HttpRequest.Body)

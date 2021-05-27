@@ -153,7 +153,12 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			FlowId string
 			NodeId model.NodeID
 			NodeLabel string
-		}{Variable: msg.Payload.Value,FlowId: node.FlowOpCtx().FlowId,NodeId: node.GetMetaNode().Id,NodeLabel: node.GetMetaNode().Label}
+			TunId string
+			TunToken string
+		}{Variable: msg.Payload.Value,FlowId: node.FlowOpCtx().FlowId,NodeId: node.GetMetaNode().Id,
+			NodeLabel: node.GetMetaNode().Label,
+			TunId: node.httpServerConn.Config().TunAddress,
+			TunToken: node.httpServerConn.Config().TunEdgeToken}
 		node.responseTemplate.Execute(&templateBuffer, template)
 		body = templateBuffer.Bytes()
 	}

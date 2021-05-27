@@ -10,6 +10,8 @@ import (
 	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/registry/storage"
 	"github.com/thingsplex/tpflow/utils"
+	"github.com/thingsplex/tprelay/pkg/edge"
+	"github.com/thingsplex/tprelay/pkg/proto/tunframe"
 	"net/http"
 	"runtime/debug"
 	"sync"
@@ -38,18 +40,24 @@ type Connector struct {
 	isServerStarted    bool     // for lazy loading
 	assetRegistry      storage.RegistryStorage // this is only for exposing registry api
  	flowContext        *context.Context
+	tunClient          *edge.TunClient
+	isTunActive        bool
 }
-
 
 type ConnectorConfig struct {
 	BindAddress      string
 	GlobalAuth       AuthConfig // None , Bearer , Basic
+	IsTunEnabled     bool
+	TunCloudEndpoint string
+	TunAddress       string // tunnel address , it can be guid of the flow engine or can be gateway id.
+	TunEdgeToken     string
 }
 
 type RequestEvent struct {
 	HttpRequest *http.Request
-	RequestId   int32
+	RequestId   int64
 	IsWsMsg     bool
+	IsFromCloud bool
 	Payload     []byte
 }
 
@@ -69,6 +77,7 @@ type liveConnection struct {
 	startTime      time.Time
 	responseSignal chan bool
 	isWs           bool
+	isFromCloud    bool
 	wsConn         *websocket.Conn
 }
 
@@ -87,6 +96,11 @@ func (conn *Connector) LoadConfig(config interface{}) error {
 	return err
 }
 
+func (conn *Connector) Config() ConnectorConfig {
+	return conn.config
+}
+
+
 func (conn *Connector) Init() error {
 	var err error
 	conn.state = "INIT_FAILED"
@@ -99,7 +113,7 @@ func (conn *Connector) Init() error {
 	conn.configureInternalApi()
 	conn.flowStreamRegistry = map[string]flowStream{}
 	conn.state = "RUNNING"
-	log.Info("<HttpConn> HTTP router configured ")
+	log.Info("<HttpConn> HTTP router configured . Is cloud tunnel enabled = ",conn.config.IsTunEnabled)
 	return err
 }
 
@@ -148,14 +162,16 @@ func (conn *Connector) configureInternalApi()  {
 			w.Write(bresp)
 		}
 	})
-
 }
 
 func (conn *Connector) StartHttpServer() {
 	log.Info("<HttpConn> Starting HTTP server.")
+	conn.isServerStarted = true
 	conn.server.Handler = conn.router
 	go conn.server.ListenAndServe()
-	conn.isServerStarted = true
+	if conn.config.IsTunEnabled {
+		conn.StartWsCloudTunnel()
+	}
 }
 
 // httpFlowRouter is invoked by HTTP server ,and it returns response to caller
@@ -167,8 +183,9 @@ func (conn *Connector) httpFlowRouter(w http.ResponseWriter, r *http.Request) {
 	stream, ok := conn.flowStreamRegistry[flowId]
 	conn.flowStreamMutex.RUnlock()
 
-	if !conn.isRequestAllowed(w,r,stream.authConfig,flowId) {
+	if code := conn.isRequestAllowed(r,stream.authConfig,flowId);code != AuthCodeAuthorized {
 		log.Debug("<HttpConn> Request is not allowed ",flowId)
+		conn.SendHttpAuthFailureResponse(code,w,flowId)
 		return
 	}
 
@@ -178,10 +195,10 @@ func (conn *Connector) httpFlowRouter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var reqId int32
 	var responseSignal chan bool
 	responseSignal = make(chan bool)
-	reqId = utils.GenerateRandomNumber()
+	reqId := utils.GenerateRandomNumber64()
+	defer conn.liveConnections.Delete(reqId)
 	conn.liveConnections.Store(reqId, liveConnection{respWriter: w, startTime: time.Now(), responseSignal: responseSignal})
 
 	if stream.reqChannel != nil {
@@ -195,7 +212,9 @@ func (conn *Connector) httpFlowRouter(w http.ResponseWriter, r *http.Request) {
 	log.Debug("<HttpConn> http transaction completed. ")
 }
 
-// wsFlowRouter is invoked by HTTP server to convert HTTP request to WS request.Method is blocked until connection is alive
+// wsFlowRouter is invoked by HTTP server to convert HTTP request to WS request , it start message reading loop , consumes messages from WS stream and
+// and routes them to corresponding flow.Method is blocked until connection is alive.
+
 func (conn *Connector) wsFlowRouter(w http.ResponseWriter, r *http.Request) {
 	reqId := utils.GenerateRandomNumber()
 	defer func() {
@@ -217,8 +236,9 @@ func (conn *Connector) wsFlowRouter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !conn.isRequestAllowed(w,r,stream.authConfig,flowId) {
-		log.Debug("<HttpConn> Request not allowed ",flowId)
+	if code := conn.isRequestAllowed(r,stream.authConfig,flowId);code != AuthCodeAuthorized {
+		log.Debug("<HttpConn> Request is not allowed ",flowId)
+		conn.SendHttpAuthFailureResponse(code,w,flowId)
 		return
 	}
 
@@ -260,10 +280,7 @@ func (conn *Connector) wsFlowRouter(w http.ResponseWriter, r *http.Request) {
 			log.Debug("<HttpConn> Message of type = ", msgType)
 		}
 	}
-
 }
-
-
 
 // RegisterFlow registers node of the flow
 func (conn *Connector) RegisterFlow(flowId string, isSync bool, isWs bool, publishOnly bool, reqChannel chan RequestEvent, alias, name string,authConfig AuthConfig) {
@@ -316,7 +333,7 @@ func (conn *Connector) UnregisterFlow(flowId string) {
 	}
 }
 
-func (conn *Connector) ReplyToRequest(requestId int32, payload []byte, responseContentType string) {
+func (conn *Connector) ReplyToRequest(requestId int64, payload []byte, responseContentType string) {
 	if requestId == 0 {
 		return
 	}
@@ -324,23 +341,31 @@ func (conn *Connector) ReplyToRequest(requestId int32, payload []byte, responseC
 	if !ok {
 		return
 	}
-	defer conn.liveConnections.Delete(requestId)
 	lConn, ok := wi.(liveConnection)
 	if !ok {
 		return
 	}
-	if lConn.isWs {
-		// Connection was initiated using WS trigger
-		err := lConn.wsConn.WriteMessage(websocket.TextMessage, payload)
-		if err != nil {
-			log.Debug("<httpConn> Message forwarded to client")
+	//
+	if lConn.isFromCloud {
+		// Request was received over cloud channel , sending back to cloud
+		headers := map[string]*tunframe.TunnelFrame_StringArray{}
+		hVal := tunframe.TunnelFrame_StringArray{Items:[]string{responseContentType}}
+		headers["Content-Type"] = &hVal
+		newMsg := tunframe.TunnelFrame{
+			MsgType:   tunframe.TunnelFrame_HTTP_RESP,
+			Headers:   headers,
+			CorrId:    requestId,
+			Payload:   payload,
 		}
+		conn.tunClient.Send(&newMsg)
+		conn.liveConnections.Delete(requestId)
 	} else {
 		if payload != nil {
 			log.Debug("<httpConn> Sending http reply , Payload size = ", len(payload))
 			headers := lConn.respWriter.Header()
 			headers.Set("Content-Type", responseContentType)
 			lConn.respWriter.Write(payload)
+
 		}
 		lConn.responseSignal <- true
 	}
@@ -367,6 +392,16 @@ func (conn *Connector) PublishWs(flowId string, payload []byte) {
 		}
 		return true
 	})
+	// Forward all WS message if cloud connection is active.
+	// TODO: ADD SUBSCRIBE support , so cloud has to send subscribe frame to start receiving events
+	if conn.isTunActive {
+		newMsg := tunframe.TunnelFrame{
+			MsgType:   tunframe.TunnelFrame_WS_MSG,
+			Payload:   payload,
+		}
+		conn.tunClient.Send(&newMsg)
+	}
+
 }
 
 func (conn *Connector) Stop() {
