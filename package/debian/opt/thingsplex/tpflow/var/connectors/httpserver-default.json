@@ -4,6 +4,10 @@
   "Plugin": "httpserver",
   "State": "",
   "Config": {
-    "BindAddress": ":8082"
+    "BindAddress": ":8082",
+    "IsTunEnabled": false,
+    "TunAddress": "tp-test-tun-1",
+    "TunCloudEndpoint":"ws://localhost:8083",
+    "TunEdgeToken": "supertoken1"
   }
 }

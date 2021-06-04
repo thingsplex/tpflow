@@ -200,7 +200,12 @@ func (r *VinculumRegistryStore) GetAllServices() ([]model.Service, error) {
 			services = append(services, svc)
 		}
 	}
+
 	return services, nil
+}
+
+func (r *VinculumRegistryStore) GetServicesByDeviceId(Id model.ID)([]model.Service,error) {
+	return nil, errors.New("not implemented")
 }
 
 func (VinculumRegistryStore) GetThingExtendedViewById(Id model.ID) (*model.ThingExtendedView, error) {
@@ -326,25 +331,59 @@ func (r *VinculumRegistryStore) GetAllDevices() ([]model.Device, error) {
 }
 
 func (r *VinculumRegistryStore) GetExtendedDevices() ([]model.DeviceExtendedView, error) {
-	devices, err := r.GetAllDevices()
+
+	site, err := r.vApi.GetSite(true)
 	if err != nil {
 		return nil, err
 	}
-	var extDevices []model.DeviceExtendedView
-	for i := range devices {
-		location, err := r.GetLocationById(devices[i].LocationId)
-		var locationAlias string
-		if err == nil && location != nil {
-			locationAlias = fmt.Sprintf("%s(%s %s)", location.Alias, location.Type, location.SubType)
+	vDevices := site.Devices
+	var devices []model.DeviceExtendedView
+
+	for i := range vDevices {
+		device := model.DeviceExtendedView{}
+		device.ID = model.ID(vDevices[i].ID)
+		if vDevices[i].Client.Name != nil {
+			device.Alias = *vDevices[i].Client.Name
 		}
-		dev := model.DeviceExtendedView{
-			Device:        devices[i],
-			Services:      nil,
-			LocationAlias: locationAlias,
+		if vDevices[i].Room != nil {
+			device.LocationId = model.ID(*vDevices[i].Room)
+			location, err := r.GetLocationById(device.LocationId)
+				if err == nil && location != nil {
+					device.LocationAlias = fmt.Sprintf("%s(%s %s)", location.Alias, location.Type, location.SubType)
+				}
 		}
-		extDevices = append(extDevices, dev)
+
+		if vDevices[i].ThingID != nil {
+			device.ThingId = model.ID(*vDevices[i].ThingID)
+		}
+		var dtype, dsubtype string
+		if vDevices[i].Type["type"] != nil {
+			dtype, _ = vDevices[i].Type["type"].(string)
+		}
+		if vDevices[i].Type["subtype"] != nil {
+			dsubtype, _ = vDevices[i].Type["subtype"].(string)
+			dsubtype = "." + dsubtype
+		}
+		device.Type = fmt.Sprintf("%s%s", dtype, dsubtype)
+
+		device.Services = make([]model.Service,len(vDevices[i].Service))
+		var si int
+		for k,v := range vDevices[i].Service {
+			device.Services[si].Address = v.Addr
+			device.Services[si].Props = v.Props
+			device.Services[si].Name = k
+			device.Services[si].Enabled = v.Enabled
+
+			for _, intfName := range v.Interfaces {
+				intf := model.Interface{MsgType:intfName}
+				device.Services[si].Interfaces = append(device.Services[si].Interfaces, intf)
+			}
+			si++
+		}
+		devices = append(devices, device)
 	}
-	return extDevices, nil
+
+	return devices, nil
 
 }
 

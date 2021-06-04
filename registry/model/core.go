@@ -144,27 +144,27 @@ type Bridge struct {
 }
 
 type Service struct {
-	ID                  ID                                 `json:"id"  storm:"id,increment,index"`
-	IntegrationId       string                             `json:"integr_id" storm:"index"`
-	ParentContainerId   ID                                 `json:"container_id" storm:"index"`
-	ParentContainerType string                             `json:"container_type" storm:"index"`
+	ID                  ID                                 `json:"id,omitempty"  storm:"id,increment,index"`
+	IntegrationId       string                             `json:"integr_id,omitempty" storm:"index"`
+	ParentContainerId   ID                                 `json:"container_id,omitempty" storm:"index"`
+	ParentContainerType string                             `json:"container_type,omitempty" storm:"index"`
 	Name                string                             `json:"name" storm:"index"`
 	Enabled             bool                               `json:"enabled"`
-	Alias               string                             `json:"alias"`
+	Alias               string                             `json:"alias,omitempty"`
 	Address             string                             `json:"address" storm:"index"`
-	Groups              []string                           `json:"groups"`
-	LocationId          ID                                 `json:"location_id" storm:"index"`
-	Props               map[string]interface{}             `json:"props"`
-	Tags                []string                           `json:"tags"`
+	Groups              []string                           `json:"groups,omitempty"`
+	LocationId          ID                                 `json:"location_id,omitempty" storm:"index"`
+	Props               map[string]interface{}             `json:"props,omitempty"`
+	Tags                []string                           `json:"tags,omitempty"`
 	Interfaces          []Interface                        `json:"interfaces"`
-	Attributes          map[string]AttributeValueContainer `json:"attributes"`
+	Attributes          map[string]AttributeValueContainer `json:"attributes,omitempty"`
 }
 
 type Interface struct {
-	Type      string `json:"intf_t"`
+	Type      string `json:"intf_t,omitempty"`
 	MsgType   string `json:"msg_t"`
-	ValueType string `json:"val_t"`
-	Version   string `json:"ver"`
+	ValueType string `json:"val_t,omitempty"`
+	Version   string `json:"ver,omitempty"`
 }
 
 type Location struct {

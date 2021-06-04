@@ -195,6 +195,10 @@ func (st *LocalRegistryStore) GetAllServices() ([]model.Service, error) {
 	return st.services, nil
 }
 
+func (st *LocalRegistryStore) GetServicesByDeviceId(Id model.ID)([]model.Service,error) {
+	return nil, errors.New("not implemented")
+}
+
 // GetThingExtendedViewById return thing enhanced with linked services and location Alias
 func (st *LocalRegistryStore) GetThingExtendedViewById(Id model.ID) (*model.ThingExtendedView, error) {
 	var thingExView model.ThingExtendedView
