@@ -9,6 +9,7 @@ import (
 
 const (
 	AuthMethodBasic = "basic"
+	AuthMethodNone = "none"
 	AuthMethodBearer = "bearer"
 	AuthMethodHeaderToken = "header_token"
 	AuthMethodQueryToken = "query_token"
@@ -99,6 +100,10 @@ func (conn *Connector) isRequestAllowed(r *http.Request,streamAuth AuthConfig,fl
 				return AuthCodeAuthorized
 			}
 		}
+	case AuthMethodNone:
+		return AuthCodeAuthorized
+	case "":
+		return AuthCodeAuthorized
 
 	}
 	return AuthCodeFailed

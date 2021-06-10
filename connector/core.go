@@ -25,8 +25,8 @@ func NewRegistry(configDir string) *Registry {
 }
 
 // AddConnection Adds existing connection as connector instance into the registry
-func (reg *Registry) AddConnection(id string, name string, connType string, conn model.ConnInterface) {
-	inst := model.Instance{ID: id, Name: name, Plugin: connType, Connection: conn}
+func (reg *Registry) AddConnection(id string, name string, connType string, conn model.ConnInterface,config interface{}) {
+	inst := model.Instance{ID: id, Name: name, Plugin: connType, Connection: conn,Config: config}
 	reg.instances = append(reg.instances, &inst)
 }
 
@@ -44,7 +44,7 @@ func (reg *Registry) CreateInstance(id string, name string, plugin string, confi
 			id = utils.GenerateId(15)
 		}
 		connInstance := connPlugin.Constructor(name, config)
-		reg.AddConnection(id, name, plugin, connInstance)
+		reg.AddConnection(id, name, plugin, connInstance,config)
 		return connInstance
 	}
 	return nil
