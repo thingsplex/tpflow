@@ -1,0 +1,19 @@
+{
+  "ID": "httpserver",
+  "Name": "httpserver",
+  "Plugin": "httpserver",
+  "Config": {
+    "BindAddress": ":8082",
+    "GlobalAuth": {
+      "AuthMethod": "basic",
+      "AuthPassword": "molodec2",
+      "AuthToken": "",
+      "AuthUsername": "shurik"
+    },
+    "IsLocalServEnabled": true,
+    "IsTunEnabled": true,
+    "TunAddress": "36de74a4-9226-4a53-970a-7637d291cc62",
+    "TunCloudEndpoint": "wss://tun.thingsplex.com",
+    "TunEdgeToken": "z8AlG2Z9DULkHrZg"
+  }
+}

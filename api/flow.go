@@ -7,6 +7,7 @@ import (
 	"github.com/futurehomeno/fimpgo/fimptype"
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow"
+	model2 "github.com/thingsplex/tpflow/connector/model"
 	"github.com/thingsplex/tpflow/connector/plugins"
 	"github.com/thingsplex/tpflow/flow"
 	"github.com/thingsplex/tpflow/model"
@@ -182,6 +183,22 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 			case "cmd.flow.get_connector_instances":
 				resp := ctx.flowManager.GetConnectorRegistry().GetAllInstances()
 				fimp = fimpgo.NewMessage("evt.flow.connector_instances_report", "tpflow", "object", resp, nil, nil, newMsg.Payload)
+
+			case "cmd.flow.update_connector_instance_config":
+				resp := "ok"
+				instConf := model2.Instance{}
+				err := newMsg.Payload.GetObjectValue(&instConf)
+				if err != nil {
+					log.Error("<ConnRegistry> Incorrect payload for cmd.flow.update_connector_instance.")
+					resp = err.Error()
+				}else {
+					err = ctx.flowManager.GetConnectorRegistry().UpdateConnectorConfig(instConf.ID,instConf.Config)
+					if err != nil {
+						resp = err.Error()
+					}
+				}
+
+				fimp = fimpgo.NewMessage("evt.flow.connector_instances_update_report", "tpflow", "string", resp, nil, nil, newMsg.Payload)
 
 			case "cmd.flow.update_definition":
 				flowMeta := model.FlowMeta{}

@@ -19,6 +19,8 @@ type TunClient struct {
 	stopSignal       chan bool
 	IsConnected      bool
 	IsRunning        bool
+	reconnectCounter int
+	readErrorCounter int
 	connHeaders      http.Header // Should be used to configure additional metadata , like security tokens
 }
 
@@ -43,6 +45,7 @@ func (tc *TunClient) Connect() error {
 	tc.IsRunning = true
 	if err == nil {
 		tc.IsConnected = true
+		tc.readErrorCounter = 0
 		log.Debug("<edgeClient> Successfully connected")
 	}else {
 		tc.IsConnected = false
@@ -94,20 +97,36 @@ func (tc *TunClient) startMsgReader() {
 		}
 		if !tc.IsConnected {
 			time.Sleep(time.Second*3)
+			tc.reconnectCounter++
 			if err := tc.Connect();err != nil {
-				log.Warning("<edgeClient> Reconnection failed..")
+				delay := time.Duration(2*tc.reconnectCounter)
+				if delay > 1200 {
+					delay = 1200
+				}
+				log.Warningf("<edgeClient> Reconnection failed...reconnecting after %d sec",delay)
+				time.Sleep(time.Second*delay)
 			}
 			continue
 		}
+
 		msgType, msg, err := tc.wsConn.ReadMessage() // reading message from Edge devices
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err) {
 				log.Warning("<edgeClient> Lost connection , reconnecting after 2 sec")
 				tc.IsConnected = false
-				time.Sleep(time.Second*2)
+			}else if websocket.IsCloseError(err) {
+				tc.IsConnected = false
+				log.Warning("<edgeClient> WS Close error :", err)
 			}else {
 				log.Warning("<edgeClient> WS Read error :", err)
+				if tc.readErrorCounter > 5 {
+					tc.wsConn.Close()
+					tc.IsConnected = false
+					time.Sleep(time.Second*3)
+				}
+				tc.readErrorCounter++
 			}
+			time.Sleep(time.Second*3)
 			continue
 		}
 		if msgType != websocket.BinaryMessage {

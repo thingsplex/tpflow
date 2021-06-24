@@ -21,6 +21,13 @@ type LocalRegistryStore struct {
 	locations []model.Location
 }
 
+func (st *LocalRegistryStore) GetConfig() interface{} {
+	return nil
+}
+
+func (st *LocalRegistryStore) SetDefaults() bool {
+	return false
+}
 
 func NewThingRegistryStore(storeFile string) RegistryStorage {
 	store := LocalRegistryStore{thingRegistryStoreFile: storeFile}

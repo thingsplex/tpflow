@@ -16,6 +16,14 @@ type VinculumRegistryStore struct {
 	config       *tpflow.Configs
 }
 
+func (r *VinculumRegistryStore) GetConfig() interface{} {
+	return nil
+}
+
+func (r *VinculumRegistryStore) SetDefaults() bool {
+	return false
+}
+
 func NewVinculumRegistryStore(config *tpflow.Configs) RegistryStorage {
 	return &VinculumRegistryStore{config: config}
 }

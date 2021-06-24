@@ -2,6 +2,7 @@ package utils
 
 import (
 	"github.com/dchest/uniuri"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"io"
 	"math/rand"
@@ -13,6 +14,11 @@ import (
 
 func GenerateId(len int) string {
 	return uniuri.NewLen(len)
+}
+
+func GenerateUuid()string {
+	id := uuid.New()
+	return id.String()
 }
 
 func GenerateRandomNumber() int32 {

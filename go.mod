@@ -12,6 +12,7 @@ require (
 	github.com/dchest/uniuri v0.0.0-20160212164326-8902c56451e9
 	github.com/futurehomeno/fimpgo v1.7.0
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
+	github.com/google/uuid v1.2.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/imdario/mergo v0.3.6
@@ -26,13 +27,12 @@ require (
 	github.com/pkg/errors v0.8.0
 	github.com/robfig/cron/v3 v3.0.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/thingsplex/tprelay v0.0.0-20210527180129-46738287c59f
+	github.com/thingsplex/tprelay v0.0.0-20210623220309-5ffe8cbfac9b
 	github.com/traefik/yaegi v0.9.16
 	github.com/valyala/bytebufferpool v0.0.0-20160817181652-e746df99fe4a // indirect
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 	github.com/vmihailenco/msgpack v4.0.0+incompatible // indirect
 	golang.org/x/net v0.0.0-20180826012351-8a410e7b638d // indirect
-	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f // indirect
 	golang.org/x/text v0.3.0 // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
 	google.golang.org/appengine v1.1.0 // indirect

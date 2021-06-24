@@ -36,21 +36,22 @@ type Connector struct {
 	router             *mux.Router
 	flowStreamMutex    sync.RWMutex
 	flowStreamRegistry map[string]flowStream
-	liveConnections    sync.Map // map of type liveConnection
-	isServerStarted    bool     // for lazy loading
+	liveConnections    sync.Map                // map of type liveConnection
+	isServerStarted    bool                    // for lazy loading
 	assetRegistry      storage.RegistryStorage // this is only for exposing registry api
- 	flowContext        *context.Context
+	flowContext        *context.Context
 	tunClient          *edge.TunClient
 	isTunActive        bool
 }
 
 type ConnectorConfig struct {
-	BindAddress      string
-	GlobalAuth       AuthConfig // None , Bearer , Basic
-	IsTunEnabled     bool
-	TunCloudEndpoint string
-	TunAddress       string // tunnel address , it can be guid of the flow engine or can be gateway id.
-	TunEdgeToken     string
+	BindAddress        string
+	GlobalAuth         AuthConfig // None , Bearer , Basic
+	IsTunEnabled       bool
+	IsLocalServEnabled bool
+	TunCloudEndpoint   string
+	TunAddress         string // tunnel address , it can be guid of the flow engine or can be gateway id.
+	TunEdgeToken       string
 }
 
 type RequestEvent struct {
@@ -84,22 +85,52 @@ type liveConnection struct {
 func NewConnectorInstance(name string, config interface{}) model.ConnInterface {
 	con := Connector{name: name}
 	con.LoadConfig(config)
-	con.Init()
 	return &con
 }
 
 func (conn *Connector) LoadConfig(config interface{}) error {
 	err := mapstructure.Decode(config, &conn.config)
+	if err != nil {
+		return err
+	}
+	if conn.state == "RUNNING" {
+		if conn.isTunActive && !conn.config.IsTunEnabled {
+			//Stop tunnel
+			return conn.StopWsCloudTunnel()
+
+		} else if !conn.isTunActive && conn.config.IsTunEnabled {
+			//Start tunnel
+			return conn.StartWsCloudTunnel()
+		}
+	}
+	return nil
+}
+
+func (conn *Connector) GetConfig() interface{} {
+	return conn.config
+}
+
+func (conn *Connector) SetDefaults() bool {
+	var isChanged bool
 	if conn.config.BindAddress == "" {
 		conn.config.BindAddress = ":8082"
+		isChanged = true
 	}
-	return err
+
+	if conn.config.TunAddress == "" {
+		conn.config.TunAddress = utils.GenerateUuid()
+		isChanged = true
+	}
+	if conn.config.TunEdgeToken == "" {
+		conn.config.TunEdgeToken = utils.GenerateId(16)
+		isChanged = true
+	}
+	return isChanged
 }
 
 func (conn *Connector) Config() ConnectorConfig {
 	return conn.config
 }
-
 
 func (conn *Connector) Init() error {
 	var err error
@@ -113,7 +144,7 @@ func (conn *Connector) Init() error {
 	conn.configureInternalApi()
 	conn.flowStreamRegistry = map[string]flowStream{}
 	conn.state = "RUNNING"
-	log.Info("<HttpConn> HTTP router configured . Is cloud tunnel enabled = ",conn.config.IsTunEnabled)
+	log.Info("<HttpConn> HTTP router configured . Is cloud tunnel enabled = ", conn.config.IsTunEnabled)
 	return err
 }
 
@@ -125,11 +156,11 @@ func (conn *Connector) SetFlowContext(flowContext *context.Context) {
 	conn.flowContext = flowContext
 }
 
-func (conn *Connector) configureInternalApi()  {
+func (conn *Connector) configureInternalApi() {
 	conn.router.HandleFunc("/api/registry/devices", func(w http.ResponseWriter, r *http.Request) {
 		if conn.assetRegistry != nil {
-			devs , _ := conn.assetRegistry.GetExtendedDevices()
-			bresp , err :=  json.Marshal(devs)
+			devs, _ := conn.assetRegistry.GetExtendedDevices()
+			bresp, err := json.Marshal(devs)
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				return
@@ -139,8 +170,8 @@ func (conn *Connector) configureInternalApi()  {
 	})
 	conn.router.HandleFunc("/api/registry/locations", func(w http.ResponseWriter, r *http.Request) {
 		if conn.assetRegistry != nil {
-			locs , _ := conn.assetRegistry.GetAllLocations()
-			bresp , err :=  json.Marshal(locs)
+			locs, _ := conn.assetRegistry.GetAllLocations()
+			bresp, err := json.Marshal(locs)
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				return
@@ -154,7 +185,7 @@ func (conn *Connector) configureInternalApi()  {
 			vars := mux.Vars(r)
 			flowId := vars["flowId"]
 			records := conn.flowContext.GetRecords(flowId)
-			bresp , err :=  json.Marshal(records)
+			bresp, err := json.Marshal(records)
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				return
@@ -165,11 +196,14 @@ func (conn *Connector) configureInternalApi()  {
 }
 
 func (conn *Connector) StartHttpServer() {
-	log.Info("<HttpConn> Starting HTTP server.")
-	conn.isServerStarted = true
 	conn.server.Handler = conn.router
-	go conn.server.ListenAndServe()
-	if conn.config.IsTunEnabled {
+	if !conn.isServerStarted && conn.config.IsLocalServEnabled {
+		log.Info("<HttpConn> Starting HTTP server.")
+		go conn.server.ListenAndServe()
+		conn.isServerStarted = true
+	}
+	if !conn.isTunActive && conn.config.IsTunEnabled {
+		log.Info("<HttpConn> Starting WS cloud tunnel.")
 		conn.StartWsCloudTunnel()
 	}
 }
@@ -183,9 +217,9 @@ func (conn *Connector) httpFlowRouter(w http.ResponseWriter, r *http.Request) {
 	stream, ok := conn.flowStreamRegistry[flowId]
 	conn.flowStreamMutex.RUnlock()
 
-	if code := conn.isRequestAllowed(r,stream.authConfig,flowId);code != AuthCodeAuthorized {
-		log.Debug("<HttpConn> Request is not allowed ",flowId)
-		conn.SendHttpAuthFailureResponse(code,w,flowId)
+	if code := conn.isRequestAllowed(r, stream.authConfig, flowId); code != AuthCodeAuthorized {
+		log.Debug("<HttpConn> Request is not allowed ", flowId)
+		conn.SendHttpAuthFailureResponse(code, w, flowId)
 		return
 	}
 
@@ -236,9 +270,9 @@ func (conn *Connector) wsFlowRouter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if code := conn.isRequestAllowed(r,stream.authConfig,flowId);code != AuthCodeAuthorized {
-		log.Debug("<HttpConn> Request is not allowed ",flowId)
-		conn.SendHttpAuthFailureResponse(code,w,flowId)
+	if code := conn.isRequestAllowed(r, stream.authConfig, flowId); code != AuthCodeAuthorized {
+		log.Debug("<HttpConn> Request is not allowed ", flowId)
+		conn.SendHttpAuthFailureResponse(code, w, flowId)
 		return
 	}
 
@@ -283,7 +317,7 @@ func (conn *Connector) wsFlowRouter(w http.ResponseWriter, r *http.Request) {
 }
 
 // RegisterFlow registers node of the flow
-func (conn *Connector) RegisterFlow(flowId string, isSync bool, isWs bool, publishOnly bool, reqChannel chan RequestEvent, alias, name string,authConfig AuthConfig) {
+func (conn *Connector) RegisterFlow(flowId string, isSync bool, isWs bool, publishOnly bool, reqChannel chan RequestEvent, alias, name string, authConfig AuthConfig) {
 	if reqChannel == nil {
 		return
 	}
@@ -299,8 +333,7 @@ func (conn *Connector) RegisterFlow(flowId string, isSync bool, isWs bool, publi
 		isPublishOnly: publishOnly,
 		FlowIdAlias:   alias,
 		Name:          name,
-		authConfig: authConfig,
-
+		authConfig:    authConfig,
 	}
 	conn.flowStreamMutex.Unlock()
 	log.Debug("<HttpConn> Registered flow with id = ", flowId)
@@ -349,13 +382,13 @@ func (conn *Connector) ReplyToRequest(requestId int64, payload []byte, responseC
 	if lConn.isFromCloud {
 		// Request was received over cloud channel , sending back to cloud
 		headers := map[string]*tunframe.TunnelFrame_StringArray{}
-		hVal := tunframe.TunnelFrame_StringArray{Items:[]string{responseContentType}}
+		hVal := tunframe.TunnelFrame_StringArray{Items: []string{responseContentType}}
 		headers["Content-Type"] = &hVal
 		newMsg := tunframe.TunnelFrame{
-			MsgType:   tunframe.TunnelFrame_HTTP_RESP,
-			Headers:   headers,
-			CorrId:    requestId,
-			Payload:   payload,
+			MsgType: tunframe.TunnelFrame_HTTP_RESP,
+			Headers: headers,
+			CorrId:  requestId,
+			Payload: payload,
 		}
 		conn.tunClient.Send(&newMsg)
 		conn.liveConnections.Delete(requestId)
@@ -396,8 +429,8 @@ func (conn *Connector) PublishWs(flowId string, payload []byte) {
 	// TODO: ADD SUBSCRIBE support , so cloud has to send subscribe frame to start receiving events
 	if conn.isTunActive {
 		newMsg := tunframe.TunnelFrame{
-			MsgType:   tunframe.TunnelFrame_WS_MSG,
-			Payload:   payload,
+			MsgType: tunframe.TunnelFrame_WS_MSG,
+			Payload: payload,
 		}
 		conn.tunClient.Send(&newMsg)
 	}

@@ -2,10 +2,10 @@ package influxdb
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"github.com/thingsplex/tpflow/connector/model"
 	influx "github.com/influxdata/influxdb/client/v2"
 	"github.com/mitchellh/mapstructure"
+	log "github.com/sirupsen/logrus"
+	"github.com/thingsplex/tpflow/connector/model"
 )
 
 type Connector struct {
@@ -14,6 +14,8 @@ type Connector struct {
 	state   string
 	config  ConnectorConfig
 }
+
+
 
 type ConnectorConfig struct {
 	Address             string
@@ -27,12 +29,19 @@ type ConnectorConfig struct {
 func NewConnectorInstance(name string, config interface{}) model.ConnInterface {
 	con := Connector{name: name}
 	con.LoadConfig(config)
-	con.Init()
 	return &con
 }
 
 func (conn *Connector) LoadConfig(config interface{}) error {
 	return mapstructure.Decode(config, &conn.config)
+}
+
+func (conn *Connector) GetConfig() interface{} {
+	return conn.config
+}
+
+func (conn *Connector) SetDefaults() bool {
+	return false
 }
 
 func (conn *Connector) Init() error {

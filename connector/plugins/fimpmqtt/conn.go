@@ -37,12 +37,19 @@ type Message struct {
 func NewConnectorInstance(name string, config interface{}) model.ConnInterface {
 	con := Connector{name: name}
 	con.LoadConfig(config)
-	con.Init()
 	return &con
 }
 
 func (conn *Connector) LoadConfig(config interface{}) error {
 	return mapstructure.Decode(config, &conn.config)
+}
+
+func (conn *Connector) GetConfig() interface{} {
+	return conn.config
+}
+
+func (conn *Connector) SetDefaults() bool {
+	return false
 }
 
 func (conn *Connector) Init() error {

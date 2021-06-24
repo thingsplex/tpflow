@@ -21,11 +21,11 @@ const (
 
 
 type AuthConfig struct {
-	AuthMethod          string `json:"omitempty"` // none , bearer , basic ,header-token, query-token
-	AuthToken           string `json:"omitempty"` // Bearer token
-	AuthUsername        string `json:"omitempty"` // Username for Basic auth
-	AuthPassword        string `json:"omitempty"` // Password for Basic auth
-	AuthCustomParamName string `json:"omitempty"` // Name of custom header that stores token. Or name of query parameter that holds token.
+	AuthMethod          string // none , bearer , basic ,header-token, query-token
+	AuthToken           string // Bearer token
+	AuthUsername        string // Username for Basic auth
+	AuthPassword        string // Password for Basic auth
+	AuthCustomParamName string // Name of custom header that stores token. Or name of query parameter that holds token.
 }
 
 func (conn *Connector) SendHttpAuthFailureResponse(authCode int , w http.ResponseWriter,flowId string) {

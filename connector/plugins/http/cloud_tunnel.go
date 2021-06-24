@@ -21,14 +21,24 @@ func (conn *Connector) StartWsCloudTunnel() error {
 	log.Info("<HttpCloudConn> Starting cloud tunnel")
 	conn.tunClient = edge.NewTunClient(conn.config.TunCloudEndpoint,conn.config.TunAddress,5)
 	conn.tunClient.SetEdgeToken(conn.config.TunEdgeToken)
+
 	if err := conn.tunClient.Connect(); err != nil {
 		log.Errorf("<HttCloudConn> Connect() error = %v, ", err)
+		conn.isTunActive = false
+		return err
+	}else {
+		go conn.wsCloudRouter()
+		conn.isTunActive = true
+		log.Info("<HttpCloudConn> Successfully connected to ",conn.config.TunCloudEndpoint)
 	}
-	go conn.wsCloudRouter()
-	conn.isTunActive = true
 	return nil
 }
 
+func (conn *Connector) StopWsCloudTunnel() error {
+	log.Info("<HttpCloudConn> Stopping cloud tunnel ")
+	conn.tunClient.Close()
+	return nil
+}
 // wsCloudFlowRouter reads messages from cloud stream and routes them either directly to flow or to API.
 func (conn *Connector) wsCloudRouter()  {
 	stream := conn.tunClient.GetStream()
@@ -106,9 +116,7 @@ func (conn *Connector) wsCloudRouter()  {
 			}
 
 		}
-		//if string(newMsg.Payload) == "ping" {
-		//
-		//}
+
 	}
 	conn.isTunActive = false
 }

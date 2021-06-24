@@ -1,0 +1,20 @@
+{
+  "ID": "httpserver",
+  "Name": "httpserver",
+  "Plugin": "httpserver",
+  "State": "",
+  "Config": {
+    "BindAddress": ":8082",
+    "IsTunEnabled": false,
+    "TunAddress": "tp-test-tun-1",
+    "TunCloudEndpoint":"wss://tun.thingsplex.com",
+    "TunEdgeToken": "tBxtE5SfUMuD9z52",
+    "GlobalAuth": {
+      "AuthMethod": "none",
+      "AuthToken ": "",
+      "AuthUsername": "",
+      "AuthPassword": "",
+      "AuthCustomParamName": ""
+    }
+  }
+}

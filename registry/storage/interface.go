@@ -45,4 +45,7 @@ type RegistryStorage interface {
 	Stop()
 	GetConnection() interface{}
 	GetState() string
+
+	GetConfig() interface{}
+	SetDefaults() bool // true - defaults were set , false - nothing to set
 }

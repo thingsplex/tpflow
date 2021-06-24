@@ -6,6 +6,7 @@ type Instance struct {
 	Plugin     string        // name of connector
 	Connection ConnInterface `json:"-"`
 	Config     interface{}
+	ConfigFileName   string  `json:"-"`
 }
 
 type InstanceView struct {
@@ -23,6 +24,8 @@ type Plugin struct {
 
 type ConnInterface interface {
 	LoadConfig(config interface{}) error
+	GetConfig() interface{}
+	SetDefaults() bool // true - defaults were set , false - nothing to set
 	Init() error
 	Stop()
 	GetConnection() interface{}

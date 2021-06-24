@@ -2,6 +2,7 @@ package connector
 
 import (
 	"encoding/json"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow/connector/model"
 	"github.com/thingsplex/tpflow/connector/plugins"
@@ -33,19 +34,24 @@ func (reg *Registry) AddConnection(id string, name string, connType string, conn
 // AddInstance Adds existing instance to registry
 func (reg *Registry) AddInstance(inst *model.Instance) {
 	reg.instances = append(reg.instances, inst)
-	log.Info("<ConnRegistry> Instance was added , id = %s , name = %s ", inst.ID, inst.Name)
+	log.Infof("<ConnRegistry> Instance was added , id = %s , name = %s ", inst.ID, inst.Name)
 }
 
 // CreateInstance Creates instance of connector using one of registered plugins
-func (reg *Registry) CreateInstance(id string, name string, plugin string, config interface{}) model.ConnInterface {
-	connPlugin := plugins.GetPlugin(plugin)
+func (reg *Registry) CreateInstance(inst  model.Instance) model.ConnInterface {
+	connPlugin := plugins.GetPlugin(inst.Plugin)
 	if connPlugin != nil {
-		if id == "" {
-			id = utils.GenerateId(15)
+		if inst.ID == "" {
+			inst.ID = utils.GenerateId(15)
 		}
-		connInstance := connPlugin.Constructor(name, config)
-		reg.AddConnection(id, name, plugin, connInstance,config)
-		return connInstance
+		inst.Connection = connPlugin.Constructor(inst.Name, inst.Config)
+		if inst.Connection.SetDefaults() { // checking if defaults mutated config or not
+			inst.Config = inst.Connection.GetConfig() // copying mutated config
+			reg.SaveConnectorConfigToDisk(&inst)
+		}
+		inst.Connection.Init()
+		reg.AddInstance(&inst)
+		return inst.Connection
 	}
 	return nil
 }
@@ -72,7 +78,6 @@ func (reg *Registry) GetAllInstances() []model.InstanceView {
 
 func (reg *Registry) LoadInstancesFromDisk() error {
 	log.Info("<ConnRegistry> Loading connectors from disk ")
-
 	files, err := ioutil.ReadDir(reg.configsDir)
 	if err != nil {
 		log.Error(err)
@@ -87,15 +92,36 @@ func (reg *Registry) LoadInstancesFromDisk() error {
 				log.Error("<ConnRegistry> Can't open connector config file.")
 				continue
 			}
-			inst := model.Instance{}
-			err = json.Unmarshal(file, &inst)
+			instConf := model.Instance{ConfigFileName: fileName}
+			err = json.Unmarshal(file, &instConf)
 			if err != nil {
 				log.Error("<ConnRegistry> Can't unmarshel connector file.")
 				continue
 			}
-
-			reg.CreateInstance(inst.ID, inst.Name, inst.Plugin, inst.Config)
+			reg.CreateInstance(instConf)
 		}
 	}
+	return nil
+}
+
+func (reg *Registry) UpdateConnectorConfig(ID string ,config interface{}) error {
+	log.Info("<ConnRegistry> Updating connector config . ID =  ",ID)
+	inst := reg.GetInstance(ID)
+	if inst == nil {
+		return fmt.Errorf("conn instance not found")
+	}
+	inst.Config = config
+	inst.Connection.LoadConfig(config)
+	return reg.SaveConnectorConfigToDisk(inst)
+}
+
+func (reg *Registry) SaveConnectorConfigToDisk(inst *model.Instance)error {
+	log.Info("<ConnRegistry> Saving connector to disk , filename: ",inst.ConfigFileName)
+	log.Warningf("%+v",inst.Config)
+	bp , err := json.Marshal(inst)
+	if err != nil {
+		return err
+	}
+	ioutil.WriteFile(inst.ConfigFileName,bp,0777)
 	return nil
 }

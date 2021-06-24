@@ -1,0 +1,63 @@
+{
+  "Id": "fh_home_mode",
+  "ClassId": "fh_home_mode",
+  "Author": "",
+  "Version": 0,
+  "CreatedAt": "2020-03-19T11:44:24.86589223+01:00",
+  "UpdatedAt": "2020-03-19T11:49:07.669718637+01:00",
+  "Name": "Home mode tracker",
+  "Group": "fh.home.defaults",
+  "Description": "",
+  "Nodes": [
+    {
+      "Id": "2",
+      "Type": "vinc_trigger",
+      "Label": "Home event trigger",
+      "SuccessTransition": "3",
+      "TimeoutTransition": "",
+      "ErrorTransition": "",
+      "Address": "",
+      "Service": "",
+      "ServiceInterface": "",
+      "Config": {
+        "EventType": "mode",
+        "IsValueFilterEnabled": false,
+        "Timeout": 0,
+        "ValueFilter": ""
+      },
+      "Ui": {
+        "nodeType": "",
+        "x": 168,
+        "y": 173
+      }
+    },
+    {
+      "Id": "3",
+      "Type": "set_variable",
+      "Label": "save global variable",
+      "SuccessTransition": "",
+      "TimeoutTransition": "",
+      "ErrorTransition": "",
+      "Address": "",
+      "Service": "",
+      "ServiceInterface": "",
+      "Config": {
+        "DefaultValue": {
+          "Value": 0,
+          "ValueType": ""
+        },
+        "Name": "fh.home.mode",
+        "UpdateGlobal": true,
+        "UpdateInputMsg": false
+      },
+      "Ui": {
+        "nodeType": "",
+        "x": 164,
+        "y": 434
+      }
+    }
+  ],
+  "IsDisabled": false,
+  "IsDefault": true,
+  "ParallelExecution": "parallel"
+}
