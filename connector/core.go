@@ -8,6 +8,7 @@ import (
 	"github.com/thingsplex/tpflow/connector/plugins"
 	"github.com/thingsplex/tpflow/utils"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -76,16 +77,34 @@ func (reg *Registry) GetAllInstances() []model.InstanceView {
 	return instList
 }
 
+func (reg *Registry) LoadDefaults()error {
+	//configFile := filepath.Join(reg.configsDir,"data","config.json")
+	//os.Remove(configFile)
+	//log.Info("Config file doesn't exist.Loading default config")
+	//defaultConfigFile := filepath.Join(cf.WorkDir,"defaults","config.json")
+	//return utils.CopyFile(defaultConfigFile,configFile)
+	dataDir := filepath.Join(reg.configsDir,"data")
+	files, err := ioutil.ReadDir(dataDir)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	for _, file := range files {
+
+	}
+}
+
 func (reg *Registry) LoadInstancesFromDisk() error {
 	log.Info("<ConnRegistry> Loading connectors from disk ")
-	files, err := ioutil.ReadDir(reg.configsDir)
+	dataDir := filepath.Join(reg.configsDir,"data")
+	files, err := ioutil.ReadDir(dataDir)
 	if err != nil {
 		log.Error(err)
 		return err
 	}
 	for _, file := range files {
 		if strings.Contains(file.Name(), ".json") {
-			fileName := filepath.Join(reg.configsDir, file.Name())
+			fileName := filepath.Join(dataDir, file.Name())
 			log.Info("<ConnRegistry> Loading connector instance from file : ", fileName)
 			file, err := ioutil.ReadFile(fileName)
 			if err != nil {
