@@ -59,6 +59,7 @@ func NewManager(config tpflow.Configs) (*Manager, error) {
 	}
 	man.globalContext.RegisterFlow("global")
 	man.connectorRegistry = *connector.NewRegistry(config.ConnectorStorageDir)
+	man.connectorRegistry.LoadDefaults()
 	man.connectorRegistry.LoadInstancesFromDisk()
 
 	return &man, err

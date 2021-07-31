@@ -8,7 +8,6 @@ import (
 	"github.com/thingsplex/tpflow/connector/plugins"
 	"github.com/thingsplex/tpflow/utils"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 )
@@ -78,20 +77,21 @@ func (reg *Registry) GetAllInstances() []model.InstanceView {
 }
 
 func (reg *Registry) LoadDefaults()error {
-	//configFile := filepath.Join(reg.configsDir,"data","config.json")
-	//os.Remove(configFile)
-	//log.Info("Config file doesn't exist.Loading default config")
-	//defaultConfigFile := filepath.Join(cf.WorkDir,"defaults","config.json")
-	//return utils.CopyFile(defaultConfigFile,configFile)
-	dataDir := filepath.Join(reg.configsDir,"data")
-	files, err := ioutil.ReadDir(dataDir)
+	defaultsDir := filepath.Join(reg.configsDir,"defaults")
+	defaultFiles, err := ioutil.ReadDir(defaultsDir)
 	if err != nil {
 		log.Error(err)
 		return err
 	}
-	for _, file := range files {
-
+	for _, file := range defaultFiles {
+		dataFile := filepath.Join(reg.configsDir,"data",file.Name()) // related data file
+		if !utils.FileExists(dataFile) {
+			log.Infof("<ConnRegistry> Data file %s doesn't exist. Moving from default folder",file.Name())
+		}
+		defaultFile := filepath.Join(defaultsDir, file.Name())
+		utils.CopyFile(defaultFile,dataFile)
 	}
+	return nil
 }
 
 func (reg *Registry) LoadInstancesFromDisk() error {
