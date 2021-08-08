@@ -83,8 +83,9 @@ func (conn *Connector) wsCloudRouter()  {
 						stream.reqChannel <- RequestEvent{RequestId: newMsg.ReqId,Payload: newMsg.Payload,IsFromCloud: true,HttpRequest: httpReq}
 					}
 
-				}else if strings.Contains(newMsg.GetReqUrl(),fmt.Sprintf("/api/flow/context/%s",flowId)) {
-
+				}else if strings.Contains(newMsg.GetReqUrl(),"/api/flow/context/") {
+					log.Debug("<HttpCloudConn> New API frame ")
+					conn.InternalApiHandlerOverCloud(newMsg)
 				}else {
 					log.Debug("<HttpCloudConn> Unsupported resource ",newMsg.GetReqUrl())
 				}
@@ -122,24 +123,40 @@ func (conn *Connector) wsCloudRouter()  {
 }
 
 func (conn *Connector) InternalApiHandlerOverCloud(msg *tunframe.TunnelFrame) {
+	var bresp []byte
+	var err error
 	if strings.Contains(msg.GetReqUrl(),"/api/registry/devices") {
 		if conn.assetRegistry != nil {
 			devs , _ := conn.assetRegistry.GetExtendedDevices()
-			bresp , err :=  json.Marshal(devs)
-			tunFrame := tunframe.TunnelFrame{
-				MsgType:   tunframe.TunnelFrame_HTTP_RESP,
-				CorrId:    msg.ReqId,
-				RespCode:  200,
-			}
-			if err != nil {
-				tunFrame.RespCode = http.StatusBadRequest
-				return
-			}
-			tunFrame.Payload = bresp
-			conn.tunClient.Send(&tunFrame)
+			bresp , err =  json.Marshal(devs)
 		}
+	}else if strings.Contains(msg.GetReqUrl(),"/api/registry/locations") {
+		if conn.assetRegistry != nil {
+			locs, _ := conn.assetRegistry.GetAllLocations()
+			bresp , err =  json.Marshal(locs)
+		}
+	}else if strings.Contains(msg.GetReqUrl(),"/api/flow/context/") {
+		if conn.flowContext != nil {
+			flowId := msg.GetVars()["flowId"]
+			records := conn.flowContext.GetRecords(flowId)
+			bresp, err = json.Marshal(records)
+		}
+	}else {
+		log.Info("<HttpCloudConn> Unsupported internal API call path ",msg.GetReqUrl())
+		return
 	}
 
+	tunFrame := tunframe.TunnelFrame{
+		MsgType:   tunframe.TunnelFrame_HTTP_RESP,
+		CorrId:    msg.ReqId,
+		RespCode:  200,
+	}
+	if err != nil {
+		tunFrame.RespCode = http.StatusBadRequest
+	}else {
+		tunFrame.Payload = bresp
+	}
+	conn.tunClient.Send(&tunFrame)
 }
 
 func (conn *Connector) SendCloudAuthFailureResponse(authCode int , reqId int64,flowId string) {
