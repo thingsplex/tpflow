@@ -14,9 +14,17 @@ func (conn *Connector) index(w http.ResponseWriter, r *http.Request) {
     <p>List of endpoints</p>
     {{ range $index, $element := . }} 
       {{ if $element.IsWs }}
-        <p> Websocket  : <a href="/flow/{{ $index }}/ws"> /flow/{{ $index }}/ws </a> - {{ $element.Name }} </p> 
+        {{ if $element.FlowIdAlias }}  
+          <p> Websocket  : <a href="/flow/{{ $element.FlowIdAlias }}/ws"> /flow/{{ $element.FlowIdAlias }}/ws </a> - {{ $element.Name }} </p> 
+        {{ else }}
+          <p> Websocket  : <a href="/flow/{{ $index }}/ws"> /flow/{{ $index }}/ws </a> - {{ $element.Name }} </p> 
+        {{ end }}  
       {{ else }} 
-		<p> Http : <a href="/flow/{{ $index }}/rest"> /flow/{{ $index }}/rest </a> - {{ $element.Name }} </p> 
+         {{ if $element.FlowIdAlias }}  
+            <p> Http : <a href="/flow/{{ $element.FlowIdAlias }}/rest"> /flow/{{ $element.FlowIdAlias }}/rest </a> - {{ $element.Name }} </p> 
+         {{ else }}
+     		<p> Http : <a href="/flow/{{ $index }}/rest"> /flow/{{ $index }}/rest </a> - {{ $element.Name }} </p> 
+         {{ end }}
       {{ end }} 
     {{ end }}
 

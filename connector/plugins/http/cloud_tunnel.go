@@ -8,6 +8,7 @@ import (
 	"github.com/thingsplex/tprelay/pkg/proto/tunframe"
 	"net/http"
 	url2 "net/url"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -61,9 +62,18 @@ func (conn *Connector) wsCloudRouter()  {
 			flowId := vars["flowId"]
 			if flowId != "" {
 				log.Debug("<HttpCloudConn> New frame for flow ",flowId)
-				if strings.Contains(newMsg.GetReqUrl(),fmt.Sprintf("/flow/%s/rest",flowId)) {
+				//if strings.Contains(newMsg.GetReqUrl(),fmt.Sprintf("/flow/%s/rest",flowId)) {
+				if r,_ := regexp.MatchString("/flow/[a-z0-9\\-\\_]+/rest",newMsg.GetReqUrl());r==true {
 					conn.flowStreamMutex.RLock()
 					stream, ok := conn.flowStreamRegistry[flowId]
+					if !ok {
+						for i := range conn.flowStreamRegistry {
+							if conn.flowStreamRegistry[i].FlowIdAlias == flowId {
+								ok = true
+								stream = conn.flowStreamRegistry[i]
+							}
+						}
+					}
 					conn.flowStreamMutex.RUnlock()
 					if !ok {
 						log.Warning("<HttpConn> Flow is not registered. FlowId = ", flowId)

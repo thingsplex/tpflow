@@ -214,7 +214,18 @@ func (conn *Connector) httpFlowRouter(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	flowId := vars["id"]
 	conn.flowStreamMutex.RLock()
+	// Searching by flow id
 	stream, ok := conn.flowStreamRegistry[flowId]
+	// Searching by alias
+	if !ok {
+		for i := range conn.flowStreamRegistry {
+			if conn.flowStreamRegistry[i].FlowIdAlias == flowId {
+				stream = conn.flowStreamRegistry[i]
+				ok = true
+				break
+			}
+		}
+	}
 	conn.flowStreamMutex.RUnlock()
 
 	if code := conn.isRequestAllowed(r, stream.authConfig, flowId); code != AuthCodeAuthorized {
