@@ -144,7 +144,11 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			}
 		} else {
 			msg.Payload.Topic = msg.AddressStr
-			body, _ = msg.Payload.SerializeToJson()
+			if msg.ValPayload == nil {
+				body, _ = msg.Payload.SerializeToJson()
+			}else {
+				body, _ = json.Marshal(msg.ValPayload)
+			}
 		}
 	} else {
 		var templateBuffer bytes.Buffer

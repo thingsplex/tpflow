@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/boltdb/bolt"
+	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"math"
 	"time"
@@ -15,6 +16,10 @@ import (
 type Variable struct {
 	Value     interface{}
 	ValueType string
+}
+
+func (vrbl *Variable) ToStruct(targetVar interface{}) {
+	mapstructure.Decode(vrbl.Value,targetVar)
 }
 
 func (vrbl *Variable) IsNumber() bool {
