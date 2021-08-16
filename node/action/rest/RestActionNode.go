@@ -108,6 +108,10 @@ func (node *Node) LoadNodeConfig() error {
 			} else {
 				vari, err = node.ctx.GetVariable(varName, node.FlowOpCtx().FlowId)
 			}
+			if vari.ValueType == "object" {
+				obj , err := json.Marshal(vari.Value)
+				return string(obj),err
+			}
 
 			if vari.IsNumber() {
 				return vari.ToNumber()
@@ -116,7 +120,12 @@ func (node *Node) LoadNodeConfig() error {
 			if ok {
 				return vstr, err
 			} else {
-				return "", errors.New("Only simple types are supported ")
+				obj , err := json.Marshal(vari.Value)
+				if err == nil {
+					return string(obj),err
+				}
+				node.GetLog().Debug("Can't serialize vars . Err ",err.Error())
+				return "", err
 			}
 		},
 		"setting": func(name string) (interface{}, error) {
