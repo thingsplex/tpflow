@@ -63,7 +63,7 @@ func (conn *Connector) wsCloudRouter()  {
 			if flowId != "" {
 				log.Debug("<HttpCloudConn> New frame for flow ",flowId)
 				//if strings.Contains(newMsg.GetReqUrl(),fmt.Sprintf("/flow/%s/rest",flowId)) {
-				if r,_ := regexp.MatchString("/flow/[a-z0-9\\-\\_]+/rest",newMsg.GetReqUrl());r==true {
+				if r,_ := regexp.MatchString("/cloud/.*/flow/.*/rest.*",newMsg.GetReqUrl());r==true {
 					conn.flowStreamMutex.RLock()
 					stream, ok := conn.flowStreamRegistry[flowId]
 					if !ok {

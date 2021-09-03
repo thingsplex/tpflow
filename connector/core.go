@@ -86,10 +86,10 @@ func (reg *Registry) LoadDefaults()error {
 	for _, file := range defaultFiles {
 		dataFile := filepath.Join(reg.configsDir,"data",file.Name()) // related data file
 		if !utils.FileExists(dataFile) {
-			log.Infof("<ConnRegistry> Data file %s doesn't exist. Moving from default folder",file.Name())
+			log.Infof("<ConnRegistry> Connector config file %s doesn't exist. Moving from default folder",file.Name())
+			defaultFile := filepath.Join(defaultsDir, file.Name())
+			utils.CopyFile(defaultFile,dataFile)
 		}
-		defaultFile := filepath.Join(defaultsDir, file.Name())
-		utils.CopyFile(defaultFile,dataFile)
 	}
 	return nil
 }
