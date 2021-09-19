@@ -106,6 +106,7 @@ func (conn *Connector) wsCloudRouter()  {
 			}
 		case tunframe.TunnelFrame_WS_MSG:
 			flowId := vars["flowId"]
+			log.Debug("<HttpCloudConn> New WS frame for flow ",flowId)
 			if flowId != "" {
 				conn.flowStreamMutex.RLock()
 				stream, ok := conn.flowStreamRegistry[flowId]

@@ -11,6 +11,7 @@ import (
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
 	"io/ioutil"
+	"runtime/debug"
 	"time"
 )
 
@@ -115,8 +116,11 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 	}else {
 		timer = time.NewTimer(timeout)
 	}
-
 	defer func() {
+		if r := recover(); r != nil {
+			node.GetLog().Error("<HttpConn> WS connection failed with PANIC")
+			node.GetLog().Error(string(debug.Stack()))
+		}
 		node.SetReactorRunning(false)
 		node.GetLog().Debug("WaitForEvent has quit. ")
 		timer.Stop()
@@ -129,11 +133,18 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 		var fimpMsg *fimpgo.FimpMessage
 		select {
 		case newMsg := <-node.msgInStream:
-			node.GetLog().Debug("--New http message--")
-			if newMsg.HttpRequest.Method != node.config.Method {
-				node.httpServerConn.ReplyToRequest(newMsg.RequestId, nil, "")
-				continue
+			if newMsg.IsWsMsg {
+				node.GetLog().Debug("--New WS message--")
+			}else {
+				node.GetLog().Debug("--New http message--")
 			}
+			if ! newMsg.IsWsMsg {
+				if newMsg.HttpRequest.Method != node.config.Method {
+					node.httpServerConn.ReplyToRequest(newMsg.RequestId, nil, "")
+					continue
+				}
+			}
+
 			var err error
 			switch node.config.PayloadFormat {
 			case PayloadFormatFimp:
