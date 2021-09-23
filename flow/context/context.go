@@ -13,6 +13,11 @@ import (
 	"time"
 )
 
+const (
+	ContextRecTypeUser = 0
+	ContextRecTypeState = 1
+)
+
 type Variable struct {
 	Value     interface{}
 	ValueType string
@@ -125,6 +130,8 @@ type ContextRecord struct {
 	UpdatedAt   time.Time
 	Variable    Variable
 	InMemory    bool
+	Type        byte //
+	ExternalId  int  // link to external resource . For instance device id or location id
 }
 
 type Context struct {
@@ -196,6 +203,11 @@ func (ctx *Context) UnregisterFlow(flowId string) error {
 func (ctx *Context) SetVariable(name string, valueType string, value interface{}, description string, flowId string, inMemory bool) error {
 	rec := ContextRecord{Name: name, UpdatedAt: time.Now(), Description: description, Variable: Variable{ValueType: valueType, Value: value}}
 	return ctx.PutRecord(&rec, flowId, inMemory)
+}
+
+func (ctx *Context) SetState(name string, valueType string, value interface{},externalId int) error {
+	rec := ContextRecord{Name: name,Type:ContextRecTypeState, UpdatedAt: time.Now(), Variable: Variable{ValueType: valueType, Value: value},ExternalId: externalId}
+	return ctx.PutRecord(&rec, "global", true)
 }
 
 func (ctx *Context) PutRecord(rec *ContextRecord, flowId string, inMemory bool) error {

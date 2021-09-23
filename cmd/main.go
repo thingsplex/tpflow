@@ -10,6 +10,7 @@ import (
 	fapi "github.com/thingsplex/tpflow/api"
 	"github.com/thingsplex/tpflow/connector/plugins/http"
 	"github.com/thingsplex/tpflow/flow"
+	"github.com/thingsplex/tpflow/gstate"
 	"github.com/thingsplex/tpflow/registry/integration/fimpcore"
 	"github.com/thingsplex/tpflow/registry/storage"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -111,6 +112,8 @@ func main() {
 	flowApi := fapi.NewFlowApi(flowManager, &configs)
 	regApi := fapi.NewRegistryApi(assetRegistry)
 
+	stateTracker := gstate.NewGlobalStateTracker(&configs,flowManager.GetGlobalContext())
+	stateTracker.Init()
 	connectorReg := flowManager.GetConnectorRegistry()
 
 	if connectorReg != nil {
