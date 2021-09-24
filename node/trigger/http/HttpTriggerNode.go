@@ -214,7 +214,7 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 					node.GetLog().Info("Can't parse form params . Err:",err.Error())
 				}
 				r := map[string]string {}
-				node.GetLog().Info("Mapping param ",newMsg.HttpRequest.Form)
+				node.GetLog().Debug("Mapping param ",newMsg.HttpRequest.Form)
 				for k,v :=range newMsg.HttpRequest.Form {
 					if len(v)>0 {
 						r[k] = v[0]

@@ -122,7 +122,7 @@ func (node *Node) WaitForEvent(responseChannel chan model.ReactorEvent) {
 }
 
 func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
-	node.GetLog().Info(" Executing Node . Name = ", node.Meta().Label)
+	node.GetLog().Debug(" Executing Node . Name = ", node.Meta().Label)
 	var body []byte
 
 	if node.config.ResponseTemplate == "" {

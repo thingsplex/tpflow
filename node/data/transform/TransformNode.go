@@ -121,8 +121,8 @@ func (node *Node) LoadNodeConfig() error {
 }
 
 func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
-	node.GetLog().Info(" Executing Node . Name = ", node.Meta().Label)
-	node.GetLog().Info(" Transform type  = ", node.nodeConfig.TransformType)
+	node.GetLog().Debug(" Executing Node . Name = ", node.Meta().Label)
+	node.GetLog().Debug(" Transform type  = ", node.nodeConfig.TransformType)
 
 	// There are 3 possible sources for RVariable : default value , inputMessage , variable from context
 	// There are 2 possible destinations for LVariable : inputMessage , variable from context
@@ -218,7 +218,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 				}
 			}
 		} else if node.nodeConfig.TransformType == "jpath" || node.nodeConfig.TransformType == "xpath" {
-			node.GetLog().Info(" Doing XPATH transformation ")
+			node.GetLog().Debug(" Doing XPATH transformation ")
 			for i := range node.nodeConfig.XPathMapping {
 
 				var rawPayload []byte
@@ -244,7 +244,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 				result.Value, err = model.GetValueByPath(&msg2, node.nodeConfig.TransformType, node.nodeConfig.XPathMapping[i].Path, node.nodeConfig.XPathMapping[i].TargetVariableType)
 
 				result.ValueType = node.nodeConfig.XPathMapping[i].TargetVariableType
-				node.GetLog().Info(" Extracted value : ", result.Value)
+				node.GetLog().Debug(" Extracted value : ", result.Value)
 				if err != nil {
 					node.GetLog().Warn(" Error while processing path in variable : ", err)
 					return []model.NodeID{node.Meta().ErrorTransition}, err
@@ -256,7 +256,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 				} else {
 					// Save value into variable
 					// Save default value from node config to variable
-					node.GetLog().Info(" Setting transformed variable : ")
+					node.GetLog().Debug(" Setting transformed variable : ")
 					if node.nodeConfig.XPathMapping[i].IsTargetVariableGlobal {
 						node.ctx.SetVariable(node.nodeConfig.XPathMapping[i].TargetVariableName, result.ValueType, result.Value, "", "global", node.nodeConfig.IsTargetVariableInMemory)
 					} else {
