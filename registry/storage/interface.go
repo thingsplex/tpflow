@@ -13,7 +13,7 @@ type RegistryStorage interface {
 	GetLocationById(Id model.ID) (*model.Location, error)
 	GetAllThings() ([]model.Thing, error)
 	ExtendThingsWithLocation(things []model.Thing) []model.ThingWithLocationView
-	GetAllServices() ([]model.Service, error)
+	GetAllServices(filter *ServiceFilter) ([]model.Service, error)
 	GetThingExtendedViewById(Id model.ID) (*model.ThingExtendedView, error)
 	GetServiceByAddress(serviceName string, serviceAddress string) (*model.Service, error)
 	GetExtendedServices(serviceNameFilter string, filterWithoutAlias bool, thingIdFilter model.ID, locationIdFilter model.ID) ([]model.ServiceExtendedView, error)
@@ -48,4 +48,8 @@ type RegistryStorage interface {
 
 	GetConfig() interface{}
 	SetDefaults() bool // true - defaults were set , false - nothing to set
+}
+
+type ServiceFilter struct {
+	Topic string
 }

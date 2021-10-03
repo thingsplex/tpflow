@@ -1,10 +1,17 @@
 package model
 
+import "github.com/thingsplex/tpflow/flow/context"
+
 type ServiceExtendedView struct {
 	Service
 	LocationAlias   string `json:"location_alias"`
 	LocationType    string `json:"location_type"`
 	LocationSubType string `json:"location_sub_type"`
+}
+
+type LocationExtendedView struct {
+	Location
+	Devices []DeviceExtendedView
 }
 
 type ThingWithLocationView struct {
@@ -19,13 +26,14 @@ type DeviceWithLocationView struct {
 
 type ThingExtendedView struct {
 	Thing
-	LocationAlias string                `json:"location_alias"`
+	LocationAlias string `json:"location_alias"`
 }
 
 type DeviceExtendedView struct {
 	Device
-	Services      []Service `json:"services"`
-	LocationAlias string    `json:"location_alias"`
+	Services      []Service               `json:"services"`
+	LocationAlias string                  `json:"location_alias"`
+	States        []context.ContextRecord `json:"states"`
 }
 
 type InterfaceFlatView struct {

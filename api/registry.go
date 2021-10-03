@@ -266,7 +266,7 @@ func (api *RegistryApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				//}
 				log.Debug("Getting extended services ")
 				//services, err := api.reg.GetExtendedServices(serviceName, filterWithoutAlias, model.ID(thingId), model.ID(locationId))
-				services, err := api.reg.GetAllServices()
+				services, err := api.reg.GetAllServices(nil)
 
 
 				if err == nil {

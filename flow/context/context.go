@@ -131,7 +131,7 @@ type ContextRecord struct {
 	Variable    Variable
 	InMemory    bool
 	Type        byte //
-	ExternalId  int  // link to external resource . For instance device id or location id
+	ExternalId  int   // link to external resource . For instance device id or location id
 }
 
 type Context struct {
@@ -296,6 +296,22 @@ func (ctx *Context) GetRecord(name string, flowId string) (*ContextRecord, error
 	return ctxRec, err
 }
 
+func (ctx *Context) GetDeviceStates() []ContextRecord  {
+	var result []ContextRecord
+	memResult, err := ctx.inMemoryStore.GetRecordsForFlow("global")
+	if err == nil {
+		for i := range memResult {
+			if memResult[i].Type == ContextRecTypeState {
+				memResult[i].InMemory = true
+				result = append(result, memResult[i])
+			}
+		}
+	} else {
+		log.Error("Can't get state records from memory store , err :", err)
+	}
+	return result
+}
+
 func (ctx *Context) GetRecords(flowId string) []ContextRecord {
 	var result []ContextRecord
 	log.Debug("<ctx> Getting records")
@@ -315,14 +331,10 @@ func (ctx *Context) GetRecords(flowId string) []ContextRecord {
 			} else {
 				log.Errorf("Can't decode record = %s , %s", k, err)
 			}
-
 		}
-
 		return nil
 	})
-	//log.Info("<ctx> DONE ,",len(result))
-	//log.Info("<ctx> DONE ,",result)
-	//
+
 	memResult, err := ctx.inMemoryStore.GetRecordsForFlow(flowId)
 	if err == nil {
 		for i := range memResult {

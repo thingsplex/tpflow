@@ -195,7 +195,7 @@ func (st *LocalRegistryStore) ExtendThingsWithLocation(things []model.Thing) []m
 	return response
 }
 
-func (st *LocalRegistryStore) GetAllServices() ([]model.Service, error) {
+func (st *LocalRegistryStore) GetAllServices(filter * ServiceFilter) ([]model.Service, error) {
 	//var services []Service
 	//err := st.db.All(&services)
 	//return services, err

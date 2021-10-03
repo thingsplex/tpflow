@@ -112,7 +112,7 @@ func main() {
 	flowApi := fapi.NewFlowApi(flowManager, &configs)
 	regApi := fapi.NewRegistryApi(assetRegistry)
 
-	stateTracker := gstate.NewGlobalStateTracker(&configs,flowManager.GetGlobalContext())
+	stateTracker := gstate.NewGlobalStateTracker(&configs,flowManager.GetGlobalContext(),assetRegistry)
 	stateTracker.Init()
 	connectorReg := flowManager.GetConnectorRegistry()
 

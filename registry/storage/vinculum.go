@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow"
 	"github.com/thingsplex/tpflow/registry/model"
+	"strings"
 )
 
 type VinculumRegistryStore struct {
@@ -63,19 +64,14 @@ func (r *VinculumRegistryStore) Disconnect() {
 	r.vApi.Stop()
 }
 
-func (VinculumRegistryStore) GetServiceById(Id model.ID) (*model.Service, error) {
+func (r *VinculumRegistryStore) GetServiceById(Id model.ID) (*model.Service, error) {
 	//log.Warn("GetServiceById NOT implemented !!!!")
-	return nil, errors.New("not implemented")
-}
-
-func (VinculumRegistryStore) GetServiceByFullAddress(address string) (*model.ServiceExtendedView, error) {
-	//log.Warn("GetServiceByFullAddress NOT implemented !!!!")
 	return nil, errors.New("not implemented")
 }
 
 func (r *VinculumRegistryStore) GetServicesByLocationAndName(locId model.ID, name string) ([]model.Service, error) {
 	var result []model.Service
-	services , err := r.GetAllServices()
+	services , err := r.GetAllServices(nil)
 	if err != nil {
 		return nil, err
 	}
@@ -144,6 +140,12 @@ func (r *VinculumRegistryStore) GetAllThings() ([]model.Thing, error) {
 	return things, nil
 }
 
+func (VinculumRegistryStore) GetServiceByFullAddress(address string) (*model.ServiceExtendedView, error) {
+	//log.Warn("GetServiceByFullAddress NOT implemented !!!!")
+	return nil, errors.New("not implemented")
+}
+
+
 func (r *VinculumRegistryStore) GetDevicesByThingId(locationId model.ID) ([]model.Device, error) {
 	log.Warn("GetDevicesByThingId NOT implemented  !!!!")
 	return nil, nil
@@ -177,17 +179,24 @@ func (r *VinculumRegistryStore) ExtendThingsWithLocation(things []model.Thing) [
 	return response
 }
 
-func (r *VinculumRegistryStore) GetAllServices() ([]model.Service, error) {
+func (r *VinculumRegistryStore) GetAllServices(filter *ServiceFilter) ([]model.Service, error) {
 	site, err := r.vApi.GetSite(true)
 	if err != nil {
 		return nil, err
 	}
 	vDevs := site.Devices
 	var services []model.Service
+
 	for i := range vDevs {
 		for k := range vDevs[i].Service {
 			svc := model.Service{Name: k}
 			svc.Address = vDevs[i].Service[k].Addr
+			if filter != nil {
+				if !strings.Contains(filter.Topic,svc.Address) && filter.Topic != "" {
+					continue
+			}
+
+			}
 			if vDevs[i].Client.Name != nil {
 				svc.Alias = *vDevs[i].Client.Name
 			}

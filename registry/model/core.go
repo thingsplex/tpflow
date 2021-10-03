@@ -182,5 +182,6 @@ type Location struct {
 	State          string     `json:"state"`
 }
 
+
 // for vinculum rooms we'll use positive IDs , for vinculum Areas we'll use negative numbers
 // id > 0 -> Room , id < 0 -> Area
