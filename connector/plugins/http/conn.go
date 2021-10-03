@@ -185,36 +185,7 @@ func (conn *Connector) configureInternalApi() {
 		if conn.flowContext != nil {
 			vars := mux.Vars(r)
 			flowId := vars["flowId"]
-			var err error
-			var bresp []byte
-			if flowId == "full_struct_and_states" {
-				var result []model2.LocationExtendedView
-				states := conn.flowContext.GetDeviceStates()
-				locs, _ := conn.assetRegistry.GetAllLocations()
-				devs, _ := conn.assetRegistry.GetExtendedDevices()
-
-				for li := range locs {
-					rloc := model2.LocationExtendedView{Location:locs[li]}
-					for di := range devs {
-						if locs[li].ID == devs[di].LocationId {
-							for si := range states {
-								if states[si].ExternalId == int(devs[di].ID) {
-									devs[di].States = append(devs[di].States,states[si])
-								}
-							}
-							rloc.Devices =  append(rloc.Devices, devs[di])
-						}
-
-					}
-					result = append(result,rloc)
-				}
-				bresp, err = json.Marshal(result)
-
-			}else {
-				records := conn.flowContext.GetRecords(flowId)
-				bresp, err = json.Marshal(records)
-			}
-
+			bresp,err := conn.getContextResponse(flowId)
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				return
@@ -222,6 +193,39 @@ func (conn *Connector) configureInternalApi() {
 			w.Write(bresp)
 		}
 	})
+}
+
+func (conn *Connector) getContextResponse(flowId string) ([]byte,error) {
+	var err error
+	var bresp []byte
+	if flowId == "full_struct_and_states" {
+		var result []model2.LocationExtendedView
+		states := conn.flowContext.GetDeviceStates()
+		locs, _ := conn.assetRegistry.GetAllLocations()
+		devs, _ := conn.assetRegistry.GetExtendedDevices()
+
+		for li := range locs {
+			rloc := model2.LocationExtendedView{Location:locs[li]}
+			for di := range devs {
+				if locs[li].ID == devs[di].LocationId {
+					for si := range states {
+						if states[si].ExternalId == int(devs[di].ID) {
+							devs[di].States = append(devs[di].States,states[si])
+						}
+					}
+					rloc.Devices =  append(rloc.Devices, devs[di])
+				}
+
+			}
+			result = append(result,rloc)
+		}
+		bresp, err = json.Marshal(result)
+
+	}else {
+		records := conn.flowContext.GetRecords(flowId)
+		bresp, err = json.Marshal(records)
+	}
+	return bresp,err
 }
 
 func (conn *Connector) StartHttpServer() {

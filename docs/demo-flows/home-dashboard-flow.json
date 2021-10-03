@@ -1,0 +1,300 @@
+{
+  "Id": "3927lCQcqMl8My1",
+  "ClassId": "5Di9JaQXaGuRf3r",
+  "Author": "",
+  "Version": 0,
+  "CreatedAt": "2021-05-05T23:18:36.960685863+02:00",
+  "UpdatedAt": "2021-10-03T23:24:37.301929526+02:00",
+  "Name": "Electricity dashboard",
+  "Group": "dashboards",
+  "Description": "",
+  "Nodes": [
+    {
+      "Id": "1",
+      "Type": "http_trigger",
+      "Label": "Dashboard page",
+      "SuccessTransition": "17",
+      "TimeoutTransition": "",
+      "ErrorTransition": "",
+      "Address": "",
+      "Service": "",
+      "ServiceInterface": "",
+      "Config": {
+        "AuthConfig": {
+          "AuthCustomParamName": "",
+          "AuthMethod": "none",
+          "AuthPassword": "",
+          "AuthToken": "",
+          "AuthUsername": ""
+        },
+        "ConnectorID": "",
+        "IsSync": true,
+        "MapFormParamsToVars": true,
+        "Method": "GET",
+        "OutputVar": {
+          "InMemory": true,
+          "IsGlobal": false,
+          "Name": "",
+          "Type": "object"
+        },
+        "PayloadFormat": "form",
+        "Timeout": 0
+      },
+      "Ui": {
+        "nodeType": "",
+        "x": 243,
+        "y": 175
+      },
+      "TypeAlias": " Http/ws"
+    },
+    {
+      "Id": "6",
+      "Type": "http_trigger",
+      "Label": "Websocket connection",
+      "SuccessTransition": "15",
+      "TimeoutTransition": "",
+      "ErrorTransition": "",
+      "Address": "",
+      "Service": "",
+      "ServiceInterface": "",
+      "Config": {
+        "AuthConfig": {
+          "AuthCustomParamName": "",
+          "AuthMethod": "none",
+          "AuthPassword": "",
+          "AuthToken": "",
+          "AuthUsername": ""
+        },
+        "ConnectorID": "",
+        "IsSync": true,
+        "IsWs": true,
+        "MapFormParamsToVars": false,
+        "Method": "GET",
+        "OutputVar": {
+          "InMemory": true,
+          "IsGlobal": false,
+          "Name": "ws_msg",
+          "Type": "object"
+        },
+        "PayloadFormat": "json",
+        "Timeout": 0
+      },
+      "Ui": {
+        "nodeType": "",
+        "x": 522,
+        "y": 181
+      },
+      "TypeAlias": " Http/ws"
+    },
+    {
+      "Id": "11",
+      "Type": "trigger",
+      "Label": "Events from main meter",
+      "SuccessTransition": "19",
+      "TimeoutTransition": "",
+      "ErrorTransition": "",
+      "Address": "pt:j1/mt:evt/rt:dev/rn:tibber/ad:1/sv:meter_elec/#",
+      "Service": "meter_elec",
+      "ServiceInterface": "evt.meter.report",
+      "Config": {
+        "IsValueFilterEnabled": false,
+        "LookupServiceNameAndLocation": false,
+        "RegisterAsVirtualService": false,
+        "Timeout": 0,
+        "ValueFilter": {
+          "Value": "",
+          "ValueType": "float"
+        },
+        "VirtualServiceGroup": "ch_0",
+        "VirtualServiceProps": {}
+      },
+      "Ui": {
+        "nodeType": "",
+        "x": 811,
+        "y": 183
+      },
+      "TypeAlias": "Trigger"
+    },
+    {
+      "Id": "15",
+      "Type": "transform",
+      "Label": "Set params",
+      "SuccessTransition": "16",
+      "TimeoutTransition": "",
+      "ErrorTransition": "",
+      "Address": "",
+      "Service": "",
+      "ServiceInterface": "",
+      "Config": {
+        "Expression": "",
+        "IsLVariableGlobal": false,
+        "IsRVariableGlobal": false,
+        "IsTargetVariableGlobal": false,
+        "IsTargetVariableInMemory": true,
+        "LVariableName": "ws_msg",
+        "RValue": {
+          "Value": 0,
+          "ValueType": "int"
+        },
+        "RVariableName": "",
+        "Rtype": "var",
+        "TargetVariableName": "",
+        "TargetVariableType": "",
+        "Template": "",
+        "TransformType": "jpath",
+        "ValueMapping": [],
+        "XPathMapping": [
+          {
+            "IsTargetVariableGlobal": false,
+            "IsTargetVariableInMemory": true,
+            "Path": "$.val",
+            "TargetVariableName": "service_state",
+            "TargetVariableType": "bool",
+            "UpdateInputVariable": false
+          },
+          {
+            "IsTargetVariableGlobal": false,
+            "IsTargetVariableInMemory": true,
+            "Path": "$.addr",
+            "TargetVariableName": "cmd_address",
+            "TargetVariableType": "string",
+            "UpdateInputVariable": false
+          }
+        ]
+      },
+      "Ui": {
+        "nodeType": "",
+        "x": 508,
+        "y": 419
+      },
+      "TypeAlias": "Transform"
+    },
+    {
+      "Id": "16",
+      "Type": "action",
+      "Label": "Controll lamp",
+      "SuccessTransition": "",
+      "TimeoutTransition": "",
+      "ErrorTransition": "",
+      "Address": "pt:j1/mt:cmd{{ variable \"cmd_address\" false }}",
+      "Service": "out_bin_switch",
+      "ServiceInterface": "cmd.binary.set",
+      "Config": {
+        "DefaultValue": {
+          "Value": "",
+          "ValueType": "bool"
+        },
+        "IsVariableGlobal": false,
+        "Props": {},
+        "RegisterAsVirtualService": false,
+        "ResponseToTopic": "",
+        "VariableName": "service_state",
+        "VariableType": "bool",
+        "VirtualServiceGroup": "",
+        "VirtualServiceProps": {}
+      },
+      "Ui": {
+        "nodeType": "",
+        "x": 488,
+        "y": 671
+      },
+      "TypeAlias": "Action"
+    },
+    {
+      "Id": "17",
+      "Type": "action_http_reply",
+      "Label": "Send dashboard html template",
+      "SuccessTransition": "",
+      "TimeoutTransition": "",
+      "ErrorTransition": "",
+      "Address": "",
+      "Service": "",
+      "ServiceInterface": "",
+      "Config": {
+        "InputVar": {
+          "InMemory": true,
+          "IsGlobal": false,
+          "Name": "",
+          "Type": ""
+        },
+        "IsPublishOnly": false,
+        "IsWs": false,
+        "ResponsePayloadFormat": "html",
+        "ResponseTemplate": "<html>\n  <head>\n   <script type=\"text/javascript\" src=\"https://www.gstatic.com/charts/loader.js\"></script>\n   <script src=\"https://unpkg.com/vue@next\"></script>\n   <script src=\"https://cdn.plot.ly/plotly-2.4.2.min.js\"></script>\n   <script type=\"text/javascript\">\n      google.charts.load('current', {'packages':['gauge','corechart']});\n      google.charts.setOnLoadCallback(drawChart);\n      \n      var data ;\n      var lineData;\n      var chart ; \n      var lineChart;\n      var options;\n      var lineOptions;\n      var ws; \n      var reconnectCounter = 0;\n      \n      var locations;   \n      var devices;\n\n      function drawChart() {\n        initLineChart();\n        configureWs();    \n        data = google.visualization.arrayToDataTable([\n          ['Label', 'Value'],\n          ['Server', 0],\n          ['Main power',0],\n          ['CO2 office',0],\n          ['Office T',0],\n          ['Outdoor T',0],\n         ]);\n\n        options = {\n          width: 750, height: 180,\n          redFrom: 2000, redTo: 3000,\n          yellowFrom:1000, yellowTo: 2000,\n          minorTicks: 5,\n          max:3000\n        };\n\n        chart = new google.visualization.Gauge(document.getElementById('chart_div'));\n        chart.draw(data, options); \n      }\n      \n      function setPlotlyChart() {\n        var time = new Date();\n\n        let layout ={\n            title: {\n                text:\"Power usage\",\n                font: {\n                family: \"Times New Roman\",\n                size: 24\n                },\n            },\n        }\n\n        let trace1 = {\n            x: [time],\n            y: [0],\n            mode: 'lines',\n            name: \"Tibber\",\n            line: {color: '#80CAF6'}\n        }\n       \n        var data = [trace1]\n        Plotly.newPlot('plotly_chart', data,layout);\n      }\n\n      var power_trace_index = {}\n      var temp_trace_index = {}\n      var humid_trace_index = {}\n      var co2_trace_index = {}\n      var lux_trace_index = {}\n\n      function setMultiPlotlyCharts(context) {\n        var time = new Date();\n        \n        let power_data = [];\n        let temp_data = [];\n        let humid_data = [];\n        let co2_data = [];\n        let lux_data = [];\n\n        for (let loc of context) {\n            if (loc.Devices) {\n                for( let dev of loc.Devices) {\n                    if ( dev.states) {\n                        for ( let state of dev.states) {\n                            if (state.Variable.ValueType == \"float\" || state.Variable.ValueType == \"int\") {\n                               let trace = {\n                                    x: [state.UpdatedAt],\n                                    y: [state.Variable.Value],\n                                    mode: 'lines+markers',\n                                    name:  loc.alias + \" - \" +  dev.alias,\n                                }\n                                if (state.Name.includes(\"meter\")) {\n                                    trace.mode = 'lines'\n                                    power_trace_index[state.Name] = power_data.length\n                                    power_data.push(trace)\n                                }else if (state.Name.includes(\"sensor_temp\")) {\n                                    temp_trace_index[state.Name] = temp_data.length\n                                    temp_data.push(trace)\n                                }else if (state.Name.includes(\"sensor_humid\")) {\n                                    humid_trace_index[state.Name] = humid_data.length\n                                    humid_data.push(trace)    \n                                }else if (state.Name.includes(\"sensor_co2\")) {\n                                    co2_trace_index[state.Name] = co2_data.length\n                                    co2_data.push(trace)\n                                }else if (state.Name.includes(\"sensor_lumin\")) {\n                                    lux_trace_index[state.Name] = lux_data.length\n                                    lux_data.push(trace)\n                                }\n                                \n                            } \n                        }  \n                    }\n                }\n            } \n            \n        }\n\n        let power_layout = {title: {text:\"Power\"} }               \n        let temp_layout = {title: {text:\"Temperature\"} }               \n        let humid_layout = {title: {text:\"Humidity\"} }               \n        let co2_layout = {title: {text:\"Co2 level\"} }               \n        let lux_layout = {title: {text:\"Lux\"} }               \n        \n        Plotly.newPlot(\"power_plotly_chart\", power_data,power_layout); \n        Plotly.newPlot(\"temp_plotly_chart\", temp_data,temp_layout); \n        Plotly.newPlot(\"humid_plotly_chart\", humid_data,humid_layout); \n        Plotly.newPlot(\"co2_plotly_chart\", co2_data,co2_layout); \n        Plotly.newPlot(\"lux_plotly_chart\", lux_data,lux_layout); \n       \n      }\n\n      function getStateNameFromMessage(msg) {\n          // pt:j1/mt:evt/rt:dev/rn:tibber/ad:1/sv:meter_elec/ad:12a889be-095a-47dd-8045-da84b57ae41d\n          // \"type\": \"evt.meter_ext.report\", \n          // state name : meter_ext@rt:dev/rn:tibber/ad:1/sv:meter_elec/ad:12a889be-095a-47dd-8045-da84b57ae41d\n          topic = msg.topic.replace(\"pt:j1/mt:evt/\",\"\")\n          typeS = msg.type.split(\".\")\n          return typeS[1]+\"@\"+topic\n\n      }\n\n      function updateTraceByTopic(state_name,value,time) {\n        var time = new Date();\n        console.log(\"Updating state : \"+state_name)\n        if (state_name.includes(\"meter_ext\")) {\n            value = value.p_import;\n        }\n\n        var update = {\n            x:  [[time]],\n            y: [[value]],\n        }\n\n        if(state_name.includes(\"meter\")) {\n            trace_index = power_trace_index[state_name]\n            Plotly.extendTraces('power_plotly_chart', update, [trace_index])  \n        }else if (state_name.includes(\"sensor_co2\")) {\n            trace_index = co2_trace_index[state_name]\n            Plotly.extendTraces('co2_plotly_chart', update, [trace_index])  \n        }else if (state_name.includes(\"sensor_temp\")) {\n            trace_index = temp_trace_index[state_name]\n            Plotly.extendTraces('temp_plotly_chart', update, [trace_index])  \n        }else if (state_name.includes(\"sensor_humid\")) {\n            trace_index = humid_trace_index[state_name]\n            Plotly.extendTraces('humid_plotly_chart', update, [trace_index])  \n        }else if (state_name.includes(\"sensor_lumin\")) {\n            trace_index = lux_trace_index[state_name]\n            Plotly.extendTraces('lux_plotly_chart', update, [trace_index])  \n        }\n        \n      }\n\n      function updatePlotlyChart(val) {\n        var time = new Date();\n        var update = {\n            x:  [[time]],\n            y: [[val]]\n        }\n\n        Plotly.extendTraces('plotly_chart', update, [0])\n      }\n      \n\n\n      \n      function setAuthScroll() {\n  \n        var time = new Date();\n        \n        var olderTime = time.setMinutes(time.getMinutes() - 2);\n        var futureTime = time.setMinutes(time.getMinutes() + 2 );\n        \n        var minuteView = {\n                xaxis: {\n                type: 'date',\n                range: [olderTime,futureTime]\n                }\n            };\n        \n        Plotly.relayout('plotly_chart', minuteView);\n                \n        }\n\n\n      function initLineChart() {\n        lineData = new google.visualization.DataTable();\n        lineData.addColumn('timeofday','Time');\n        lineData.addColumn('number','Main meter');\n        lineData.addColumn('number','Server');\n        lineOptions = {\n          title: 'Live power usage (W)',\n          curveType: 'function',\n          legend: { position: 'bottom' }\n        };\n\n        // lineChart = new google.visualization.LineChart(document.getElementById('curve_chart'));\n\n        // lineChart.draw(lineData, lineOptions);\n      }  \n      \n      function getFlowWsUrl() {\n          // href: \"https://tun.thingsplex.com/cloud/5cf8b357-f1a1-4f36-b1d3-cfc3eeea6429/flow/3927lCQcqMl8My1_1/rest?tptun_token=lWqc4pErWp6WaB7A\"\n          // pathname: \"/cloud/5cf8b357-f1a1-4f36-b1d3-cfc3eeea6429/flow/3927lCQcqMl8My1_1/rest\"\n          // search: \"?tptun_token=lWqc4pErWp6WaB7A\"\n          // host: \"tun.thingsplex.com\"\n           let flowWsUrl = \"\";\n           console.dir(location);\n           if(location.protocol==\"https:\") {\n              pathSp = location.pathname.split(\"/\");\n              flowWsUrl = \"wss://\";\n              return flowWsUrl+location.host+\"/cloud/\"+pathSp[2]+\"/flow/{{.FlowId}}/ws\"+location.search\n           }else {\n              flowWsUrl = \"ws://\";\n              return flowWsUrl+location.host+\"/flow/{{.FlowId}}/ws\"\n           }\n      }\n      \n      function getHttpApiUrl(comp) {\n          if(location.protocol==\"https:\") {\n              pathSp = location.pathname.split(\"/\");\n              return location.origin+\"/cloud/\"+pathSp[2]+comp+location.search\n           }else {\n              return location.origin+comp\n           }\n      }\n\n      function configureWs() {\n           // Let us open a web socket\n\n           ws = new WebSocket(getFlowWsUrl());\n\t\t\t\t\n                ws.onopen = function() {\n                };\n                 \n                ws.onmessage = function (evt) { \n                   var msg = JSON.parse(evt.data);\n                   if (msg.power) { // non-fimp message \n                       data.setValue(0, 1, msg.power.pc.p);\n                       data.setValue(1, 1, msg.power.main.p);\n                       chart.draw(data, options);\n                       updatePlotlyChart(msg.power.main.p)\n                       var dt = new Date();\n                       var tm = [dt.getHours(),dt.getMinutes(),dt.getSeconds()]\n                       lineData.addRow([tm,msg.power.main.p,msg.power.pc.p]);\n                       if (lineData.getNumberOfRows()>1000){\n                           lineData.removeRow(0);\n                       }\n                       document.getElementById(\"home_mode\").innerHTML = msg.home_mode;\n                       lineChart.draw(lineData, lineOptions);\n                   }else {\n                       if (msg.serv) { // fimp message \n                           console.dir(msg)\n                           state_name = getStateNameFromMessage(msg)\n                           updateTraceByTopic(state_name,msg.val,new Date());\n                           \n                           if (msg.serv==\"sensor_co2\") {\n                               data.setValue(2, 1, msg.val);\n                               chart.draw(data, options);\n                           }else if (msg.serv==\"sensor_temp\") {\n                               if (msg.topic.includes(\"02000032ea36\")) {\n                                   // outdoor sensor\n                                   data.setValue(4, 1, msg.val);\n                                   chart.draw(data, options);\n                               }else {\n                                   data.setValue(3, 1, msg.val);\n                                   chart.draw(data, options);\n                               }\n                               \n                           }\n                       }\n                   }\n                   \n                };\n                 \n                ws.onclose = function() { \n                   setTimeout(function() {\n                      configureWs();\n                    }, 1000);\n                   reconnectCounter++;\n                   document.getElementById(\"rCounter\").innerHTML = reconnectCounter++;\n                };\n      }\n      \n      function CtrlBinaryService(topic,state) {\n          let cmd = {\"op\":\"cmd.binary.set\",\"val\":state,\"addr\":topic};\n          ws.send(JSON.stringify(cmd));\n      }\n\n    \n      const HomeDash = {\n                delimiters: ['${', '}'],    \n                data() {\n                    return {\n                    counter: 0,\n                    locations:[],\n                    }\n                },\n                methods: {\n                    loadFullStructAndStates() {\n                        fetch(getHttpApiUrl('/api/flow/context/full_struct_and_states')).then((response)=> {\n                        if (response.status !== 200) {\n                            console.log('Looks like there was a problem. Status Code: ' +\n                            response.status);\n                            return;\n                        }\n                        response.json().then((data) => {\n                            this.locations = data;\n                            setMultiPlotlyCharts(data);\n                        });\n                        }).catch(function(err) {\n                            console.log('Context fetch Error :-S', err);\n                        });\n                    },\n                    CtrlBinaryService    \n                },\n                mounted() {\n                    this.loadFullStructAndStates();\n                    setInterval(() => {\n                    this.counter++\n                    }, 1000)\n                }\n    }\n         \n    </script>\n  </head>\n  <body>\n    <p>Home mode:<b id=\"home_mode\"></b></p>  \n    <div id=\"chart_div\" style=\"width: 750px; height: 180px;\"></div>\n    \n    <div id=\"plotly_chart\"></div>\n\n    <div id=\"power_plotly_chart\"></div>\n    <div id=\"temp_plotly_chart\"></div>\n    <div id=\"humid_plotly_chart\"></div>\n    <div id=\"co2_plotly_chart\"></div>\n    <div id=\"lux_plotly_chart\"></div>\n    \n    <div> \n       <button onclick=\"CtrlBinaryService('1',true)\"> Turn ON </button> \n       <button onclick=\"CtrlBinaryService('1',false)\"> Turn OFF </button>    \n    </div>\n    \n    <p id=\"rCounter\"></p>\n\n    <p>Locations</p>\n\n    <div id=\"loc_div\">\n        Counter: ${ counter }\n        \n        <ul>\n        <li v-for=\"loc in locations\" :key=\"loc.id\" >\n          <h3>${ loc.alias }</h3>\n          <div v-for=\"dev in loc.Devices\" :key=\"dev.id\" >\n              <h4>${ dev.alias}</h4> \n              <div v-for=\"svc in dev.services\"> \n                <div v-if=\"svc.name == 'out_bin_switch'\"> \n                    <button @click=\"CtrlBinaryService(svc.address,true)\"> on </button> \n                    <button @click=\"CtrlBinaryService(svc.address,false)\"> off </button>    \n                </div> \n              </div>\n              <div v-for=\"state in dev.states\" v-bind:id=\"state.Name\" >\n                 State : ${state.Name } , value = ${state.Variable.Value} , Updated at : ${state.UpdatedAt}\n              </div>\n          </div>\n        </li>\n        </ul>\n    </div>\n   <script>\n      Vue.createApp(HomeDash).mount('#loc_div')\n  </script>\n\n\n  </body>\n  \n</html>\n"
+      },
+      "Ui": {
+        "nodeType": "",
+        "x": 224,
+        "y": 430
+      },
+      "TypeAlias": "Http reply"
+    },
+    {
+      "Id": "18",
+      "Type": "trigger",
+      "Label": "Room env sensor",
+      "SuccessTransition": "19",
+      "TimeoutTransition": "",
+      "ErrorTransition": "",
+      "Address": "pt:j1/mt:evt/rt:dev/#",
+      "Service": "*",
+      "ServiceInterface": "evt.sensor.report",
+      "Config": {
+        "IsValueFilterEnabled": false,
+        "LookupServiceNameAndLocation": false,
+        "RegisterAsVirtualService": false,
+        "Timeout": 0,
+        "ValueFilter": {
+          "Value": "",
+          "ValueType": "float"
+        },
+        "VirtualServiceGroup": "ch_0",
+        "VirtualServiceProps": {}
+      },
+      "Ui": {
+        "nodeType": "",
+        "x": 1121,
+        "y": 183
+      },
+      "TypeAlias": "Trigger"
+    },
+    {
+      "Id": "19",
+      "Type": "action_http_reply",
+      "Label": "Forwarding sensor data over WS",
+      "SuccessTransition": "",
+      "TimeoutTransition": "",
+      "ErrorTransition": "",
+      "Address": "",
+      "Service": "",
+      "ServiceInterface": "",
+      "Config": {
+        "InputVar": {
+          "InMemory": true,
+          "IsGlobal": false,
+          "Name": "",
+          "Type": ""
+        },
+        "IsPublishOnly": false,
+        "IsWs": true,
+        "ResponsePayloadFormat": "json",
+        "ResponseTemplate": ""
+      },
+      "Ui": {
+        "nodeType": "",
+        "x": 850,
+        "y": 664
+      },
+      "TypeAlias": "Http reply"
+    }
+  ],
+  "Settings": {
+    "address": {
+      "Value": "cube.local:8082",
+      "ValueType": "string"
+    }
+  },
+  "IsDisabled": false,
+  "IsDefault": false,
+  "ParallelExecution": "parallel"
+}

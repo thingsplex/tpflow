@@ -149,8 +149,7 @@ func (conn *Connector) InternalApiHandlerOverCloud(msg *tunframe.TunnelFrame) {
 	}else if strings.Contains(msg.GetReqUrl(),"/api/flow/context/") {
 		if conn.flowContext != nil {
 			flowId := msg.GetVars()["flowId"]
-			records := conn.flowContext.GetRecords(flowId)
-			bresp, err = json.Marshal(records)
+			bresp,err = conn.getContextResponse(flowId)
 		}
 	}else {
 		log.Info("<HttpCloudConn> Unsupported internal API call path ",msg.GetReqUrl())
