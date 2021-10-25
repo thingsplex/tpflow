@@ -4,11 +4,11 @@ import (
 	"github.com/thingsplex/tpflow/connector/model"
 	"github.com/thingsplex/tpflow/connector/plugins/fimpmqtt"
 	"github.com/thingsplex/tpflow/connector/plugins/http"
-	"github.com/thingsplex/tpflow/connector/plugins/influxdb"
+	"github.com/thingsplex/tpflow/connector/plugins/timeseries"
 )
 
 var pluginRegistry = map[string]model.Plugin{
-	"influxdb": {Constructor: influxdb.NewConnectorInstance, Config: influxdb.ConnectorConfig{}},
+	"timeseries": {Constructor: timeseries.NewConnectorInstance, Config: fimpmqtt.ConnectorConfig{}},
 	"fimpmqtt": {Constructor: fimpmqtt.NewConnectorInstance, Config: fimpmqtt.ConnectorConfig{}},
 	"httpserver": {Constructor: http.NewConnectorInstance, Config: http.ConnectorConfig{}},
 }

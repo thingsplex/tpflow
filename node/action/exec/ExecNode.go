@@ -5,6 +5,7 @@ import (
 	"github.com/futurehomeno/fimpgo"
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
+	"github.com/thingsplex/tpflow/connector/plugins/timeseries"
 	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
@@ -33,7 +34,9 @@ type ScriptParams struct {
 	FlowId      string
 	Mqtt 		*fimpgo.MqttTransport
 	Registry    storage.RegistryStorage
+	Timeseries   *timeseries.Connector
 	Settings    map[string]model.Setting
+	Log         *log.Entry
 }
 
 type NodeConfig struct {
@@ -73,6 +76,7 @@ func (node *Node) LoadNodeConfig() error {
 		initScriptExports()
 		node.scriptParams.FlowId = node.BaseNode.FlowOpCtx().FlowId
 		node.scriptParams.Settings = node.FlowOpCtx().FlowMeta.Settings
+		node.scriptParams.Log = node.GetLog()
 		fimpTransportInstance := node.ConnectorRegistry().GetInstance("fimpmqtt")
 		var ok bool
 		if fimpTransportInstance != nil {
@@ -92,6 +96,16 @@ func (node *Node) LoadNodeConfig() error {
 			}
 		} else {
 			node.GetLog().Error("Connector registry doesn't have thing_registry instance")
+		}
+
+		connInstance2 := node.ConnectorRegistry().GetInstance("timeseries")
+		if connInstance2 != nil {
+			node.scriptParams.Timeseries, ok = connInstance2.Connection.(*timeseries.Connector)
+			if !ok {
+				node.GetLog().Error("Can't timeseries connection to things registry . Cast to Timeseries object")
+			}
+		} else {
+			node.GetLog().Error("Connector registry doesn't have timeseries instance")
 		}
 
 		node.intp = interp.New(interp.Options{})

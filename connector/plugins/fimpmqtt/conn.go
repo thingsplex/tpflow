@@ -72,10 +72,9 @@ func (conn *Connector) Init() error {
 func (conn *Connector) Stop() {
 	conn.state = "STOPPED"
 	conn.msgTransport.Stop()
-
 }
 
-// Returns
+
 func (conn *Connector) GetConnection() interface{} {
 	return conn.msgTransport
 }

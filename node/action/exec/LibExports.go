@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/futurehomeno/fimpgo"
+	"github.com/thingsplex/tpflow/connector/plugins/timeseries"
 	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	storage "github.com/thingsplex/tpflow/registry/storage"
-	"go/constant"
+    "go/constant"
 	"go/token"
 	"math"
 	"net"
@@ -33,6 +34,15 @@ func initScriptExports() {
 		"ScriptParams": reflect.ValueOf((*ScriptParams)(nil)),
 	}
 
+	Symbols["github.com/thingsplex/tpflow/connector/plugins/timeseries"] = map[string]reflect.Value{
+		"WriteDataPointsRequest": reflect.ValueOf((*timeseries.WriteDataPointsRequest)(nil)),
+		"DataPointsFilter": reflect.ValueOf((*timeseries.DataPointsFilter)(nil)),
+		"GetDataPointsRequest": reflect.ValueOf((*timeseries.GetDataPointsRequest)(nil)),
+		"Result": reflect.ValueOf((*timeseries.Result)(nil)),
+		"Row": reflect.ValueOf((*timeseries.Row)(nil)),
+		"MDataPoint": reflect.ValueOf((*timeseries.MDataPoint)(nil)),
+	}
+
 	Symbols["github.com/thingsplex/tpflow/registry/storage"] = map[string]reflect.Value{
 		"RegistryStorage": reflect.ValueOf((*storage.RegistryStorage)(nil)),
 	}
@@ -45,6 +55,7 @@ func initScriptExports() {
 		"Address": reflect.ValueOf((*fimpgo.Address)(nil)),
 		"MqttTransport": reflect.ValueOf((*fimpgo.MqttTransport)(nil)),
 	}
+
 
 
 

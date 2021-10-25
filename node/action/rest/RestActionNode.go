@@ -8,6 +8,7 @@ import (
 	"github.com/ChrisTrenkamp/goxpath/tree/xmltree"
 	"github.com/mitchellh/mapstructure"
 	"github.com/oliveagle/jsonpath"
+	"github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow/flow/context"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/node/base"
@@ -219,12 +220,12 @@ func (node *Node) Authenticate(username string, password string) {
 	bData, err := ioutil.ReadAll(resp.Body)
 	if err == nil {
 
-		node.GetLog().Info("Auth Response:", string(bData))
+		node.GetLog().Debug("Auth Response:", string(bData))
 
 		jresp := AuthResponse{}
-		json.Unmarshal([]byte(bData), &jresp)
+		json.Unmarshal(bData, &jresp)
 
-		node.GetLog().Info("Auth Response:", string(bData))
+		node.GetLog().Debug("Auth Response:", string(bData))
 
 		node.accessToken = jresp.AccessToken
 		node.tokenExpiresAt = time.Now().Add(time.Second * time.Duration(jresp.ExpiresIn))
@@ -305,9 +306,10 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 
 	node.reqTemplate.Execute(&templateBuffer, templateParams)
 	node.urlTemplate.Execute(&urlTemplateBuffer, templateParams)
-
-	node.GetLog().Debug("Url:", urlTemplateBuffer.String())
-	node.GetLog().Debug("Request:", templateBuffer.String())
+    if logrus.DebugLevel == node.GetLog().Level {
+		node.GetLog().Debug("Url:", urlTemplateBuffer.String())
+		node.GetLog().Debug("Request:", templateBuffer.String())
+	}
 	req, err := http.NewRequest(node.config.Method, urlTemplateBuffer.String(), &templateBuffer)
 	for i := range node.config.Headers {
 		req.Header.Add(node.config.Headers[i].Name, node.config.Headers[i].Value)

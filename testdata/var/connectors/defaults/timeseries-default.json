@@ -1,0 +1,13 @@
+{
+  "ID": "fimpmqtt",
+  "Name": "fimpmqtt",
+  "Plugin": "fimpmqtt",
+  "State": "",
+  "Config": {
+    "MqttServerURI": "tcp://localhost:1883",
+    "MqttUsername" : "",
+    "MqttPassword" : "",
+    "MqttTopicGlobalPrefix" : "",
+    "MqttClientIdPrefix" : "thingsplex_conn_dev"
+  }
+}
