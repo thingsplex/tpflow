@@ -131,6 +131,7 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 			timer.Reset(timeout)
 		}
 		var fimpMsg *fimpgo.FimpMessage
+		var body []byte
 		select {
 		case newMsg := <-node.msgInStream:
 			if newMsg.IsWsMsg {
@@ -148,7 +149,6 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 			var err error
 			switch node.config.PayloadFormat {
 			case PayloadFormatFimp:
-				var body []byte
 				if newMsg.IsWsMsg || newMsg.IsFromCloud {
 					body = newMsg.Payload
 				}else {
@@ -176,7 +176,6 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 				}
 
 			case PayloadFormatJson:
-				var body []byte
 				if newMsg.IsWsMsg || newMsg.IsFromCloud {
 					body = newMsg.Payload
 				}else {
@@ -187,6 +186,7 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 						continue
 					}
 				}
+
 				node.GetLog().Debug("New json message: ",string(body))
 				var jVal interface{}
 				err = json.Unmarshal(body,&jVal)
@@ -196,6 +196,7 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 					continue
 				}
 				if node.config.OutputVar.Name != "" {
+					// TODO : VTypeObject --> []binary
 					err = node.ctx.SetVariable(node.config.OutputVar.Name, fimpgo.VTypeObject, jVal,"", node.FlowOpCtx().FlowId, node.config.OutputVar.InMemory)
 					if err != nil {
 						node.GetLog().Error("Can't save input data to variable . Err :",err.Error())
@@ -238,9 +239,10 @@ func (node *Node) WaitForEvent(nodeEventStream chan model.ReactorEvent) {
 				node.httpServerConn.ReplyToRequest(newMsg.RequestId, nil, "")
 			}
 
-			rMsg := model.Message{RequestId: newMsg.RequestId}
+			rMsg := model.Message{RequestId: newMsg.RequestId,RawPayload: body}
 			if fimpMsg != nil {
 				rMsg.Payload = *fimpMsg
+				rMsg.Payload.ValueObj = body
 			}
 			newEvent := model.ReactorEvent{Msg: rMsg, TransitionNodeId: node.Meta().SuccessTransition}
 			// Flow is executed within flow runner goroutine

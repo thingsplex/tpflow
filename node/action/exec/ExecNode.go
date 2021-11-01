@@ -25,18 +25,18 @@ type Node struct {
 	config         NodeConfig
 	scriptFullPath string
 	intp           *interp.Interpreter
-	scriptFunc     func(*model.Message,*context.Context,ScriptParams)string
+	scriptFunc     func(*model.Message, *context.Context, ScriptParams) string
 	localStorage   sync.Map
 	scriptParams   ScriptParams
 }
 
 type ScriptParams struct {
-	FlowId      string
-	Mqtt 		*fimpgo.MqttTransport
-	Registry    storage.RegistryStorage
-	Timeseries   *timeseries.Connector
-	Settings    map[string]model.Setting
-	Log         *log.Entry
+	FlowId     string
+	Mqtt       *fimpgo.MqttTransport
+	Registry   storage.RegistryStorage
+	Timeseries *timeseries.Connector
+	Settings   map[string]model.Setting
+	Log        *log.Entry
 }
 
 type NodeConfig struct {
@@ -49,8 +49,8 @@ type NodeConfig struct {
 	OutputVariableType     string
 	IsOutputVariableGlobal bool
 
-	IsOutputJson           bool
-	IsInputJson            bool
+	IsOutputJson bool
+	IsInputJson  bool
 }
 
 func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
@@ -112,15 +112,15 @@ func (node *Node) LoadNodeConfig() error {
 		node.intp.Use(Symbols)
 		v, err := node.intp.Eval(node.config.ScriptBody)
 		if err != nil {
-			log.Errorf("Error 1 while initializing golang script %v",err)
+			log.Errorf("Error 1 while initializing golang script %v", err)
 			return err
-		}else {
+		} else {
 			v, err = node.intp.Eval("ext.Run")
 			if err != nil {
-				log.Errorf("Error 2 while initializing golang script %v",err)
+				log.Errorf("Error 2 while initializing golang script %v", err)
 				return err
-			}else {
-				node.scriptFunc = v.Interface().(func(*model.Message,*context.Context,ScriptParams)string)
+			} else {
+				node.scriptFunc = v.Interface().(func(*model.Message, *context.Context, ScriptParams) string)
 			}
 		}
 	}
@@ -151,11 +151,11 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 		cmd = exec.Command("bash", "-c", node.config.Command)
 
 	case "golang":
-		r := node.scriptFunc(msg,node.ctx,node.scriptParams)
-		node.GetLog().Debug("go script output :",r)
+		r := node.scriptFunc(msg, node.ctx, node.scriptParams)
+		node.GetLog().Debug("go script output :", r)
 		if r == "ok" {
 			return []model.NodeID{node.Meta().SuccessTransition}, nil
-		}else {
+		} else {
 			return []model.NodeID{node.Meta().ErrorTransition}, nil
 		}
 
@@ -184,11 +184,11 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 				cmd = exec.Command("python3", node.scriptFullPath, string(strMsg))
 			}
 		} else {
-			param,_ := iValue.Value.(string)
-			cmd = exec.Command("python3", node.scriptFullPath,param)
+			param, _ := iValue.Value.(string)
+			cmd = exec.Command("python3", node.scriptFullPath, param)
 		}
 		cmd.Env = os.Environ()
-		node.GetLog().Debug("Externa lib dir =",node.FlowOpCtx().ExtLibsDir)
+		node.GetLog().Debug("Externa lib dir =", node.FlowOpCtx().ExtLibsDir)
 		cmd.Env = append(cmd.Env, "PYTHONPATH=$PATH:"+node.FlowOpCtx().ExtLibsDir+"/python")
 
 	}
@@ -219,9 +219,9 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			node.GetLog().Debug("Output JSON : ", outputJson)
 			err = node.ctx.SetVariable(node.config.OutputVariableName, "object", outputJson, "", flowId, false)
 		} else {
-			if node.config.OutputVariableType == ""{
+			if node.config.OutputVariableType == "" {
 				err = node.ctx.SetVariable(node.config.OutputVariableName, "string", string(output), "", flowId, false)
-			}else {
+			} else {
 				var val interface{}
 				switch node.config.OutputVariableType {
 				case "string":
@@ -233,15 +233,15 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 						node.GetLog().Error("Output var cast to int error:", err)
 					}
 				case "float":
-					val,err = strconv.ParseFloat(string(output),64)
+					val, err = strconv.ParseFloat(string(output), 64)
 					if err != nil {
 						val = nil
-						node.GetLog().Error("Output var cast to float error:",err)
+						node.GetLog().Error("Output var cast to float error:", err)
 					}
 				}
 				if val != nil {
-					err = node.ctx.SetVariable(node.config.OutputVariableName,node.config.OutputVariableType ,val, "", flowId, false)
-				}else {
+					err = node.ctx.SetVariable(node.config.OutputVariableName, node.config.OutputVariableType, val, "", flowId, false)
+				} else {
 					node.GetLog().Error("Output var convertion error")
 				}
 

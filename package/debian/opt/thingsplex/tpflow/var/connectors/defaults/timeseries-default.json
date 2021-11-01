@@ -1,0 +1,13 @@
+{
+  "ID": "timeseries",
+  "Name": "timeseries",
+  "Plugin": "timeseries",
+  "State": "",
+  "Config": {
+    "MqttServerURI": "tcp://localhost:1883",
+    "MqttUsername" : "",
+    "MqttPassword" : "",
+    "MqttTopicGlobalPrefix" : "",
+    "MqttClientIdPrefix" : "thingsplex_timeseries"
+  }
+}

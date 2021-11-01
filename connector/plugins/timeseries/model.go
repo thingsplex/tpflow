@@ -9,7 +9,7 @@ type MDataPoint struct {
 
 type WriteDataPointsRequest struct {
 	ProcID     int          `json:"proc_id"`
-	Bucket     string       `json:"bucket"` // data storage with retention policy , if not set system will try to auto calculate based on measurement name
+	Bucket     string       `json:"bucket"` // data is stored with retention policy , if not set system will try to auto calculate based on measurement name
 	DataPoints []MDataPoint `json:"dp"`
 }
 

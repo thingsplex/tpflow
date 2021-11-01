@@ -1,0 +1,112 @@
+{
+  "Id": "hR6w4kLFG01Siig",
+  "ClassId": "vfct3U8i9Eaywv8",
+  "Author": "",
+  "Version": 0,
+  "CreatedAt": "2021-10-27T00:33:11.077817318+02:00",
+  "UpdatedAt": "2021-10-31T21:01:54.1395693+01:00",
+  "Name": "TimeSeriesAPi",
+  "Group": "api",
+  "Description": "",
+  "Nodes": [
+    {
+      "Id": "2",
+      "Type": "http_trigger",
+      "Label": "Get endpoint",
+      "SuccessTransition": "3",
+      "TimeoutTransition": "",
+      "ErrorTransition": "",
+      "Address": "",
+      "Service": "",
+      "ServiceInterface": "",
+      "Config": {
+        "Alias": "timeseries",
+        "AuthConfig": {
+          "AuthCustomParamName": "",
+          "AuthMethod": "none",
+          "AuthPassword": "",
+          "AuthToken": "",
+          "AuthUsername": ""
+        },
+        "IsSync": true,
+        "IsWs": false,
+        "MapFormParamsToVars": false,
+        "Method": "POST",
+        "OutputVar": {
+          "InMemory": true,
+          "IsGlobal": false,
+          "Name": "request",
+          "Type": "object"
+        },
+        "PayloadFormat": "json"
+      },
+      "Ui": {
+        "nodeType": "",
+        "x": 386,
+        "y": 177
+      },
+      "TypeAlias": " Http/ws"
+    },
+    {
+      "Id": "3",
+      "Type": "exec",
+      "Label": "query data",
+      "SuccessTransition": "4",
+      "TimeoutTransition": "",
+      "ErrorTransition": "",
+      "Address": "",
+      "Service": "",
+      "ServiceInterface": "",
+      "Config": {
+        "Command": "",
+        "ExecType": "golang",
+        "InputVariableName": "",
+        "IsInputJson": false,
+        "IsInputVariableGlobal": false,
+        "IsOutputJson": false,
+        "IsOutputVariableGlobal": false,
+        "OutputVariableName": "",
+        "ScriptBody": "package ext\n\nimport \"fmt\"\nimport \"encoding/json\"\nimport \"github.com/thingsplex/tpflow/model\"\nimport \"github.com/thingsplex/tpflow/node/action/exec\"\nimport \"github.com/futurehomeno/fimpgo\"\nimport \"github.com/thingsplex/tpflow/connector/plugins/timeseries\"\n\nvar counter int = 1\n\ntype AppLogic struct {\n    mqtt *fimpgo.MqttTransport\n    ctx *model.Context\n}\n\nfunc Run(msg *model.Message,ctx *model.Context,params exec.ScriptParams) string {\n//  appL := AppLogic{mqtt:params.Mqtt,ctx:ctx}\n \n \n \n tsReq := timeseries.GetDataPointsRequest{\n    // ProcID            :1,\n// \tFieldName         :\"value\",\n// \tDataFunction      :\"last\",\n// \tMeasurementName   :\"sensor_temp.evt.sensor.report\",\n// \tRelativeTime      :\"3d\",\n// \tGroupByTime       :\"1h\",\n// \tGroupByTag        :\"location_id\",\n// \tFillType          :\"previous\"\n    }\n \n params.Log.Info(\"Input payload size = \",len(msg.RawPayload))\n \n json.Unmarshal(msg.RawPayload,&tsReq) \t\n var tsResult *timeseries.Result\n var err error\n if tsReq.MeasurementName == \"energy_data_points\" {\n     tsResult,err = params.Timeseries.GetEnergyDataPoints(&tsReq)      \n }else {\n     tsResult,err = params.Timeseries.GetDataPoints(&tsReq)     \n }    \n \n if err != nil {\n     params.Log.Error(\"Error :\",err)\n } else {\n     msg.ValPayload = tsResult.Series\n }\n params.Log.Info(\"New request , counter = \",counter)\n \n counter++\n//  r := fmt.Sprintf(\"Hello %d\",counter)\n//  ctx.SetVariable(\"hello_var\",\"string\",r,\"\",params.FlowId,true)\n return \"ok\"\n}\n"
+      },
+      "Ui": {
+        "nodeType": "",
+        "x": 366,
+        "y": 415
+      },
+      "TypeAlias": "Run script"
+    },
+    {
+      "Id": "4",
+      "Type": "action_http_reply",
+      "Label": "",
+      "SuccessTransition": "",
+      "TimeoutTransition": "",
+      "ErrorTransition": "",
+      "Address": "",
+      "Service": "",
+      "ServiceInterface": "",
+      "Config": {
+        "InputVar": {
+          "InMemory": true,
+          "IsGlobal": false,
+          "Name": "",
+          "Type": ""
+        },
+        "IsPublishOnly": false,
+        "IsWs": false,
+        "ResponsePayloadFormat": "json",
+        "ResponseTemplate": ""
+      },
+      "Ui": {
+        "nodeType": "",
+        "x": 356,
+        "y": 649
+      },
+      "TypeAlias": "Http reply"
+    }
+  ],
+  "Settings": null,
+  "IsDisabled": false,
+  "IsDefault": false,
+  "ParallelExecution": "parallel"
+}

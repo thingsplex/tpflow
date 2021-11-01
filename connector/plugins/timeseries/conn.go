@@ -86,7 +86,7 @@ func (conn *Connector) GetEnergyDataPoints(request *GetDataPointsRequest) (*Resu
 	reqMsg := fimpgo.NewObjectMessage("cmd.tsdb.get_energy_data_points","ecollector",request ,nil,nil,nil)
 	return conn.sendRequest(reqMsg)
 }
-
+// WriteDataPoints writes data points into timeseries DB
 func (conn *Connector) WriteDataPoints(request *WriteDataPointsRequest) error {
 	reqMsg := fimpgo.NewObjectMessage("cmd.tsdb.write_data_points","ecollector",request ,nil,nil,nil)
 	return conn.msgTransport.PublishToTopic(conn.requestTopic,reqMsg)
