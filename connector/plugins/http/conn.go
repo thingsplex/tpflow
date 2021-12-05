@@ -53,6 +53,7 @@ type ConnectorConfig struct {
 	TunCloudEndpoint   string
 	TunAddress         string // tunnel address , it can be guid of the flow engine or can be gateway id.
 	TunEdgeToken       string
+	StaticDir          string // full path to directory with static content , like templates , html , js , css files.
 }
 
 type RequestEvent struct {
@@ -142,6 +143,7 @@ func (conn *Connector) Init() error {
 	conn.router.HandleFunc("/index", conn.index)
 	conn.router.HandleFunc("/flow/{id}/rest", conn.httpFlowRouter)
 	conn.router.HandleFunc("/flow/{id}/ws", conn.wsFlowRouter)
+	conn.router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(conn.config.StaticDir))))
 	conn.configureInternalApi()
 	conn.flowStreamRegistry = map[string]flowStream{}
 	conn.state = "RUNNING"
@@ -158,6 +160,8 @@ func (conn *Connector) SetFlowContext(flowContext *context.Context) {
 }
 
 func (conn *Connector) configureInternalApi() {
+	// TODO : Add timeseries API , currently it's exposed via custom flow.
+
 	conn.router.HandleFunc("/api/registry/devices", func(w http.ResponseWriter, r *http.Request) {
 		if conn.assetRegistry != nil {
 			devs, _ := conn.assetRegistry.GetExtendedDevices()
@@ -181,11 +185,13 @@ func (conn *Connector) configureInternalApi() {
 		}
 	})
 
+	conn.router.HandleFunc("/api/admin/ws", conn.wsAdminApiRouter)
+
 	conn.router.HandleFunc("/api/flow/context/{flowId}", func(w http.ResponseWriter, r *http.Request) {
 		if conn.flowContext != nil {
 			vars := mux.Vars(r)
 			flowId := vars["flowId"]
-			bresp,err := conn.getContextResponse(flowId)
+			bresp, err := conn.getContextResponse(flowId)
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				return
@@ -195,7 +201,7 @@ func (conn *Connector) configureInternalApi() {
 	})
 }
 
-func (conn *Connector) getContextResponse(flowId string) ([]byte,error) {
+func (conn *Connector) getContextResponse(flowId string) ([]byte, error) {
 	var err error
 	var bresp []byte
 	if flowId == "full_struct_and_states" {
@@ -205,27 +211,27 @@ func (conn *Connector) getContextResponse(flowId string) ([]byte,error) {
 		devs, _ := conn.assetRegistry.GetExtendedDevices()
 
 		for li := range locs {
-			rloc := model2.LocationExtendedView{Location:locs[li]}
+			rloc := model2.LocationExtendedView{Location: locs[li]}
 			for di := range devs {
 				if locs[li].ID == devs[di].LocationId {
 					for si := range states {
 						if states[si].ExternalId == int(devs[di].ID) {
-							devs[di].States = append(devs[di].States,states[si])
+							devs[di].States = append(devs[di].States, states[si])
 						}
 					}
-					rloc.Devices =  append(rloc.Devices, devs[di])
+					rloc.Devices = append(rloc.Devices, devs[di])
 				}
 
 			}
-			result = append(result,rloc)
+			result = append(result, rloc)
 		}
 		bresp, err = json.Marshal(result)
 
-	}else {
+	} else {
 		records := conn.flowContext.GetRecords(flowId)
 		bresp, err = json.Marshal(records)
 	}
-	return bresp,err
+	return bresp, err
 }
 
 func (conn *Connector) StartHttpServer() {
@@ -360,6 +366,54 @@ func (conn *Connector) wsFlowRouter(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// wsAdminApiRouter routes requests to admin API. Is used from Thingspelex.
+func (conn *Connector) wsAdminApiRouter(w http.ResponseWriter, r *http.Request) {
+	reqId := utils.GenerateRandomNumber()
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("<HttpConn> WS connection failed with PANIC")
+			log.Error(string(debug.Stack()))
+		}
+	}()
+
+	// TODO : Add Auth implementation
+	//if code := conn.isRequestAllowed(r, stream.authConfig, flowId); code != AuthCodeAuthorized {
+	//	log.Debug("<HttpConn> Request is not allowed ", flowId)
+	//	conn.SendHttpAuthFailureResponse(code, w, flowId)
+	//	return
+	//}
+
+	ws, err := brUpgrader.Upgrade(w, r, nil)
+
+	if err != nil {
+		log.Error("<HttpConn> Can't upgrade to WS . Error:", err)
+		return
+	}
+
+	defer func() {
+		conn.liveConnections.Delete(reqId)
+		log.Debug("<HttpConn> WS connection closed")
+	}()
+
+	conn.liveConnections.Store(reqId, liveConnection{respWriter: w, startTime: time.Now(), isWs: true, wsConn: ws, flowId: ""})
+
+	for {
+		msgType, _, err := ws.ReadMessage()
+		if err != nil {
+			log.Error("<HttpConn> WS Read error :", err)
+			break
+		} else if msgType == websocket.TextMessage {
+			//if stream.reqChannel != nil {
+			//	stream.reqChannel <- RequestEvent{RequestId: 0, HttpRequest: r, IsWsMsg: true, Payload: msg}
+			//}
+		} else if msgType == websocket.BinaryMessage {
+			log.Debug("<HttpConn> New binary ws message")
+		} else {
+			log.Debug("<HttpConn> Message of type = ", msgType)
+		}
+	}
+}
+
 // RegisterFlow registers node of the flow
 func (conn *Connector) RegisterFlow(flowId string, isSync bool, isWs bool, publishOnly bool, reqChannel chan RequestEvent, alias, name string, authConfig AuthConfig) {
 	if reqChannel == nil {
@@ -446,7 +500,41 @@ func (conn *Connector) ReplyToRequest(requestId int64, payload []byte, responseC
 		}
 		lConn.responseSignal <- true
 	}
+}
 
+func (conn *Connector) PublishToConnectionById(requestId int64, payload []byte) {
+	if requestId == 0 {
+		return
+	}
+	wi, ok := conn.liveConnections.Load(requestId)
+	if !ok {
+		return
+	}
+	lConn, ok := wi.(liveConnection)
+	if !ok {
+		return
+	}
+	//
+	if lConn.isFromCloud {
+		// Request was received over cloud channel , sending back to cloud
+		newMsg := tunframe.TunnelFrame{
+			MsgType: tunframe.TunnelFrame_WS_MSG,
+			CorrId:  requestId,
+			Payload: payload,
+		}
+		conn.tunClient.Send(&newMsg)
+	} else {
+		if payload != nil {
+			log.Debug("<httpConn> Publishing WS message , Payload size = ", len(payload))
+			err := lConn.wsConn.WriteMessage(websocket.TextMessage, payload)
+			if err == nil {
+				log.Debug("<httpConn> Message forwarded to client")
+			} else {
+				log.Info("<httpClient> Can't write to WS connection. Err:", err.Error())
+			}
+
+		}
+	}
 }
 
 // PublishWs must be used to publish messages to live WS connection , given that flow is not triggered by the same connection and there is not WS trigger.

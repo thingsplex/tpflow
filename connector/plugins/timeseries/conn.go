@@ -9,14 +9,13 @@ import (
 )
 
 type Connector struct {
-	name         string
-	state        string
-	config       fimpmqtt.ConnectorConfig
-	msgTransport *fimpgo.MqttTransport
-	syncClient   *fimpgo.SyncClient
-	requestTopic string
+	name          string
+	state         string
+	config        fimpmqtt.ConnectorConfig
+	msgTransport  *fimpgo.MqttTransport
+	syncClient    *fimpgo.SyncClient
+	requestTopic  string
 	responseTopic string
-
 }
 
 func NewConnectorInstance(name string, config interface{}) model.ConnInterface {
@@ -39,7 +38,7 @@ func (conn *Connector) SetDefaults() bool {
 
 func (conn *Connector) Init() error {
 	conn.state = "INIT_FAILED"
-	log.Info("<TsFimpConn> Initializing fimp MQTT client.")
+	log.Info("<TsFimpConn> Initializing fimp MQTT client.Connecting to broker : ", conn.config.MqttServerURI)
 	clientId := conn.config.MqttClientIdPrefix + "_timeseries"
 	conn.msgTransport = fimpgo.NewMqttTransport(conn.config.MqttServerURI, clientId, conn.config.MqttUsername, conn.config.MqttPassword, true, 0, 0)
 	conn.msgTransport.SetGlobalTopicPrefix(conn.config.MqttTopicGlobalPrefix)
@@ -72,41 +71,42 @@ func (conn *Connector) GetState() string {
 
 // Ecollector API
 
-func (conn *Connector) QueryDataPoints(query string) (*Result,error) {
-	reqMsg := fimpgo.NewStrMapMessage("cmd.tsdb.query","ecollector", map[string]string{"query":query},nil,nil,nil)
+func (conn *Connector) QueryDataPoints(query string) (*Result, error) {
+	reqMsg := fimpgo.NewStrMapMessage("cmd.tsdb.query", "ecollector", map[string]string{"query": query}, nil, nil, nil)
 	return conn.sendRequest(reqMsg)
 }
 
-func (conn *Connector) GetDataPoints(request *GetDataPointsRequest) (*Result,error) {
-	reqMsg := fimpgo.NewObjectMessage("cmd.tsdb.get_data_points","ecollector",request ,nil,nil,nil)
+func (conn *Connector) GetDataPoints(request *GetDataPointsRequest) (*Result, error) {
+	reqMsg := fimpgo.NewObjectMessage("cmd.tsdb.get_data_points", "ecollector", request, nil, nil, nil)
 	return conn.sendRequest(reqMsg)
 }
 
-func (conn *Connector) GetEnergyDataPoints(request *GetDataPointsRequest) (*Result,error) {
-	reqMsg := fimpgo.NewObjectMessage("cmd.tsdb.get_energy_data_points","ecollector",request ,nil,nil,nil)
+func (conn *Connector) GetEnergyDataPoints(request *GetDataPointsRequest) (*Result, error) {
+	reqMsg := fimpgo.NewObjectMessage("cmd.tsdb.get_energy_data_points", "ecollector", request, nil, nil, nil)
 	return conn.sendRequest(reqMsg)
 }
+
 // WriteDataPoints writes data points into timeseries DB
 func (conn *Connector) WriteDataPoints(request *WriteDataPointsRequest) error {
-	reqMsg := fimpgo.NewObjectMessage("cmd.tsdb.write_data_points","ecollector",request ,nil,nil,nil)
-	return conn.msgTransport.PublishToTopic(conn.requestTopic,reqMsg)
+	reqMsg := fimpgo.NewObjectMessage("cmd.tsdb.write_data_points", "ecollector", request, nil, nil, nil)
+	return conn.msgTransport.PublishToTopic(conn.requestTopic, reqMsg)
 }
 
-func (conn *Connector) sendRequest(reqMsg *fimpgo.FimpMessage)(*Result,error) {
+func (conn *Connector) sendRequest(reqMsg *fimpgo.FimpMessage) (*Result, error) {
 	reqMsg.ResponseToTopic = conn.responseTopic
-	respMsg , err := conn.syncClient.SendReqRespFimp(conn.requestTopic,conn.responseTopic,reqMsg , 20,false)
+	respMsg, err := conn.syncClient.SendReqRespFimp(conn.requestTopic, conn.responseTopic, reqMsg, 20, false)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	resp := Response{}
 	err = respMsg.GetObjectValue(&resp)
 	if err != nil {
-		return nil,err
-	}
-	if len(resp.Results)>0 {
-		return &resp.Results[0],nil
-	} else {
-		log.Debugf("<TsFimpConn> Empty response")
 		return nil, err
+	}
+	if len(resp.Results) > 0 {
+		return &resp.Results[0], nil
+	} else {
+		log.Debugf("<TsFimpConn> Empty TS response error response")
+		return &Result{Err: resp.Err}, err
 	}
 }

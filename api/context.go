@@ -70,10 +70,10 @@ func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 	ctx.msgTransport.Subscribe("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:1")
 	apiCh := make(fimpgo.MessageCh, 10)
 	ctx.msgTransport.RegisterChannel("flow-ctx-api",apiCh)
+	// TODO : register channel in WS transport , so that WS can generates messages along with request-id
 	var fimp *fimpgo.FimpMessage
 	go func() {
 		for {
-
 			newMsg := <-apiCh
 			fimp = nil
 			log.Debug("New context message of type ", newMsg.Payload.Type)
@@ -126,6 +126,7 @@ func (ctx *ContextApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 			if fimp != nil {
 				addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
 				ctx.msgTransport.Publish(&addr, fimp)
+				// TODO : For WS publisher , the response must be sent to the same connection ,
 			}
 
 		}

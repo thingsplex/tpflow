@@ -9,6 +9,7 @@ import (
 	"github.com/thingsplex/tpflow"
 	model2 "github.com/thingsplex/tpflow/connector/model"
 	"github.com/thingsplex/tpflow/connector/plugins"
+	httpcon "github.com/thingsplex/tpflow/connector/plugins/http"
 	"github.com/thingsplex/tpflow/flow"
 	"github.com/thingsplex/tpflow/model"
 	"github.com/thingsplex/tpflow/utils"
@@ -28,7 +29,6 @@ type FlowApi struct {
 
 func NewFlowApi(flowManager *flow.Manager, config *tpflow.Configs) *FlowApi {
 	ctxApi := FlowApi{flowManager: flowManager, config:config}
-	//ctxApi.RegisterRestApi()
 	return &ctxApi
 }
 
@@ -139,7 +139,7 @@ func NewFlowApi(flowManager *flow.Manager, config *tpflow.Configs) *FlowApi {
 //
 //}
 
-func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
+func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport,wsConn *httpcon.Connector) {
 	ctx.msgTransport = msgTransport
 	// TODO : Implement dynamic addressing and discovery
 	ctx.msgTransport.Subscribe("pt:j1/mt:cmd/rt:app/rn:tpflow/ad:1")
@@ -151,7 +151,6 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 	var fimp *fimpgo.FimpMessage
 	go func() {
 		for {
-
 			newMsg := <-apiCh
 			fimp = nil
 			log.Debug("New flow message of type ", newMsg.Payload.Type)
@@ -451,6 +450,15 @@ func (ctx *FlowApi) RegisterMqttApi(msgTransport *fimpgo.MqttTransport) {
 				addr := fimpgo.Address{MsgType: fimpgo.MsgTypeEvt, ResourceType: fimpgo.ResourceTypeApp, ResourceName: "tpflow", ResourceAddress: "1",}
 				if err := ctx.msgTransport.RespondToRequest(newMsg.Payload,fimp); err !=nil {
 					ctx.msgTransport.Publish(&addr, fimp)
+				}
+				if wsConn != nil {
+					var reqId int64
+					binFimp,err := fimp.SerializeToJson()
+					if err != nil {
+						// Sending response to the same connection we received request from
+						wsConn.PublishToConnectionById(reqId,binFimp)
+					}
+
 				}
 			}
 		}

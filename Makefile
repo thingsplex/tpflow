@@ -35,6 +35,8 @@ package-deb-doc:
 	cp tpflow package/debian/opt/thingsplex/tpflow/
 	cp -R extlibs package/debian/opt/thingsplex/tpflow/
 	cp VERSION package/debian/opt/thingsplex/tpflow/
+	mkdir -p package/debian/opt/thingsplex/tpflow/var/connectors/data/httpserver/static
+	cp static package/debian/opt/thingsplex/tpflow/var/connectors/data/httpserver/
 	docker run --rm -v ${working_dir}:/build -w /build --name debuild debian dpkg-deb --build package/debian
 	@echo "Done"
 

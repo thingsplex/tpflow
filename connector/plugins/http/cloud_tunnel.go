@@ -6,8 +6,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tprelay/pkg/edge"
 	"github.com/thingsplex/tprelay/pkg/proto/tunframe"
+	"io/ioutil"
 	"net/http"
 	url2 "net/url"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -20,17 +22,17 @@ func (conn *Connector) StartWsCloudTunnel() error {
 	// 3. Read message , unpack , route either to WS stream or to Rest stream.
 	// 4. Send Rest response back over WS
 	log.Info("<HttpCloudConn> Starting cloud tunnel")
-	conn.tunClient = edge.NewTunClient(conn.config.TunCloudEndpoint,conn.config.TunAddress,5)
+	conn.tunClient = edge.NewTunClient(conn.config.TunCloudEndpoint, conn.config.TunAddress, 5)
 	conn.tunClient.SetEdgeToken(conn.config.TunEdgeToken)
 
 	if err := conn.tunClient.Connect(); err != nil {
 		log.Errorf("<HttCloudConn> Connect() error = %v, ", err)
 		conn.isTunActive = false
 		return err
-	}else {
+	} else {
 		go conn.wsCloudRouter()
 		conn.isTunActive = true
-		log.Info("<HttpCloudConn> Successfully connected to ",conn.config.TunCloudEndpoint)
+		log.Info("<HttpCloudConn> Successfully connected to ", conn.config.TunCloudEndpoint)
 	}
 	return nil
 }
@@ -40,11 +42,12 @@ func (conn *Connector) StopWsCloudTunnel() error {
 	conn.tunClient.Close()
 	return nil
 }
+
 // wsCloudFlowRouter reads messages from cloud stream and routes them either directly to flow or to API.
-func (conn *Connector) wsCloudRouter()  {
+func (conn *Connector) wsCloudRouter() {
 	stream := conn.tunClient.GetStream()
 	for {
-		newMsg :=<- stream
+		newMsg := <-stream
 		vars := newMsg.GetVars()
 		if vars == nil {
 			log.Debug("<HttCloudConn> corrupted request, metadata is missing")
@@ -61,9 +64,9 @@ func (conn *Connector) wsCloudRouter()  {
 		case tunframe.TunnelFrame_HTTP_REQ:
 			flowId := vars["flowId"]
 			if flowId != "" {
-				log.Debug("<HttpCloudConn> New frame for flow ",flowId)
+				log.Debug("<HttpCloudConn> New frame for flow ", flowId)
 				//if strings.Contains(newMsg.GetReqUrl(),fmt.Sprintf("/flow/%s/rest",flowId)) {
-				if r,_ := regexp.MatchString("/cloud/.*/flow/.*/rest.*",newMsg.GetReqUrl());r==true {
+				if r, _ := regexp.MatchString("/cloud/.*/flow/.*/rest.*", newMsg.GetReqUrl()); r == true {
 					conn.flowStreamMutex.RLock()
 					stream, ok := conn.flowStreamRegistry[flowId]
 					if !ok {
@@ -82,31 +85,31 @@ func (conn *Connector) wsCloudRouter()  {
 
 					httpReq := TunFrameToHttpReq(newMsg)
 
-					if code := conn.isRequestAllowed(httpReq,stream.authConfig,flowId);code != AuthCodeAuthorized {
-						log.Debug("<HttpConn> Cloud Request is not allowed ",flowId)
-						conn.SendCloudAuthFailureResponse(code,newMsg.ReqId,flowId)
+					if code := conn.isRequestAllowed(httpReq, stream.authConfig, flowId); code != AuthCodeAuthorized {
+						log.Debug("<HttpConn> Cloud Request is not allowed ", flowId)
+						conn.SendCloudAuthFailureResponse(code, newMsg.ReqId, flowId)
 						continue
 					}
 
 					if stream.reqChannel != nil {
-						conn.liveConnections.Store(newMsg.ReqId, liveConnection{startTime: time.Now(),isFromCloud: true})
-						stream.reqChannel <- RequestEvent{RequestId: newMsg.ReqId,Payload: newMsg.Payload,IsFromCloud: true,HttpRequest: httpReq}
+						conn.liveConnections.Store(newMsg.ReqId, liveConnection{startTime: time.Now(), isFromCloud: true})
+						stream.reqChannel <- RequestEvent{RequestId: newMsg.ReqId, Payload: newMsg.Payload, IsFromCloud: true, HttpRequest: httpReq}
 					}
 
-				}else if strings.Contains(newMsg.GetReqUrl(),"/api/flow/context/") {
+				} else if strings.Contains(newMsg.GetReqUrl(), "/api/flow/context/") {
 					log.Debug("<HttpCloudConn> New API frame ")
 					conn.InternalApiHandlerOverCloud(newMsg)
-				}else {
-					log.Debug("<HttpCloudConn> Unsupported resource ",newMsg.GetReqUrl())
+				} else {
+					log.Debug("<HttpCloudConn> Unsupported resource ", newMsg.GetReqUrl())
 				}
 
-			}else {
+			} else {
 				log.Debug("<HttpCloudConn> New API frame ")
 				conn.InternalApiHandlerOverCloud(newMsg)
 			}
 		case tunframe.TunnelFrame_WS_MSG:
 			flowId := vars["flowId"]
-			log.Debug("<HttpCloudConn> New WS frame for flow ",flowId)
+			log.Debug("<HttpCloudConn> New WS frame for flow ", flowId)
 			if flowId != "" {
 				conn.flowStreamMutex.RLock()
 				stream, ok := conn.flowStreamRegistry[flowId]
@@ -119,11 +122,11 @@ func (conn *Connector) wsCloudRouter()  {
 					continue
 				} else {
 					if stream.reqChannel != nil {
-						stream.reqChannel <- RequestEvent{RequestId: 0, IsWsMsg: true,IsFromCloud: true, Payload: newMsg.Payload}
+						stream.reqChannel <- RequestEvent{RequestId: 0, IsWsMsg: true, IsFromCloud: true, Payload: newMsg.Payload}
 					}
 				}
 
-			}else {
+			} else {
 				log.Debug("<HttpCloudConn> Unsupported API ")
 			}
 
@@ -136,54 +139,68 @@ func (conn *Connector) wsCloudRouter()  {
 func (conn *Connector) InternalApiHandlerOverCloud(msg *tunframe.TunnelFrame) {
 	var bresp []byte
 	var err error
-	if strings.Contains(msg.GetReqUrl(),"/api/registry/devices") {
+	var respCode int32 = 200
+	if strings.Contains(msg.GetReqUrl(), "/api/registry/devices") {
 		if conn.assetRegistry != nil {
-			devs , _ := conn.assetRegistry.GetExtendedDevices()
-			bresp , err =  json.Marshal(devs)
+			devs, _ := conn.assetRegistry.GetExtendedDevices()
+			bresp, err = json.Marshal(devs)
 		}
-	}else if strings.Contains(msg.GetReqUrl(),"/api/registry/locations") {
+	} else if strings.Contains(msg.GetReqUrl(), "/api/registry/locations") {
 		if conn.assetRegistry != nil {
 			locs, _ := conn.assetRegistry.GetAllLocations()
-			bresp , err =  json.Marshal(locs)
+			bresp, err = json.Marshal(locs)
 		}
-	}else if strings.Contains(msg.GetReqUrl(),"/api/flow/context/") {
+	} else if strings.Contains(msg.GetReqUrl(), "/api/flow/context/") {
 		if conn.flowContext != nil {
 			flowId := msg.GetVars()["flowId"]
-			bresp,err = conn.getContextResponse(flowId)
+			bresp, err = conn.getContextResponse(flowId)
 		}
-	}else {
-		log.Info("<HttpCloudConn> Unsupported internal API call path ",msg.GetReqUrl())
-		return
+	} else if strings.Contains(msg.GetReqUrl(), "/static/") {
+		urlParsed, err := url2.Parse(msg.GetReqUrl())
+		if err != nil {
+			log.Error("<HttpCloudConn> can't parse url. err:", err.Error())
+			return
+		}
+
+		splitUrl := strings.Split(urlParsed.Path, "/static/")
+		if len(splitUrl) == 2 {
+			filePath := filepath.Join(conn.config.StaticDir, splitUrl[1])
+			log.Debug("Reading file from ", filePath)
+			bresp, err = ioutil.ReadFile(filePath)
+		}
+	} else {
+		log.Info("<HttpCloudConn> Unsupported internal API call path ", msg.GetReqUrl())
+		respCode = 500
 	}
 
 	tunFrame := tunframe.TunnelFrame{
-		MsgType:   tunframe.TunnelFrame_HTTP_RESP,
-		CorrId:    msg.ReqId,
-		RespCode:  200,
+		MsgType:  tunframe.TunnelFrame_HTTP_RESP,
+		CorrId:   msg.ReqId,
+		RespCode: respCode,
 	}
 	if err != nil {
 		tunFrame.RespCode = http.StatusBadRequest
-	}else {
+	} else {
 		tunFrame.Payload = bresp
 	}
 	conn.tunClient.Send(&tunFrame)
 }
 
-func (conn *Connector) SendCloudAuthFailureResponse(authCode int , reqId int64,flowId string) {
+func (conn *Connector) SendCloudAuthFailureResponse(authCode int, reqId int64, flowId string) {
 	tunFrame := tunframe.TunnelFrame{
-		MsgType:   tunframe.TunnelFrame_HTTP_RESP,
-		Headers:   nil,
-		CorrId:    reqId,
-		RespCode:  401,
+		MsgType:  tunframe.TunnelFrame_HTTP_RESP,
+		Headers:  nil,
+		CorrId:   reqId,
+		RespCode: 401,
 	}
 
 	switch authCode {
-	case AuthCodeBasicFailed :
-		t := strings.Split(flowId,"_")
+	case AuthCodeBasicFailed:
+		t := strings.Split(flowId, "_")
 		realm := t[0]
 		tunFrame.Headers = map[string]*tunframe.TunnelFrame_StringArray{}
 
-		hVal := tunframe.TunnelFrame_StringArray{Items:[]string{fmt.Sprintf(`Basic realm="%s"`,realm)}}
+		hVal := tunframe.TunnelFrame_StringArray{Items: []string{fmt.Sprintf(`Basic realm="%s"`, realm)}}
 		tunFrame.Headers["WWW-Authenticate"] = &hVal
 		tunFrame.Payload = []byte("Unauthorised.\n")
 	case AuthCodeFailed:
@@ -195,12 +212,12 @@ func (conn *Connector) SendCloudAuthFailureResponse(authCode int , reqId int64,f
 func TunFrameToHttpReq(tunFrame *tunframe.TunnelFrame) *http.Request {
 	headers := http.Header{}
 	if tunFrame.Headers != nil {
-		for k,v := range tunFrame.Headers {
+		for k, v := range tunFrame.Headers {
 			headers[k] = v.Items
 		}
 	}
-	r := http.Request{Method: tunFrame.ReqMethod,Header: headers}
-	url,err := url2.Parse(tunFrame.ReqUrl)
+	r := http.Request{Method: tunFrame.ReqMethod, Header: headers}
+	url, err := url2.Parse(tunFrame.ReqUrl)
 	if err == nil {
 		r.URL = url
 	}

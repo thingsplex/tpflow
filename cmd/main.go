@@ -46,7 +46,7 @@ func SetupLog(logfile string, level string, logFormat string) {
 
 }
 
-func InitApiMqttTransport(config tpflow.Configs) (*fimpgo.MqttTransport,error) {
+func InitApiMqttTransport(config tpflow.Configs) (*fimpgo.MqttTransport, error) {
 	log.Info("<main> Initializing fimp MQTT client.")
 	clientId := config.MqttClientIdPrefix + "tpflow_api"
 	msgTransport := fimpgo.NewMqttTransport(config.MqttServerURI, clientId, config.MqttUsername, config.MqttPassword, true, 1, 1)
@@ -58,7 +58,7 @@ func InitApiMqttTransport(config tpflow.Configs) (*fimpgo.MqttTransport,error) {
 	} else {
 
 	}
-	return msgTransport,err
+	return msgTransport, err
 }
 
 func main() {
@@ -86,7 +86,7 @@ func main() {
 	if registryBackend == "vinculum" {
 		assetRegistry = storage.NewVinculumRegistryStore(&configs)
 		assetRegistry.Connect()
-	}else if registryBackend == "local" {
+	} else if registryBackend == "local" {
 		log.Info("<main>-------------- Starting service assetRegistry ")
 		assetRegistry = storage.NewThingRegistryStore(configs.RegistryDbFile)
 		log.Info("<main> Started ")
@@ -102,7 +102,7 @@ func main() {
 	if err != nil {
 		log.Error("Can't Init Flow manager . Error :", err)
 	}
-	flowManager.GetConnectorRegistry().AddConnection("thing_registry", "thing_registry", "thing_registry", assetRegistry,nil)
+	flowManager.GetConnectorRegistry().AddConnection("thing_registry", "thing_registry", "thing_registry", assetRegistry, nil)
 	err = flowManager.LoadAllFlowsFromStorage()
 	if err != nil {
 		log.Error("Can't load Flows from storage . Error :", err)
@@ -112,28 +112,29 @@ func main() {
 	flowApi := fapi.NewFlowApi(flowManager, &configs)
 	regApi := fapi.NewRegistryApi(assetRegistry)
 
-	stateTracker := gstate.NewGlobalStateTracker(&configs,flowManager.GetGlobalContext(),assetRegistry)
+	stateTracker := gstate.NewGlobalStateTracker(&configs, flowManager.GetGlobalContext(), assetRegistry)
 	stateTracker.Init()
 	connectorReg := flowManager.GetConnectorRegistry()
 
+	var httpSrvConnector *http.Connector
 	if connectorReg != nil {
 		inst := connectorReg.GetInstance("httpserver")
-		httpSrvConnector := inst.Connection.(*http.Connector)
+		httpSrvConnector = inst.Connection.(*http.Connector)
 		httpSrvConnector.SetAssetRegistry(assetRegistry)
 		httpSrvConnector.SetFlowContext(flowManager.GetGlobalContext())
 	}
 
-	apiMqttTransport,err := InitApiMqttTransport(configs)
+	apiMqttTransport, err := InitApiMqttTransport(configs)
 
 	if err == nil {
-		flowApi.RegisterMqttApi(apiMqttTransport)
+		flowApi.RegisterMqttApi(apiMqttTransport, httpSrvConnector)
 		regApi.RegisterMqttApi(apiMqttTransport)
 		ctxApi.RegisterMqttApi(apiMqttTransport)
 	}
 
 	log.Info("<main> Started")
-    //<< PPPROF >>
-    //if configs.EnableProfiler {
+	//<< PPPROF >>
+	//if configs.EnableProfiler {
 	//	go func() {
 	//		// http://cube.local:6060/debug/pprof/
 	//		//  go tool pprof  http://cube.local:6060/debug/pprof/heap
@@ -141,15 +142,12 @@ func main() {
 	//	}()
 	//}
 
-
-
-
 	//e.Logger.Debug(e.Start(":8083"))
 
 	//c := make(chan os.Signal, 1)
 	//signal.Notify(c)
 	//_ = <-c
-    runtime.GC()
+	runtime.GC()
 	select {}
 
 	assetRegistry.Disconnect()
