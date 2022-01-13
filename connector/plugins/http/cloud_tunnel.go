@@ -22,7 +22,7 @@ func (conn *Connector) StartWsCloudTunnel() error {
 	// 3. Read message , unpack , route either to WS stream or to Rest stream.
 	// 4. Send Rest response back over WS
 	log.Info("<HttpCloudConn> Starting cloud tunnel")
-	conn.tunClient = edge.NewTunClient(conn.config.TunCloudEndpoint, conn.config.TunAddress, 5)
+	conn.tunClient = edge.NewTunClient(conn.config.TunCloudEndpoint, conn.config.TunAddress, 10)
 	conn.tunClient.SetEdgeToken(conn.config.TunEdgeToken)
 
 	if err := conn.tunClient.Connect(); err != nil {
@@ -183,7 +183,7 @@ func (conn *Connector) InternalApiHandlerOverCloud(msg *tunframe.TunnelFrame) {
 	} else {
 		tunFrame.Payload = bresp
 	}
-	conn.tunClient.Send(&tunFrame)
+	conn.tunClient.SendAsync(&tunFrame)
 }
 
 func (conn *Connector) SendCloudAuthFailureResponse(authCode int, reqId int64, flowId string) {
@@ -206,7 +206,7 @@ func (conn *Connector) SendCloudAuthFailureResponse(authCode int, reqId int64, f
 	case AuthCodeFailed:
 		//w.WriteHeader(401)
 	}
-	conn.tunClient.Send(&tunFrame)
+	conn.tunClient.SendAsync(&tunFrame)
 }
 
 func TunFrameToHttpReq(tunFrame *tunframe.TunnelFrame) *http.Request {

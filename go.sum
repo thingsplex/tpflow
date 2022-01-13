@@ -82,8 +82,6 @@ github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd0=
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/thingsplex/tprelay v0.0.0-20210623220309-5ffe8cbfac9b h1:NFIpevEnCELXrkYgRG5pai+Ig0KltE1xg1moinEuUQI=
-github.com/thingsplex/tprelay v0.0.0-20210623220309-5ffe8cbfac9b/go.mod h1:SDmAtxNE0tDJbgDjelRcEzaovsuOx761mNEo5hFmIkM=
 github.com/traefik/yaegi v0.9.16 h1:ElGXTnv2KogInSOkA8c3s6oCsyCzf+kpb7lPPA6a3bI=
 github.com/traefik/yaegi v0.9.16/go.mod h1:FAYnRlZyuVlEkvnkHq3bvJ1lW5be6XuwgLdkYgYG6Lk=
 github.com/valyala/bytebufferpool v0.0.0-20160817181652-e746df99fe4a h1:AOcehBWpFhYPYw0ioDTppQzgI8pAAahVCiMSKTp9rbo=

@@ -22,18 +22,19 @@ type TunClient struct {
 	reconnectCounter int
 	readErrorCounter int
 	connHeaders      http.Header // Should be used to configure additional metadata , like security tokens
+	sendQueue        chan []byte
 }
 
 func NewTunClient(host string, edgeConnId string, streamBufferSize int) *TunClient {
-	return &TunClient{host: host, edgeConnId: edgeConnId, streamBufferSize: streamBufferSize,connHeaders: http.Header{}}
+	return &TunClient{host: host, edgeConnId: edgeConnId, streamBufferSize: streamBufferSize, connHeaders: http.Header{}}
 }
 
 func (tc *TunClient) SetEdgeToken(token string) {
-	tc.connHeaders.Set("X-TPlex-Token",token)
+	tc.connHeaders.Set("X-TPlex-Token", token)
 }
 
-func (tc *TunClient) SetHeader(key,value string) {
-	tc.connHeaders.Set(key,value)
+func (tc *TunClient) SetHeader(key, value string) {
+	tc.connHeaders.Set(key, value)
 }
 
 func (tc *TunClient) Connect() error {
@@ -47,9 +48,11 @@ func (tc *TunClient) Connect() error {
 		tc.IsConnected = true
 		tc.readErrorCounter = 0
 		log.Debug("<edgeClient> Successfully connected")
-	}else {
+	} else {
 		tc.IsConnected = false
 	}
+	tc.sendQueue = make(chan []byte, tc.streamBufferSize)
+	go tc.startMsgDeliveryWorker()
 	return err
 }
 
@@ -63,12 +66,37 @@ func (tc *TunClient) Send(msg *tunframe.TunnelFrame) error {
 	if !tc.IsConnected {
 		return fmt.Errorf("client disconnected")
 	}
-	if binMsg,err := proto.Marshal(msg); err != nil {
+	if binMsg, err := proto.Marshal(msg); err != nil {
 		log.Info("<edgeClient> Failed to parse proto message")
 		return err
-	}else {
+	} else {
 		// TODO : introduce write buffer/queue to avoid blocking by slow connection
 		return tc.wsConn.WriteMessage(websocket.BinaryMessage, binMsg)
+	}
+}
+
+// SendAsync sends tunnel frame over open WS connection
+func (tc *TunClient) SendAsync(msg *tunframe.TunnelFrame) error {
+	//var binMsg []byte
+	if !tc.IsConnected {
+		return fmt.Errorf("ws client disconnected")
+	}
+	if binMsg, err := proto.Marshal(msg); err != nil {
+		log.Info("<edgeClient> Failed to parse proto message")
+		return err
+	} else {
+		tc.sendQueue <- binMsg
+	}
+	return nil
+}
+
+func (tc *TunClient) startMsgDeliveryWorker() {
+	for binMsg := range tc.sendQueue {
+		if !tc.IsConnected {
+			log.Errorf(" ws client disconnected")
+			continue
+		}
+		tc.wsConn.WriteMessage(websocket.BinaryMessage, binMsg)
 	}
 }
 
@@ -86,9 +114,9 @@ func (tc *TunClient) Close() {
 		tc.stopSignal <- true
 	}
 	tc.wsConn.Close()
+	close(tc.sendQueue)
 	tc.IsConnected = false
 }
-
 
 func (tc *TunClient) startMsgReader() {
 	for {
@@ -96,15 +124,15 @@ func (tc *TunClient) startMsgReader() {
 			break
 		}
 		if !tc.IsConnected {
-			time.Sleep(time.Second*3)
+			time.Sleep(time.Second * 3)
 			tc.reconnectCounter++
-			if err := tc.Connect();err != nil {
-				delay := time.Duration(2*tc.reconnectCounter)
+			if err := tc.Connect(); err != nil {
+				delay := time.Duration(2 * tc.reconnectCounter)
 				if delay > 1200 {
 					delay = 1200
 				}
-				log.Warningf("<edgeClient> Reconnection failed...reconnecting after %d sec",delay)
-				time.Sleep(time.Second*delay)
+				log.Warningf("<edgeClient> Reconnection failed...reconnecting after %d sec", delay)
+				time.Sleep(time.Second * delay)
 			}
 			continue
 		}
@@ -114,19 +142,19 @@ func (tc *TunClient) startMsgReader() {
 			if websocket.IsUnexpectedCloseError(err) {
 				log.Warning("<edgeClient> Lost connection , reconnecting after 2 sec")
 				tc.IsConnected = false
-			}else if websocket.IsCloseError(err) {
+			} else if websocket.IsCloseError(err) {
 				tc.IsConnected = false
 				log.Warning("<edgeClient> WS Close error :", err)
-			}else {
+			} else {
 				log.Warning("<edgeClient> WS Read error :", err)
 				if tc.readErrorCounter > 5 {
 					tc.wsConn.Close()
 					tc.IsConnected = false
-					time.Sleep(time.Second*3)
+					time.Sleep(time.Second * 3)
 				}
 				tc.readErrorCounter++
 			}
-			time.Sleep(time.Second*3)
+			time.Sleep(time.Second * 3)
 			continue
 		}
 		if msgType != websocket.BinaryMessage {
@@ -150,4 +178,3 @@ func (tc *TunClient) startMsgReader() {
 	}
 	log.Debug("<edgeClient> Msg reader stopped")
 }
-

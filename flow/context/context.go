@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	ContextRecTypeUser = 0
+	ContextRecTypeUser  = 0
 	ContextRecTypeState = 1
 )
 
@@ -24,7 +24,7 @@ type Variable struct {
 }
 
 func (vrbl *Variable) ToStruct(targetVar interface{}) {
-	mapstructure.Decode(vrbl.Value,targetVar)
+	mapstructure.Decode(vrbl.Value, targetVar)
 }
 
 func (vrbl *Variable) IsNumber() bool {
@@ -131,7 +131,7 @@ type ContextRecord struct {
 	Variable    Variable
 	InMemory    bool
 	Type        byte //
-	ExternalId  int   // link to external resource . For instance device id or location id
+	ExternalId  int  // link to external resource . For instance device id or location id
 }
 
 type Context struct {
@@ -205,8 +205,15 @@ func (ctx *Context) SetVariable(name string, valueType string, value interface{}
 	return ctx.PutRecord(&rec, flowId, inMemory)
 }
 
-func (ctx *Context) SetState(name string, valueType string, value interface{},externalId int) error {
-	rec := ContextRecord{Name: name,Type:ContextRecTypeState, UpdatedAt: time.Now(), Variable: Variable{ValueType: valueType, Value: value},ExternalId: externalId}
+// SetState saves state
+func (ctx *Context) SetState(name string, valueType string, value interface{}, externalId int) error {
+	rec := ContextRecord{Name: name, Type: ContextRecTypeState, UpdatedAt: time.Now(), Variable: Variable{ValueType: valueType, Value: value}, ExternalId: externalId}
+	return ctx.PutRecord(&rec, "global", true)
+}
+
+// SetStateAndReportUpdate saves state and returns true if state changed , if changed it also returns state duration.
+func (ctx *Context) SetStateAndReportUpdate(name string, valueType string, value interface{}, externalId int) error {
+	rec := ContextRecord{Name: name, Type: ContextRecTypeState, UpdatedAt: time.Now(), Variable: Variable{ValueType: valueType, Value: value}, ExternalId: externalId}
 	return ctx.PutRecord(&rec, "global", true)
 }
 
@@ -235,7 +242,7 @@ func (ctx *Context) PutRecord(rec *ContextRecord, flowId string, inMemory bool) 
 
 func (ctx *Context) DeleteRecord(name string, flowId string, inMemory bool) error {
 	if inMemory {
-	  //TODO : Implement in-memory variable removal
+		//TODO : Implement in-memory variable removal
 	} else {
 		log.Infof("<ctx> Deleting variable %s from flow %s", name, flowId)
 		err := ctx.db.Update(func(tx *bolt.Tx) error {
@@ -296,7 +303,7 @@ func (ctx *Context) GetRecord(name string, flowId string) (*ContextRecord, error
 	return ctxRec, err
 }
 
-func (ctx *Context) GetDeviceStates() []ContextRecord  {
+func (ctx *Context) GetDeviceStates() []ContextRecord {
 	var result []ContextRecord
 	memResult, err := ctx.inMemoryStore.GetRecordsForFlow("global")
 	if err == nil {

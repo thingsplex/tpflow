@@ -92,6 +92,25 @@ class TpFlowClient {
 
 }
 
+class GlobalStructAndState {
+    constructor(struct) {
+        this.struct = struct;
+    }
+
+    updateStructAndState() {
+
+    }
+    // method should be invoked when
+    updateStateByTopic(topic,state) {
+
+    }
+
+    getDevicByTopic(topic) {
+
+    }
+
+}
+
 
 
 

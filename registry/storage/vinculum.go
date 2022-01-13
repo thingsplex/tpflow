@@ -6,7 +6,7 @@ import (
 	"github.com/futurehomeno/fimpgo"
 	"github.com/futurehomeno/fimpgo/fimptype/primefimp"
 	log "github.com/sirupsen/logrus"
-	"github.com/thingsplex/tpflow"
+	"github.com/thingsplex/tpflow/connector/plugins/fimpmqtt"
 	"github.com/thingsplex/tpflow/registry/model"
 	"strings"
 )
@@ -14,7 +14,8 @@ import (
 type VinculumRegistryStore struct {
 	vApi         *primefimp.ApiClient
 	msgTransport *fimpgo.MqttTransport
-	config       *tpflow.Configs
+	config       *fimpmqtt.ConnectorConfig
+	isDevMode    bool
 }
 
 func (r *VinculumRegistryStore) GetConfig() interface{} {
@@ -25,8 +26,8 @@ func (r *VinculumRegistryStore) SetDefaults() bool {
 	return false
 }
 
-func NewVinculumRegistryStore(config *tpflow.Configs) RegistryStorage {
-	return &VinculumRegistryStore{config: config}
+func NewVinculumRegistryStore(config *fimpmqtt.ConnectorConfig, isDevMode bool) RegistryStorage {
+	return &VinculumRegistryStore{config: config, isDevMode: isDevMode}
 }
 
 func (r *VinculumRegistryStore) Connect() error {
@@ -41,7 +42,7 @@ func (r *VinculumRegistryStore) Connect() error {
 	}
 	r.vApi = primefimp.NewApiClient("tpflow_reg", r.msgTransport, false)
 
-	if r.config.IsDevMode {
+	if r.isDevMode {
 		log.Info("<MqRegInt> DEV-MODE vinculum DB from file")
 		err = r.vApi.LoadVincResponseFromFile("testdata/vinfimp/site-response.json")
 		if err != nil {
@@ -71,16 +72,16 @@ func (r *VinculumRegistryStore) GetServiceById(Id model.ID) (*model.Service, err
 
 func (r *VinculumRegistryStore) GetServicesByLocationAndName(locId model.ID, name string) ([]model.Service, error) {
 	var result []model.Service
-	services , err := r.GetAllServices(nil)
+	services, err := r.GetAllServices(nil)
 	if err != nil {
 		return nil, err
 	}
 	for i := range services {
-		if (services[i].Name == name || name =="" )&& services[i].LocationId == locId {
-			result = append(result,services[i])
+		if (services[i].Name == name || name == "") && services[i].LocationId == locId {
+			result = append(result, services[i])
 		}
 	}
-	return result , err
+	return result, err
 }
 
 func (r *VinculumRegistryStore) GetLocationById(Id model.ID) (*model.Location, error) {
@@ -145,7 +146,6 @@ func (VinculumRegistryStore) GetServiceByFullAddress(address string) (*model.Ser
 	return nil, errors.New("not implemented")
 }
 
-
 func (r *VinculumRegistryStore) GetDevicesByThingId(locationId model.ID) ([]model.Device, error) {
 	log.Warn("GetDevicesByThingId NOT implemented  !!!!")
 	return nil, nil
@@ -192,9 +192,9 @@ func (r *VinculumRegistryStore) GetAllServices(filter *ServiceFilter) ([]model.S
 			svc := model.Service{Name: k}
 			svc.Address = vDevs[i].Service[k].Addr
 			if filter != nil {
-				if !strings.Contains(filter.Topic,svc.Address) && filter.Topic != "" {
+				if !strings.Contains(filter.Topic, svc.Address) && filter.Topic != "" {
 					continue
-			}
+				}
 
 			}
 			if vDevs[i].Client.Name != nil {
@@ -221,7 +221,7 @@ func (r *VinculumRegistryStore) GetAllServices(filter *ServiceFilter) ([]model.S
 	return services, nil
 }
 
-func (r *VinculumRegistryStore) GetServicesByDeviceId(Id model.ID)([]model.Service,error) {
+func (r *VinculumRegistryStore) GetServicesByDeviceId(Id model.ID) ([]model.Service, error) {
 	return nil, errors.New("not implemented")
 }
 
@@ -365,9 +365,9 @@ func (r *VinculumRegistryStore) GetExtendedDevices() ([]model.DeviceExtendedView
 		if vDevices[i].Room != nil {
 			device.LocationId = model.ID(*vDevices[i].Room)
 			location, err := r.GetLocationById(device.LocationId)
-				if err == nil && location != nil {
-					device.LocationAlias = fmt.Sprintf("%s(%s %s)", location.Alias, location.Type, location.SubType)
-				}
+			if err == nil && location != nil {
+				device.LocationAlias = fmt.Sprintf("%s(%s %s)", location.Alias, location.Type, location.SubType)
+			}
 		}
 
 		if vDevices[i].ThingID != nil {
@@ -383,16 +383,16 @@ func (r *VinculumRegistryStore) GetExtendedDevices() ([]model.DeviceExtendedView
 		}
 		device.Type = fmt.Sprintf("%s%s", dtype, dsubtype)
 
-		device.Services = make([]model.Service,len(vDevices[i].Service))
+		device.Services = make([]model.Service, len(vDevices[i].Service))
 		var si int
-		for k,v := range vDevices[i].Service {
+		for k, v := range vDevices[i].Service {
 			device.Services[si].Address = v.Addr
 			device.Services[si].Props = v.Props
 			device.Services[si].Name = k
 			device.Services[si].Enabled = v.Enabled
 
 			for _, intfName := range v.Interfaces {
-				intf := model.Interface{MsgType:intfName}
+				intf := model.Interface{MsgType: intfName}
 				device.Services[si].Interfaces = append(device.Services[si].Interfaces, intf)
 			}
 			si++

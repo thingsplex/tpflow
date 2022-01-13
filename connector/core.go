@@ -26,8 +26,8 @@ func NewRegistry(configDir string) *Registry {
 }
 
 // AddConnection Adds existing connection as connector instance into the registry
-func (reg *Registry) AddConnection(id string, name string, connType string, conn model.ConnInterface,config interface{}) {
-	inst := model.Instance{ID: id, Name: name, Plugin: connType, Connection: conn,Config: config}
+func (reg *Registry) AddConnection(id string, name string, connType string, conn model.ConnInterface, config interface{}) {
+	inst := model.Instance{ID: id, Name: name, Plugin: connType, Connection: conn, Config: config}
 	reg.instances = append(reg.instances, &inst)
 }
 
@@ -38,7 +38,7 @@ func (reg *Registry) AddInstance(inst *model.Instance) {
 }
 
 // CreateInstance Creates instance of connector using one of registered plugins
-func (reg *Registry) CreateInstance(inst  model.Instance) model.ConnInterface {
+func (reg *Registry) CreateInstance(inst model.Instance) model.ConnInterface {
 	connPlugin := plugins.GetPlugin(inst.Plugin)
 	if connPlugin != nil {
 		if inst.ID == "" {
@@ -76,19 +76,19 @@ func (reg *Registry) GetAllInstances() []model.InstanceView {
 	return instList
 }
 
-func (reg *Registry) LoadDefaults()error {
-	defaultsDir := filepath.Join(reg.configsDir,"defaults")
+func (reg *Registry) LoadDefaults() error {
+	defaultsDir := filepath.Join(reg.configsDir, "defaults")
 	defaultFiles, err := ioutil.ReadDir(defaultsDir)
 	if err != nil {
 		log.Error(err)
 		return err
 	}
 	for _, file := range defaultFiles {
-		dataFile := filepath.Join(reg.configsDir,"data",file.Name()) // related data file
+		dataFile := filepath.Join(reg.configsDir, "data", file.Name()) // related data file
 		if !utils.FileExists(dataFile) {
-			log.Infof("<ConnRegistry> Connector config file %s doesn't exist. Moving from default folder",file.Name())
+			log.Infof("<ConnRegistry> Connector config file %s doesn't exist. Moving from default folder", file.Name())
 			defaultFile := filepath.Join(defaultsDir, file.Name())
-			utils.CopyFile(defaultFile,dataFile)
+			utils.CopyFile(defaultFile, dataFile)
 		}
 	}
 	return nil
@@ -96,7 +96,7 @@ func (reg *Registry) LoadDefaults()error {
 
 func (reg *Registry) LoadInstancesFromDisk() error {
 	log.Info("<ConnRegistry> Loading connectors from disk ")
-	dataDir := filepath.Join(reg.configsDir,"data")
+	dataDir := filepath.Join(reg.configsDir, "data")
 	files, err := ioutil.ReadDir(dataDir)
 	if err != nil {
 		log.Error(err)
@@ -114,7 +114,7 @@ func (reg *Registry) LoadInstancesFromDisk() error {
 			instConf := model.Instance{ConfigFileName: fileName}
 			err = json.Unmarshal(file, &instConf)
 			if err != nil {
-				log.Error("<ConnRegistry> Can't unmarshel connector file.")
+				log.Error("<ConnRegistry> Can't unmarshal connector file.")
 				continue
 			}
 			reg.CreateInstance(instConf)
@@ -123,8 +123,8 @@ func (reg *Registry) LoadInstancesFromDisk() error {
 	return nil
 }
 
-func (reg *Registry) UpdateConnectorConfig(ID string ,config interface{}) error {
-	log.Info("<ConnRegistry> Updating connector config . ID =  ",ID)
+func (reg *Registry) UpdateConnectorConfig(ID string, config interface{}) error {
+	log.Info("<ConnRegistry> Updating connector config . ID =  ", ID)
 	inst := reg.GetInstance(ID)
 	if inst == nil {
 		return fmt.Errorf("conn instance not found")
@@ -134,13 +134,13 @@ func (reg *Registry) UpdateConnectorConfig(ID string ,config interface{}) error 
 	return reg.SaveConnectorConfigToDisk(inst)
 }
 
-func (reg *Registry) SaveConnectorConfigToDisk(inst *model.Instance)error {
-	log.Info("<ConnRegistry> Saving connector to disk , filename: ",inst.ConfigFileName)
-	log.Warningf("%+v",inst.Config)
-	bp , err := json.Marshal(inst)
+func (reg *Registry) SaveConnectorConfigToDisk(inst *model.Instance) error {
+	log.Info("<ConnRegistry> Saving connector to disk , filename: ", inst.ConfigFileName)
+	log.Warningf("%+v", inst.Config)
+	bp, err := json.Marshal(inst)
 	if err != nil {
 		return err
 	}
-	ioutil.WriteFile(inst.ConfigFileName,bp,0777)
+	ioutil.WriteFile(inst.ConfigFileName, bp, 0777)
 	return nil
 }

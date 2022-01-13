@@ -82,6 +82,7 @@ type liveConnection struct {
 	isWs           bool
 	isFromCloud    bool
 	wsConn         *websocket.Conn
+	wsConnMux      sync.Mutex
 }
 
 func NewConnectorInstance(name string, config interface{}) model.ConnInterface {
@@ -445,6 +446,8 @@ func (conn *Connector) UnregisterFlow(flowId string) {
 			return true
 		}
 		if lConn.flowId == flowId && lConn.isWs {
+			lConn.wsConnMux.Lock()
+			defer lConn.wsConnMux.Unlock()
 			lConn.wsConn.Close()
 			conn.liveConnections.Delete(key)
 			log.Debug("<HttpConn> Connection deleted , id=", key)
@@ -488,7 +491,7 @@ func (conn *Connector) ReplyToRequest(requestId int64, payload []byte, responseC
 			CorrId:  requestId,
 			Payload: payload,
 		}
-		conn.tunClient.Send(&newMsg)
+		conn.tunClient.SendAsync(&newMsg)
 		conn.liveConnections.Delete(requestId)
 	} else {
 		if payload != nil {
@@ -522,11 +525,15 @@ func (conn *Connector) PublishToConnectionById(requestId int64, payload []byte) 
 			CorrId:  requestId,
 			Payload: payload,
 		}
-		conn.tunClient.Send(&newMsg)
+		conn.tunClient.SendAsync(&newMsg)
 	} else {
 		if payload != nil {
 			log.Debug("<httpConn> Publishing WS message , Payload size = ", len(payload))
+			lConn.wsConnMux.Lock()
+			defer lConn.wsConnMux.Unlock()
+			lConn.wsConn.SetWriteDeadline(time.Now().Add(time.Second * 10))
 			err := lConn.wsConn.WriteMessage(websocket.TextMessage, payload)
+
 			if err == nil {
 				log.Debug("<httpConn> Message forwarded to client")
 			} else {
@@ -539,6 +546,7 @@ func (conn *Connector) PublishToConnectionById(requestId int64, payload []byte) 
 
 // PublishWs must be used to publish messages to live WS connection , given that flow is not triggered by the same connection and there is not WS trigger.
 func (conn *Connector) PublishWs(flowId string, payload []byte) {
+	//log.Debug("ws publish from flow =", flowId)
 	conn.liveConnections.Range(func(key, value interface{}) bool {
 		// republishing messages to all connected clients
 		lConn, ok := value.(liveConnection)
@@ -547,6 +555,9 @@ func (conn *Connector) PublishWs(flowId string, payload []byte) {
 		}
 		if lConn.flowId == flowId {
 			// TODO : Research is the operation must be executed in async way to avoid blocking , which can happen if client consumes with different speed.
+			lConn.wsConnMux.Lock()
+			//log.Debugf("Writing to connection =", key)
+			defer lConn.wsConnMux.Unlock()
 			lConn.wsConn.SetWriteDeadline(time.Now().Add(time.Second * 10))
 			err := lConn.wsConn.WriteMessage(websocket.TextMessage, payload)
 			if err == nil {
@@ -564,7 +575,7 @@ func (conn *Connector) PublishWs(flowId string, payload []byte) {
 			MsgType: tunframe.TunnelFrame_WS_MSG,
 			Payload: payload,
 		}
-		conn.tunClient.Send(&newMsg)
+		conn.tunClient.SendAsync(&newMsg)
 	}
 
 }
