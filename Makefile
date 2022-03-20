@@ -2,7 +2,7 @@ version="1.3.8"
 version_file=VERSION
 working_dir=$(shell pwd)
 arch="armhf"
-remote_host = "fh@cube.local"
+remote_host = "fh@futurehome-smarthub.local"
 reprepo_host = "reprepro@archive.futurehome.no"
 
 clean:
@@ -44,7 +44,7 @@ package-deb-doc:
 tar-arm: build-js build-go-arm package-deb-doc
 	@echo "The application was packaged into tar archive "
 
-deb-arm : clean configure-arm build-go-arm package-deb-doc
+deb-arm : clean configure-arm build-go-arm package-deb-docHemmelig1
 	mv package/debian.deb package/build/tpflow_$(version)_armhf.deb
 
 deb-amd : configure-amd64 build-go-amd package-deb-doc
@@ -64,5 +64,35 @@ run :
 
 publish-reprepo:
 	scp package/build/tpflow_$(version)_armhf.deb $(reprepo_host):~/apps
+
+# Docker
+build-go-amd64:
+	cd GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.Version=${version}" -mod=vendor -o package/docker/build/amd64/tpflow cmd/main.go
+
+build-go-arm64:
+	cd GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.Version=${version}" -mod=vendor -o package/docker/build/arm64/tpflow cmd/main.go
+
+package-docker-local: build-go-amd64
+	docker build --build-arg TARGETARCH=amd64 -t thingsplex/tpflow:${version} -t thingsplex/tpflow:latest ./package/docker
+
+package-docker-multi:
+	docker buildx build --platform linux/arm64,linux/amd64 -t thingsplex/tpflow:${version} -t thingsplex/tpflow:latest ./package/docker --push
+
+docker-multi-setup : configure-amd64
+	docker buildx create --name mybuilder
+	docker buildx use mybuilder
+
+docker-multi-publish : build-go-arm64 build-go-amd64 package-docker-multi
+
+run-docker:
+	docker run -d -v tpflow:/thingsplex/tpflow/var --restart unless-stopped \
+    -e MQTT_URI=tcp://192.168.86.33:1884 -e MQTT_USERNAME=uname -e MQTT_PASSWORD=pass \
+    --network tplex-net --name tpflow thingsplex/tpflow:latest
+
+init-mqtt:
+	 docker run -d --name mqtt -p 1883:1883 -p 9001:9001 -v $(working_dir)/testdata/mosquitto/config:/mosquitto/config eclipse-mosquitto:2.0.14
+
+start-mqtt:
+	docker start mqtt
 
 .phony : clean

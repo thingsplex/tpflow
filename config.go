@@ -16,4 +16,5 @@ type Configs struct {
 	LogLevel              string `json:"log_level"`
 	LogFormat             string `json:"log_format"`
 	IsDevMode             bool   `json:"is_dev_mode"`
+	RegistryBackend       string `json:"registry_backend"`
 }

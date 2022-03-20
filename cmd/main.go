@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/thingsplex/tpflow"
 	fapi "github.com/thingsplex/tpflow/api"
+	"github.com/thingsplex/tpflow/connector/plugins/fimpmqtt"
 	"github.com/thingsplex/tpflow/connector/plugins/http"
 	"github.com/thingsplex/tpflow/flow"
 	"github.com/thingsplex/tpflow/gstate"
@@ -15,6 +16,8 @@ import (
 	"github.com/thingsplex/tpflow/registry/storage"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io/ioutil"
+	"os"
+
 	//_ "net/http/pprof"
 	"runtime"
 )
@@ -44,6 +47,19 @@ func SetupLog(logfile string, level string, logFormat string) {
 		log.SetOutput(&l)
 	}
 
+}
+
+// overrides configs
+func processEnvVars(configs *tpflow.Configs) {
+	if mqttUrl := os.Getenv("MQTT_URI"); mqttUrl != "" {
+		configs.MqttServerURI = mqttUrl
+	}
+	if mqttUsername := os.Getenv("MQTT_USERNAME"); mqttUsername != "" {
+		configs.MqttUsername = mqttUsername
+	}
+	if mqttPass := os.Getenv("MQTT_PASSWORD"); mqttPass != "" {
+		configs.MqttPassword = mqttPass
+	}
 }
 
 func InitApiMqttTransport(config tpflow.Configs) (*fimpgo.MqttTransport, error) {
@@ -77,15 +93,41 @@ func main() {
 		fmt.Print(err)
 		panic("Can't load config file.")
 	}
-	registryBackend := "vinculum"
+	var registryBackend string
+	processEnvVars(&configs)
+	if configs.RegistryBackend == "" {
+		registryBackend = "vinculum"
+	} else {
+		registryBackend = configs.RegistryBackend
+	}
 
 	SetupLog(configs.LogFile, configs.LogLevel, configs.LogFormat)
 	log.Info("--------------Starting Thingsplex-Flow----------------")
+
+	//---------FLOW------------------------
+	log.Info("<main> Starting Flow manager")
+	flowManager, err := flow.NewManager(configs)
+	if err != nil {
+		log.Error("Can't Init Flow manager . Error :", err)
+	}
+
 	var assetRegistry storage.RegistryStorage
-	//---------THINGS REGISTRY-------------
+	var fimpConConf fimpmqtt.ConnectorConfig
+	//---------<THINGS REGISTRY>-------------
 	if registryBackend == "vinculum" {
-		assetRegistry = storage.NewVinculumRegistryStore(&configs)
-		assetRegistry.Connect()
+		// Loading registry from vinculum using configurations from fimpmqtt connector
+		conInst, ok := flowManager.GetConnectorRegistry().GetInstance("fimpmqtt").Connection.(*fimpmqtt.Connector)
+		if !ok {
+			log.Error("Can't load connector")
+		}
+		fimpConConf, ok = conInst.GetConfig().(fimpmqtt.ConnectorConfig)
+		if ok {
+			assetRegistry = storage.NewVinculumRegistryStore(&fimpConConf, configs.IsDevMode)
+			assetRegistry.Connect()
+		} else {
+			log.Error("Can't load fimpqtt configs")
+		}
+
 	} else if registryBackend == "local" {
 		log.Info("<main>-------------- Starting service assetRegistry ")
 		assetRegistry = storage.NewThingRegistryStore(configs.RegistryDbFile)
@@ -95,13 +137,8 @@ func main() {
 	regMqttIntegr := fimpcore.NewMqttIntegration(&configs, assetRegistry)
 	regMqttIntegr.InitMessagingTransport()
 	log.Info("<main> Started ")
+	//---------</THINGS REGISTRY>------------
 
-	//---------FLOW------------------------
-	log.Info("<main> Starting Flow manager")
-	flowManager, err := flow.NewManager(configs)
-	if err != nil {
-		log.Error("Can't Init Flow manager . Error :", err)
-	}
 	flowManager.GetConnectorRegistry().AddConnection("thing_registry", "thing_registry", "thing_registry", assetRegistry, nil)
 	err = flowManager.LoadAllFlowsFromStorage()
 	if err != nil {
@@ -112,8 +149,8 @@ func main() {
 	flowApi := fapi.NewFlowApi(flowManager, &configs)
 	regApi := fapi.NewRegistryApi(assetRegistry)
 
-	stateTracker := gstate.NewGlobalStateTracker(&configs, flowManager.GetGlobalContext(), assetRegistry)
-	stateTracker.Init()
+	stateTracker := gstate.NewGlobalStateTracker(flowManager.GetGlobalContext(), assetRegistry)
+	stateTracker.InitFimpStateExtractor(&fimpConConf)
 	connectorReg := flowManager.GetConnectorRegistry()
 
 	var httpSrvConnector *http.Connector

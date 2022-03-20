@@ -77,7 +77,7 @@ func (mg *FimpStateExtractor) onMqttMessage(topic string, addr *fimpgo.Address, 
 			}
 
 		} else {
-			log.Debugf("<gstate> Global state can't find device reference . Lookup topi topic = %s", topic)
+			log.Tracef("<gstate> Global state can't find device reference . Lookup topi topic = %s", topic)
 		}
 	}
 

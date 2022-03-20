@@ -1,0 +1,492 @@
+<html>
+<head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.4.2.min.js"></script>
+    <script src="http://localhost:8082/static/jslibs/ui-utils.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages':['gauge','corechart']});
+        google.charts.setOnLoadCallback(drawGauges);
+
+        let data ;
+        let lineData;
+        let chart ;
+        let lineChart;
+        let options;
+        let lineOptions;
+        let relTimeRange = "1d"
+        let groupByTime = "10m"
+
+        let energyPrices = [];
+        let energyUsage = [];
+
+        let dev_id_to_name_map = {};
+
+        const flow_id = "{{.FlowId}}";
+
+        let tp_client = new TpFlowClient();
+
+        let power_trace_index = {}
+        let temp_trace_index = {}
+        let humid_trace_index = {}
+        let co2_trace_index = {}
+        let lux_trace_index = {}
+
+        function drawGauges() {
+            configureWs();
+            data = google.visualization.arrayToDataTable([
+                ['Label', 'Value'],
+                ['Server', 0],
+                ['Main power',0],
+                ['CO2 office',0],
+                ['Office T',0],
+                ['Outdoor T',0],
+            ]);
+
+            options = {
+                width: 750, height: 180,
+                redFrom: 2000, redTo: 3000,
+                yellowFrom:1000, yellowTo: 2000,
+                minorTicks: 5,
+                max:3000
+            };
+
+            chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        }
+
+        function setPlotlyChart() {
+            let time = new Date();
+
+            let layout ={
+                title: {
+                    text:"Power usage",
+                    font: {
+                        family: "Times New Roman",
+                        size: 24
+                    },
+                },
+            }
+
+            let trace1 = {
+                x: [time],
+                y: [0],
+                mode: 'lines',
+                name: "Tibber",
+                line: {color: '#80CAF6'}
+            }
+
+            var data = [trace1]
+            Plotly.newPlot('plotly_chart', data,layout);
+        }
+
+        function setMultiPlotlyCharts(context) {
+
+            let power_data = [];
+            let price_data = [];
+            let energy_data = [];
+            let temp_data = [];
+            let humid_data = [];
+            let co2_data = [];
+            let lux_data = [];
+
+            for (let loc of context) {
+                if (loc.Devices) {
+                    for( let dev of loc.Devices) {
+                        if ( dev.states) {
+                            for ( let state of dev.states) {
+                                let trace = {
+                                    x: [state.UpdatedAt],
+                                    y: [state.Variable.Value],
+                                    mode: 'lines+markers',
+                                    name:  loc.alias + " - " +  dev.alias,
+                                }
+                                dev_id_to_name_map[dev.id] = loc.alias + " - " +  dev.alias;
+                                if (state.Name.includes("meter")) {
+                                    trace.mode = 'lines'
+                                    power_trace_index[state.Name] = power_data.length
+                                    power_data.push(trace)
+                                }else if (state.Name.includes("sensor_temp")) {
+                                    temp_trace_index[state.Name] = temp_data.length
+                                    temp_data.push(trace)
+                                }else if (state.Name.includes("sensor_humid")) {
+                                    humid_trace_index[state.Name] = humid_data.length
+                                    humid_data.push(trace)
+                                }else if (state.Name.includes("sensor_co2")) {
+                                    co2_trace_index[state.Name] = co2_data.length
+                                    co2_data.push(trace)
+                                }else if (state.Name.includes("sensor_lumin")) {
+                                    lux_trace_index[state.Name] = lux_data.length
+                                    lux_data.push(trace)
+                                }
+
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            let power_layout = {title: {text:"Power"},xaxis: {
+                    autorange: true,
+                    type: 'date'
+                },yaxis: {
+                    autorange: true,
+                    type: 'linear',
+                    title: 'W',
+                } }
+
+
+            let price_layout = {title: {text:"Energy price"},xaxis: {
+                    autorange: true,
+                    type: 'date'
+                },yaxis: {
+                    autorange: true,
+                    type: 'linear',
+                    title: 'NOK per kWh',
+                }}
+            let energy_layout = {title: {text:"Energy"},xaxis: {
+                    autorange: true,
+                    type: 'date'
+                },yaxis: {
+                    autorange: true,
+                    type: 'linear',
+                    title: 'kWh',
+                },barmode: 'stack'}
+
+            let temp_layout = {title: {text:"Temperature"} }
+            let humid_layout = {title: {text:"Humidity"} }
+            let co2_layout = {title: {text:"Co2 level"} }
+            let lux_layout = {title: {text:"Lux"} }
+
+            Plotly.newPlot("power_plotly_chart", power_data,power_layout);
+            Plotly.newPlot("energy_plotly_chart", energy_data,energy_layout);
+            Plotly.newPlot("price_plotly_chart", price_data,price_layout);
+            Plotly.newPlot("temp_plotly_chart", temp_data,temp_layout);
+            Plotly.newPlot("humid_plotly_chart", humid_data,humid_layout);
+            Plotly.newPlot("co2_plotly_chart", co2_data,co2_layout);
+            Plotly.newPlot("lux_plotly_chart", lux_data,lux_layout);
+            reloadHistory(relTimeRange);
+            setInterval(function(){ reloadHistory() }, 1000*600);
+        }
+
+        function updateTraceByTopic(state_name,value,time,props) {
+            if (state_name.includes("meter_ext")) {
+                value = value.p_import;
+            }
+            let update = {
+                x:  [[time]],
+                y: [[value]],
+            }
+
+            if(state_name.includes("meter")) {
+                if (props)
+                    if (props["unit"]=="W") {
+                        let trace_index = power_trace_index[state_name]
+                        if (trace_index != undefined)
+                            Plotly.extendTraces('power_plotly_chart', update, [trace_index])
+                        if(state_name.includes("tibber")) {
+                            data.setValue(1, 1, value);
+                            chart.draw(data, options);
+                        }
+                    }
+            }else if (state_name.includes("sensor_co2")) {
+                let trace_index = co2_trace_index[state_name]
+                if (trace_index != undefined)
+                    Plotly.extendTraces('co2_plotly_chart', update, [trace_index])
+            }else if (state_name.includes("sensor_temp")) {
+                let trace_index = temp_trace_index[state_name]
+                if (trace_index != undefined)
+                    Plotly.extendTraces('temp_plotly_chart', update, [trace_index])
+            }else if (state_name.includes("sensor_humid")) {
+                let trace_index = humid_trace_index[state_name]
+                if (trace_index != undefined)
+                    Plotly.extendTraces('humid_plotly_chart', update, [trace_index])
+            }else if (state_name.includes("sensor_lumin")) {
+                trace_index = lux_trace_index[state_name]
+                if (trace_index != undefined)
+                    Plotly.extendTraces('lux_plotly_chart', update, [trace_index])
+            }
+
+        }
+
+        function updatePlotlyChart(chartDivName,val) {
+            let time = new Date();
+            let update = {
+                x:  [[time]],
+                y: [[val]]
+            }
+            Plotly.extendTraces(chartDivName, update, [0])
+        }
+
+
+        function setAuthScroll() {
+
+            var time = new Date();
+
+            var olderTime = time.setMinutes(time.getMinutes() - 2);
+            var futureTime = time.setMinutes(time.getMinutes() + 2 );
+
+            var minuteView = {
+                xaxis: {
+                    type: 'date',
+                    range: [olderTime,futureTime]
+                }
+            };
+
+            Plotly.relayout('plotly_chart', minuteView);
+        }
+
+      function configureWs() {
+            let wsMsgHandlerFunc = function (msg) {
+                  if (msg.serv) { // fimp message
+                        //    console.dir(msg)
+                        let state_name = getStateNameFromMessage(msg)
+                        updateTraceByTopic(state_name,msg.val,new Date(),msg.props);
+
+                        if (msg.serv=="sensor_co2") {
+                            data.setValue(2, 1, msg.val);
+                            chart.draw(data, options);
+                        }else if (msg.serv=="sensor_temp") {
+                            if (msg.topic.includes("02000032ea36")) {
+                                // outdoor sensor
+                                data.setValue(4, 1, msg.val);
+                                chart.draw(data, options);
+                            }else {
+                                data.setValue(3, 1, msg.val);
+                                chart.draw(data, options);
+                            }
+
+                        }
+                  }
+
+            };
+            tp_client.configureWs(wsMsgHandlerFunc);
+
+        }
+
+        function CtrlBinaryService(topic,state) {
+            let cmd = {"op":"cmd.binary.set","val":state,"addr":topic};
+            tp_client.wsPublish(cmd);
+        }
+
+
+        function setRangeAndReload() {
+            relTimeRange = document.getElementById("time_range").value;
+            groupByTime = document.getElementById("group_by_time").value;
+            reloadHistory(relTimeRange);
+        }
+
+        async function reloadHistory(relTimeRange) {
+            await loadPowerTimeseries(relTimeRange);
+            await loadEnergyTimeseries(relTimeRange);
+            await loadPriceTimeseries(relTimeRange);
+            computeEnergyTotals();
+        }
+
+        function addPriceTraces(chartId,mValues) {
+            try {
+                Plotly.deleteTraces(chartId, [0]);
+            }catch {}
+            let values = mValues[0];
+            let trace = {x: [],y: [],type:"line",name:"Energy price", line: {color: 'rgb(229, 60, 88)',width: 3 }}
+            for (let val of values.values) {
+                trace.x.push(val[0]*1000)
+                trace.y.push(val[1])
+            }
+            Plotly.addTraces(chartId, trace);
+        }
+
+        async function loadPriceTimeseries(relTimeRange) {
+            let query = {
+                "proc_id":1,
+                "field_name":"value",
+                "data_function":"",
+                "measurement_name":"electricity_price_info",
+                "relative_time":relTimeRange,
+                "group_by_time":"",
+                "group_by_tag":"",
+                "fill_type":"previous"
+            }
+            const data = await tp_client.loadTimeseries(query);
+            energyPrices = data[0].values;
+            // updateTraceByChartId("price_plotly_chart",data[0].values);
+            addPriceTraces("price_plotly_chart",data);
+            return Promise.resolve(true);
+        }
+
+        async function loadPowerTimeseries(relTimeRange) {
+            let query = {
+                "proc_id":1,
+                "field_name":"value",
+                "data_function":"",
+                "measurement_name":"electricity_meter_power",
+                "relative_time":relTimeRange,
+                "group_by_time":groupByTime,
+                "group_by_tag":"dev_id",
+                "fill_type":"previous"
+            }
+            const data = await tp_client.loadTimeseries(query);
+            addPowerTraceByChartId("power_plotly_chart",data);
+            return Promise.resolve(true);
+        }
+
+        async function loadEnergyTimeseries(relTimeRange) {
+            let query = {
+                "proc_id":1,
+                "measurement_name":"energy_data_points",
+                "relative_time":relTimeRange,
+                "group_by_time":"1h",
+                "group_by_tag":"dev_id",
+            }
+
+            const data = await tp_client.loadTimeseries(query);
+            addEnergyTraceByChartId("energy_plotly_chart",data,"100");
+            return Promise.resolve(true);
+        }
+
+        function addEnergyTraceByChartId(chartId,mValues,mainMeterDeviceId) {
+            let totals = []
+            let traces_to_remove = []
+            for(let i=0;i<mValues.length;i++) {
+                traces_to_remove.push(i);
+            }
+            try {
+                Plotly.deleteTraces(chartId, traces_to_remove);
+            }catch {}
+
+            for (let values of mValues) {
+                let name = "";
+                let trace = {x: [],y: [],type:"line",name:""}
+                if (values.tags.dev_id == mainMeterDeviceId){
+                    trace.name = "Main meter"
+                    energyUsage = values.values
+                }else {
+                    trace.type = "bar"
+                    trace.name = dev_id_to_name_map[values.tags.dev_id]
+
+                }
+                for (let val of values.values) {
+                    trace.x.push(val[0]*1000)
+                    trace.y.push(val[1])
+                }
+                Plotly.addTraces(chartId, trace);
+            }
+
+        }
+
+        function addPowerTraceByChartId(chartId,mValues,mainMeterDeviceId) {
+            let traces_to_remove = []
+            for(let i=0;i<mValues.length;i++) {
+                traces_to_remove.push(i);
+            }
+            try {
+                Plotly.deleteTraces(chartId, traces_to_remove);
+            }catch {}
+
+            for (let values of mValues) {
+                let name = "";
+                let trace = {x: [],y: [],type:"line",name:dev_id_to_name_map[values.tags.dev_id]}
+                for (let val of values.values) {
+                    trace.x.push(val[0]*1000)
+                    trace.y.push(val[1])
+                }
+                Plotly.addTraces(chartId, trace);
+            }
+ }
+
+        function computeEnergyTotals() {
+            let totalEnergy = 0;
+            let totalCost = 0;
+            let now = new Date();
+            let trace1 = {x: [],y: [],type:'line',name:"Costs per hour",line: {color: 'rgb(255, 140, 0)',width: 4 }}
+            let trace2 = {x: [],y: [],type:'line',name:"Costs accumulated",line: {color: 'rgb(13, 0, 255)',width: 3 },visible:"legendonly"}
+            let traceEnergy = {x: [],y: [],type:'line',name:"Consumed energy" , line: {color: 'rgb(50, 205, 50)',width: 2 } }
+            let traceNow = {x: [],y: [],type:'scatter',mode:"lines+markers",line: {color: 'rgb(50, 205, 50)',width: 2 },name:"Current usage",marker: { size: 12 }}
+
+            //   console.dir(energyPrices);
+            let lastReportedEnergyVal = 0;
+            let lastReportedEnergyTs = 0;
+            for (let i=0;i<energyUsage.length;i++) {
+                // conosle.log("Seraching for "+str(energyUsage[i][0]));
+                ePriceEl = energyPrices.filter(ptime => energyUsage[i][0] == ptime[0] )
+                if (ePriceEl.length>0) {
+                    eUsage = energyUsage[i][1];
+                    ePrice = ePriceEl[0][1]
+
+
+                    // capturing last valid response
+                    if (energyUsage[i][1] != null) {
+                        lastReportedEnergyTs = energyUsage[i][0]*1000;
+                        lastReportedEnergyVal = energyUsage[i][1];
+                        traceEnergy.x.push(lastReportedEnergyTs);
+                        traceEnergy.y.push(lastReportedEnergyVal);
+                    }
+
+                    if (eUsage!=null && ePrice != null) {
+                        cost = eUsage * ePrice;
+                        totalCost += cost;
+                        trace1.y.push(cost); // value
+                        trace1.x.push(energyUsage[i][0]*1000); // time
+
+                        trace2.y.push(totalCost); //value
+                        trace2.x.push(energyUsage[i][0]*1000); // time
+                    }
+                    totalEnergy += eUsage
+                }else {
+                    console.log("Time don't match")
+                }
+            }
+            traceNow.x = [lastReportedEnergyTs,now];
+            traceNow.y = [lastReportedEnergyVal,lastReportedEnergyVal];
+            //lastReportedEnergyVal,lastReportedEnergyVal
+            totalCost = Math.round(totalCost*100)/100;
+            totalEnergy = Math.round(totalEnergy*100)/100;
+            document.getElementById("energy_total").innerHTML = "Total energy consumed = "+totalEnergy+" kWh , monthly projection = "+totalEnergy*30+" kWh"
+            document.getElementById("energy_costs_total").innerHTML = "Total accumulated cost = "+totalCost+" NOK , monthly projection = "+totalCost*30+" NOK"
+            try {
+                Plotly.deleteTraces("price_plotly_chart",[0,1,2,3]);
+            }catch {}
+            Plotly.addTraces("price_plotly_chart", [trace1,trace2,traceEnergy,traceNow]);
+        }
+        document.addEventListener('DOMContentLoaded', async (event) => {
+            let structAndStates = await tp_client.loadFullStructAndStates()
+            setMultiPlotlyCharts(structAndStates);
+        })
+       </script>
+</head>
+<body>
+<p>Home mode:<b id="home_mode"></b></p>
+<div id="chart_div" style="width: 750px; height: 180px;"></div>
+
+<div id="plotly_chart"></div>
+
+<select name="time_range" id="time_range">
+    <option value="1d">1 day </option>
+    <option value="2d">2 days</option>
+    <option value="1w">1 week</option>
+    <option value="2w">2 weeks</option>
+    <option value="4w">1 month</option>
+</select>
+
+<select name="group_by_time" id="group_by_time">
+    <option value="10m">10 min </option>
+    <option value="30m">30 min</option>
+    <option value="1h">1 hour</option>
+    <option value="2d">1 day</option>
+    <option value="7d">7 days</option>
+</select>
+
+<button onclick="setRangeAndReload()"> Reload history </button>
+
+<div id="power_plotly_chart"></div>
+<div id="energy_plotly_chart"></div>
+<div id="energy_total">Total energy consumed =</div><div id="energy_costs_total">Total accumulated cost =</div>
+<div id="price_plotly_chart"></div>
+<div id="temp_plotly_chart"></div>
+<div id="humid_plotly_chart"></div>
+<div id="co2_plotly_chart"></div>
+<div id="lux_plotly_chart"></div>
+
+</body>
+
+</html>

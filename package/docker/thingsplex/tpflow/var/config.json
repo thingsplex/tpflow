@@ -1,6 +1,6 @@
 {
   "mqtt_server_uri":"tcp://localhost:1883",
-  "mqtt_client_id_prefix":"tpflow",
+  "mqtt_client_id_prefix":"tpflow-doc",
   "mqtt_server_username":"",
   "mqtt_server_password":"",
   "mqtt_topic_global_prefix":"",
@@ -8,9 +8,9 @@
   "connector_storage_dir":"./var/connectors",
   "registry_db_file":"./var/registry.db",
   "context_storage_dir":"./var/flow_storage/context.db",
-  "log_file":"/var/log/thingsplex/tpflow/tpflow.log",
+  "log_file":"",
   "log_level":"info",
-  "log_format":"json",
+  "log_format":"text",
   "ext_libs_dir":"./extlibs",
   "is_dev_mode": false
 }

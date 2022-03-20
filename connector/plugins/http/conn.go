@@ -548,6 +548,12 @@ func (conn *Connector) PublishToConnectionById(requestId int64, payload []byte) 
 func (conn *Connector) PublishWs(flowId string, payload []byte) {
 	//log.Debug("ws publish from flow =", flowId)
 	conn.liveConnections.Range(func(key, value interface{}) bool {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Errorf("<HttpConn> WS connection %s failed with PANIC", key)
+				log.Error(string(debug.Stack()))
+			}
+		}()
 		// republishing messages to all connected clients
 		lConn, ok := value.(liveConnection)
 		if !ok {

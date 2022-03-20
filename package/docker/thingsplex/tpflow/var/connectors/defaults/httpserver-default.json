@@ -6,9 +6,10 @@
   "Config": {
     "BindAddress": ":8082",
     "IsTunEnabled": false,
-    "TunAddress": "tp-test-tun-1",
+    "IsLocalServEnabled": true,
+    "TunAddress": "",
     "TunCloudEndpoint":"wss://tun.thingsplex.com",
-    "TunEdgeToken": "tBxtE5SfUMuD9z52",
+    "TunEdgeToken": "",
     "GlobalAuth": {
       "AuthMethod": "none",
       "AuthToken ": "",
