@@ -11,16 +11,16 @@ import (
 
 type LogNode struct {
 	base.BaseNode
-	ctx             *context.Context
-	transport       *fimpgo.MqttTransport
-	config          LogNodeConfig
+	ctx       *context.Context
+	transport *fimpgo.MqttTransport
+	config    LogNodeConfig
 }
 
 type LogNodeConfig struct {
-	VariableName             string
-	IsVariableGlobal         bool
-	LogLevel                 string
-	Text                     string
+	VariableName     string
+	IsVariableGlobal bool
+	LogLevel         string
+	Text             string
 }
 
 func NewNode(flowOpCtx *model.FlowOperationalContext, meta model.MetaNode, ctx *context.Context) model.Node {
@@ -45,13 +45,13 @@ func (node *LogNode) WaitForEvent(responseChannel chan model.ReactorEvent) {
 }
 
 func (node *LogNode) OnInput(msg *model.Message) ([]model.NodeID, error) {
-	level , err := log.ParseLevel(node.config.LogLevel)
+	level, err := log.ParseLevel(node.config.LogLevel)
 	if err != nil {
-		level,_ = log.ParseLevel("info")
+		level, _ = log.ParseLevel("info")
 	}
 	if node.config.Text != "" {
-		node.GetLog().Logf(level,node.config.Text)
-	}else if node.config.VariableName != "" {
+		node.GetLog().Logf(level, node.config.Text)
+	} else if node.config.VariableName != "" {
 
 		flowId := node.FlowOpCtx().FlowId
 		if node.config.IsVariableGlobal {
@@ -62,9 +62,19 @@ func (node *LogNode) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			node.GetLog().Error("Can't get variable . Error:", err)
 			return nil, err
 		}
-		node.GetLog().Logf(level,"%+v",variable)
+		node.GetLog().Logf(level, "%+v", variable)
 	} else {
-		node.GetLog().Logf(level,"%+v",msg.Payload)
+		node.GetLog().Logf(level, "Payload type: %d", msg.PayloadType)
+		if msg.PayloadType == model.MsgPayloadBinary || msg.PayloadType == model.MsgPayloadBinaryString || msg.PayloadType == model.MsgPayloadBinaryJson {
+			node.GetLog().Logf(level, string(msg.RawPayload))
+		} else {
+			if len(msg.RawPayload) > 0 {
+				node.GetLog().Logf(level, "%+v", msg.RawPayload)
+			} else {
+				node.GetLog().Logf(level, "%+v", msg.Payload)
+			}
+		}
+
 	}
 
 	return []model.NodeID{node.Meta().SuccessTransition}, nil

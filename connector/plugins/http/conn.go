@@ -544,7 +544,7 @@ func (conn *Connector) PublishToConnectionById(requestId int64, payload []byte) 
 	}
 }
 
-// PublishWs must be used to publish messages to live WS connection , given that flow is not triggered by the same connection and there is not WS trigger.
+// PublishWs must be used to publish messages to all live WS connection , given that flow is not triggered by the same connection and there is not WS trigger.
 func (conn *Connector) PublishWs(flowId string, payload []byte) {
 	//log.Debug("ws publish from flow =", flowId)
 	conn.liveConnections.Range(func(key, value interface{}) bool {

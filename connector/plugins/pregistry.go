@@ -5,12 +5,14 @@ import (
 	"github.com/thingsplex/tpflow/connector/plugins/fimpmqtt"
 	"github.com/thingsplex/tpflow/connector/plugins/http"
 	"github.com/thingsplex/tpflow/connector/plugins/timeseries"
+	"github.com/thingsplex/tpflow/connector/plugins/websocket"
 )
 
 var pluginRegistry = map[string]model.Plugin{
-	"timeseries": {Constructor: timeseries.NewConnectorInstance, Config: fimpmqtt.ConnectorConfig{}},
-	"fimpmqtt": {Constructor: fimpmqtt.NewConnectorInstance, Config: fimpmqtt.ConnectorConfig{}},
-	"httpserver": {Constructor: http.NewConnectorInstance, Config: http.ConnectorConfig{}},
+	"timeseries":       {Constructor: timeseries.NewConnectorInstance, Config: fimpmqtt.ConnectorConfig{}},
+	"fimpmqtt":         {Constructor: fimpmqtt.NewConnectorInstance, Config: fimpmqtt.ConnectorConfig{}},
+	"httpserver":       {Constructor: http.NewConnectorInstance, Config: http.ConnectorConfig{}},
+	"websocket-client": {Constructor: websocket.NewConnectorInstance, Config: websocket.ConnectorConfig{}},
 }
 
 func GetPlugin(name string) *model.Plugin {

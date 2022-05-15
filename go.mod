@@ -41,13 +41,13 @@ require (
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 	github.com/vmihailenco/msgpack v4.0.0+incompatible // indirect
 	golang.org/x/net v0.0.0-20180826012351-8a410e7b638d // indirect
-	golang.org/x/sys v0.0.0-20191026070338-33540a1f6037 // indirect
+	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150 // indirect
 	golang.org/x/text v0.3.0 // indirect
 	google.golang.org/appengine v1.1.0 // indirect
 	google.golang.org/protobuf v1.26.0 // indirect
 )
 
 // remove after testing
-//replace github.com/thingsplex/tprelay => ../tprelay
+replace github.com/thingsplex/tprelay => ../tprelay
 
-go 1.17
+go 1.18

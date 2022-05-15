@@ -2,7 +2,6 @@ package http
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/mitchellh/mapstructure"
@@ -16,11 +15,11 @@ import (
 // Node is Http reply node that sends response to request received from HTTP trigger node
 type Node struct {
 	base.BaseNode
-	ctx            *context.Context
-	config         NodeConfig
-	httpServerConn *http.Connector
-	nodeGlobalId   string
-	responseTemplate   *template.Template
+	ctx              *context.Context
+	config           NodeConfig
+	httpServerConn   *http.Connector
+	nodeGlobalId     string
+	responseTemplate *template.Template
 }
 
 type NodeConfig struct {
@@ -73,8 +72,8 @@ func (node *Node) LoadNodeConfig() error {
 	}
 
 	if node.config.IsWs && node.config.IsPublishOnly {
-		name := fmt.Sprintf("%s %s", node.FlowOpCtx().FlowMeta.Name,node.BaseNode.GetMetaNode().Label)
-		node.httpServerConn.RegisterFlow(node.nodeGlobalId, true, true, true, nil,node.config.Alias,name,http.AuthConfig{})
+		name := fmt.Sprintf("%s %s", node.FlowOpCtx().FlowMeta.Name, node.BaseNode.GetMetaNode().Label)
+		node.httpServerConn.RegisterFlow(node.nodeGlobalId, true, true, true, nil, node.config.Alias, name, http.AuthConfig{})
 	}
 
 	if node.config.ResponseTemplate != "" {
@@ -102,9 +101,9 @@ func (node *Node) LoadNodeConfig() error {
 			"setting": func(name string) (interface{}, error) {
 				if node.FlowOpCtx().FlowMeta.Settings != nil {
 					s := node.FlowOpCtx().FlowMeta.Settings[name]
-					return s.String(),nil
-				}else {
-					return "",nil
+					return s.String(), nil
+				} else {
+					return "", nil
 				}
 			},
 		}
@@ -127,42 +126,38 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 
 	if node.config.ResponseTemplate == "" {
 		if node.config.InputVar.Name != "" {
+			// variable of arbitrary type
 			variable, err := node.ctx.GetVariable(node.config.InputVar.Name, node.FlowOpCtx().FlowId)
 			if err != nil {
 				node.GetLog().Error("Can't get variable . Error:", err)
 				return nil, err
 			}
-
-			if variable.ValueType == "string" {
-				body = []byte(variable.Value.(string))
-			} else {
-				body, err = json.Marshal(variable.Value)
-				if err != nil {
-					node.GetLog().Error("Can't marshal json . Error:", err)
-					return []model.NodeID{node.Meta().ErrorTransition}, err
-				}
-			}
+			body, err = variable.ToBinary()
 		} else {
+			// fimp handling , serializing fimp into binary payload
 			msg.Payload.Topic = msg.AddressStr
-			if msg.ValPayload == nil {
+			if msg.RawPayload == nil {
 				body, _ = msg.Payload.SerializeToJson()
-			}else {
-				body, _ = json.Marshal(msg.ValPayload)
+			} else {
+				body = msg.RawPayload
 			}
 		}
 	} else {
 		var templateBuffer bytes.Buffer
+		// Preparing template and setting variables which are available from template
 		var template = struct {
-			Variable interface{} // Available from template
-			FlowId string
-			NodeId model.NodeID
+			Variable  interface{} // Available from template
+			FlowId    string
+			NodeId    model.NodeID
 			NodeLabel string
-			TunId string
-			TunToken string
-		}{Variable: msg.Payload.Value,FlowId: node.FlowOpCtx().FlowId,NodeId: node.GetMetaNode().Id,
+			TunId     string
+			TunToken  string
+		}{Variable: msg.Payload.Value,
+			FlowId:    node.FlowOpCtx().FlowId,
+			NodeId:    node.GetMetaNode().Id,
 			NodeLabel: node.GetMetaNode().Label,
-			TunId: node.httpServerConn.Config().TunAddress,
-			TunToken: node.httpServerConn.Config().TunEdgeToken}
+			TunId:     node.httpServerConn.Config().TunAddress,
+			TunToken:  node.httpServerConn.Config().TunEdgeToken}
 		node.responseTemplate.Execute(&templateBuffer, template)
 		body = templateBuffer.Bytes()
 	}

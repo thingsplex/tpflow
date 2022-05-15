@@ -52,6 +52,8 @@ func (reg *Registry) CreateInstance(inst model.Instance) model.ConnInterface {
 		inst.Connection.Init()
 		reg.AddInstance(&inst)
 		return inst.Connection
+	} else {
+		log.Errorf("<ConnRegistry> Plugin %s not found", inst.Plugin)
 	}
 	return nil
 }

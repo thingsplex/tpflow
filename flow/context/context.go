@@ -3,6 +3,7 @@ package context
 import (
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"os"
 
@@ -16,6 +17,12 @@ import (
 const (
 	ContextRecTypeUser  = 0
 	ContextRecTypeState = 1
+
+	VarTypeString  = "string"
+	VarTypeInt     = "int"
+	VarTypeFloat   = "float"
+	VarTypeBinBlob = "blob"
+	VarTypeBool    = "bool"
 )
 
 type Variable struct {
@@ -23,12 +30,26 @@ type Variable struct {
 	ValueType string
 }
 
+// ToStruct converts interface{} payload to variable of certain structure using reflection
 func (vrbl *Variable) ToStruct(targetVar interface{}) {
 	mapstructure.Decode(vrbl.Value, targetVar)
 }
 
+func (vrbl *Variable) ToBinary() ([]byte, error) {
+
+	switch vrbl.ValueType {
+	case VarTypeString:
+		return []byte(vrbl.Value.(string)), nil
+	case VarTypeBinBlob:
+		return vrbl.Value.([]byte), nil
+	default:
+		// this works only is parsed json
+		return json.Marshal(vrbl.Value)
+	}
+}
+
 func (vrbl *Variable) IsNumber() bool {
-	if vrbl.ValueType == "int" || vrbl.ValueType == "float" {
+	if vrbl.ValueType == VarTypeInt || vrbl.ValueType == VarTypeFloat {
 		return true
 	} else {
 		return false
@@ -38,7 +59,7 @@ func (vrbl *Variable) IsNumber() bool {
 func (vrbl *Variable) IsEqual(var2 *Variable) (bool, error) {
 	if vrbl.ValueType == var2.ValueType {
 		switch vrbl.ValueType {
-		case "string":
+		case VarTypeString:
 			v1, ok1 := vrbl.Value.(string)
 			v2, ok2 := var2.Value.(string)
 			if ok1 && ok2 {
@@ -46,7 +67,7 @@ func (vrbl *Variable) IsEqual(var2 *Variable) (bool, error) {
 			} else {
 				return false, errors.New("Can't cast var to string")
 			}
-		case "int", "float":
+		case VarTypeInt, VarTypeFloat:
 			v1, ok1 := vrbl.ToNumber()
 			v2, ok2 := var2.ToNumber()
 			if ok1 == nil && ok2 == nil {
@@ -54,7 +75,7 @@ func (vrbl *Variable) IsEqual(var2 *Variable) (bool, error) {
 			} else {
 				return false, errors.New("Can't cast var to number")
 			}
-		case "bool":
+		case VarTypeBool:
 			v1, ok1 := vrbl.Value.(bool)
 			v2, ok2 := var2.Value.(bool)
 			if ok1 && ok2 {
@@ -73,13 +94,13 @@ func (vrbl *Variable) IsEqual(var2 *Variable) (bool, error) {
 // Validates actual Variable type against type set in VariableType
 func (vrbl *Variable) isTypeValid() bool {
 	switch vrbl.ValueType {
-	case "int":
+	case VarTypeInt:
 		switch vrbl.Value.(type) {
 		case int, int8, int16, int32, int64, float32, float64:
 			return true
 		}
 		return false
-	case "float":
+	case VarTypeFloat:
 		switch v := vrbl.Value.(type) {
 		case float32:
 			return true
@@ -89,13 +110,13 @@ func (vrbl *Variable) isTypeValid() bool {
 			}
 		}
 		return false
-	case "bool":
+	case VarTypeBool:
 		switch vrbl.Value.(type) {
 		case bool:
 			return true
 		}
 		return false
-	case "string":
+	case VarTypeString:
 		switch vrbl.Value.(type) {
 		case string:
 			return true
@@ -147,6 +168,7 @@ func NewContextDB(storageLocation string) (*Context, error) {
 	gob.Register([]int64{})
 	gob.Register([]float64{})
 	gob.Register([]bool{})
+	gob.Register([]byte{})
 	gob.Register(map[string]interface{}{})
 	gob.Register(map[string]string{})
 	gob.Register(map[string]int64{})

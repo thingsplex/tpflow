@@ -159,7 +159,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 			return []model.NodeID{node.Meta().ErrorTransition}, nil
 		}
 
-	case "python": // --- This is going to be removed
+	case "python":
 		var iValue context.Variable
 		if node.config.InputVariableName == "" {
 			// Use input message

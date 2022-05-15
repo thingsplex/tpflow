@@ -90,7 +90,7 @@ run-docker:
     --network tplex-net --name tpflow thingsplex/tpflow:latest
 
 init-mqtt:
-	 docker run -d --name mqtt -p 1883:1883 -p 9001:9001 -v $(working_dir)/testdata/mosquitto/config:/mosquitto/config eclipse-mosquitto:2.0.14
+	 docker run -d --name mqtt -p 1883:1883 -p 9001:9001 -v $(working_dir)/scripts/mosquitto/config:/mosquitto/config eclipse-mosquitto:2.0.14
 
 start-mqtt:
 	docker start mqtt

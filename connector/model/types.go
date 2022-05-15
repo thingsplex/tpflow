@@ -1,12 +1,12 @@
 package model
 
 type Instance struct {
-	ID         string
-	Name       string        // name of the instance
-	Plugin     string        // name of connector
-	Connection ConnInterface `json:"-"`
-	Config     interface{}
-	ConfigFileName   string  `json:"-"`
+	ID             string
+	Name           string        // human-readable name of the instance
+	Plugin         string        // name of connector
+	Connection     ConnInterface `json:"-"`
+	Config         interface{}
+	ConfigFileName string `json:"-"`
 }
 
 type InstanceView struct {

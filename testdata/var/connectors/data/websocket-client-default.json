@@ -1,0 +1,1 @@
+{"ID":"websocket-client","Name":"websocket-client","Plugin":"websocket-client","Config":{"Headers":{"Content-Type":"application/json"},"WsServerURI":"ws://lego.local:8123/api/websocket"}}

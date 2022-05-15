@@ -89,7 +89,7 @@ func (node *Node) Init() error {
 }
 
 func (node *Node) logNextEvent() {
-	for _,e := range node.cron.Entries() {
+	for _, e := range node.cron.Entries() {
 		node.GetLog().Info("Next task will run at:", e.Next.Format(TIME_FORMAT))
 	}
 }
@@ -102,8 +102,8 @@ func (node *Node) getSunriseAndSunset(nextDay bool) (sunrise time.Time, sunset t
 	}
 
 	sunrise, sunset = sun.SunriseSunset(
-		node.config.Latitude,node.config.Longitude,          // Toronto, CA
-		currentDate.Year(), currentDate.Month(), currentDate.Day(),  // 2000-01-01
+		node.config.Latitude, node.config.Longitude, // Toronto, CA
+		currentDate.Year(), currentDate.Month(), currentDate.Day(), // 2000-01-01
 	)
 
 	sunrise = time.Date(currentDate.Year(), currentDate.Month(), currentDate.Day(), sunrise.Hour(), sunrise.Minute(), 0, 0, time.UTC)
@@ -114,11 +114,11 @@ func (node *Node) getSunriseAndSunset(nextDay bool) (sunrise time.Time, sunset t
 func (node *Node) getTimeUntilNextEvent() (eventTime time.Duration, eventType string, err error) {
 	sunrise, sunset, err := node.getSunriseAndSunset(false)
 	if err != nil {
-		return 0,"",err
+		return 0, "", err
 	}
 	timeTillSunrise := time.Until(sunrise)
 	timeTillSunset := time.Until(sunset)
-	node.GetLog().Debugf("-- Time till sunrise = %f , till sunset = %f ",timeTillSunrise.Minutes(),timeTillSunset.Minutes())
+	node.GetLog().Debugf("-- Time till sunrise = %f , till sunset = %f ", timeTillSunrise.Minutes(), timeTillSunset.Minutes())
 	var nextEvent string
 	if timeTillSunrise.Minutes() > 0 && timeTillSunset.Minutes() > 0 {
 		// morning before sunrise (both events are in future )
@@ -136,18 +136,18 @@ func (node *Node) getTimeUntilNextEvent() (eventTime time.Duration, eventType st
 	}
 	if node.nextAstroEvent == nextEvent && nextEvent == SUNRISE {
 		nextEvent = SUNSET
-	}else if node.nextAstroEvent == nextEvent && nextEvent == SUNSET {
+	} else if node.nextAstroEvent == nextEvent && nextEvent == SUNSET {
 		nextEvent = SUNRISE
 		sunrise, sunset, err = node.getSunriseAndSunset(true)
 		timeTillSunrise = time.Until(sunrise)
 		timeTillSunset = time.Until(sunset)
 	}
-	node.GetLog().Debugf("-- Time till sunrise = %f , till sunset = %f , next event %s",timeTillSunrise.Minutes(),timeTillSunset.Minutes(),nextEvent)
+	node.GetLog().Debugf("-- Time till sunrise = %f , till sunset = %f , next event %s", timeTillSunrise.Minutes(), timeTillSunset.Minutes(), nextEvent)
 
 	if nextEvent == SUNRISE {
-		return timeTillSunrise,nextEvent,nil
-	}else {
-		return timeTillSunset,nextEvent,nil
+		return timeTillSunrise, nextEvent, nil
+	} else {
+		return timeTillSunset, nextEvent, nil
 	}
 }
 
@@ -190,7 +190,7 @@ func (node *Node) ConfigureInStream(activeSubscriptions *[]string, msgInStream m
 	node.msgInStream = msgInStream
 }
 
-// is invoked when node flow is stopped
+// Cleanup is invoked when node flow is stopped
 func (node *Node) Cleanup() error {
 	if node.config.GenerateAstroTimeEvents {
 		node.astroTimer.Stop()
