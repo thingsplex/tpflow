@@ -300,6 +300,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	if node.nodeConfig.TargetVariableName == "" {
 		node.GetLog().Debug("Updating input variable.")
 		// Update input message
+		//TODO: set non-fimp value to raw payload
 		msg.Payload.Value = result.Value
 		msg.Payload.ValueType = result.ValueType
 	} else {

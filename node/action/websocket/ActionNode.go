@@ -1,4 +1,4 @@
-package fimp
+package websocket
 
 import (
 	"errors"
@@ -22,6 +22,7 @@ type Node struct {
 type NodeConfig struct {
 	ConnectorID     string
 	InputVar        model.NodeVariableDef
+	PayloadFormat   string
 	WsPayloadType   string
 	RequestTemplate string // content of template will be used if input variable is not set .
 }
@@ -42,17 +43,20 @@ func (node *Node) LoadNodeConfig() error {
 
 	}
 
-	connTransportInstance := node.ConnectorRegistry().GetInstance(node.config.ConnectorID)
+	if node.config.ConnectorID == "" {
+		node.config.ConnectorID = "websocket-client"
+	}
 	var ok bool
-	if connTransportInstance != nil {
-		node.connector = connTransportInstance.Connection.GetConnection().(*ws.Connector)
+	wsConnectionInstance := node.ConnectorRegistry().GetInstance(node.config.ConnectorID)
+	if wsConnectionInstance != nil {
+		node.connector, ok = wsConnectionInstance.Connection.GetConnection().(*ws.Connector)
 		if !ok {
-			node.GetLog().Error("can't cast connection to websocket connector")
-			return errors.New("can't cast connection to websocket connector")
+			node.GetLog().Error("can't cast connection to ws.Connector ")
+			return errors.New("can't cast connection to ws.Connector ")
 		}
 	} else {
-		node.GetLog().Error("Connector registry doesn't have websocket connector instance")
-		return errors.New("can't find websocket connector instance")
+		node.GetLog().Error("Connector registry doesn't have ws.Connector instance")
+		return errors.New("can't find ws.Connector connector")
 	}
 	return err
 }
@@ -85,6 +89,7 @@ func (node *Node) OnInput(msg *model.Message) ([]model.NodeID, error) {
 	if err != nil {
 		return []model.NodeID{node.Meta().ErrorTransition}, err
 	}
+	node.GetLog().Debug("Sending message to websocket server. Payload:", string(body))
 	err = node.connector.Publish(websocket.TextMessage, body)
 	if err != nil {
 		return []model.NodeID{node.Meta().ErrorTransition}, err

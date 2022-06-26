@@ -1,13 +1,13 @@
 {
-  "ID": "fimpmqtt",
-  "Name": "fimpmqtt",
-  "Plugin": "fimpmqtt",
+  "ID": "timeseries",
+  "Name": "timeseries",
+  "Plugin": "timeseries",
   "State": "",
   "Config": {
     "MqttServerURI": "tcp://localhost:1883",
     "MqttUsername" : "",
     "MqttPassword" : "",
     "MqttTopicGlobalPrefix" : "",
-    "MqttClientIdPrefix" : "thingsplex_conn_dev"
+    "MqttClientIdPrefix" : "thingsplex_timeseries"
   }
 }
